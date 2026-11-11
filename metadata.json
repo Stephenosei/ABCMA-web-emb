@@ -1,0 +1,8 @@
+{
+  "name": "Remix Ablekuma Central Municipal Assembly",
+  "description": "Official municipal assembly portal for public service delivery, permits, property \u0026 business rates billing, and citizen community engagement in Greater Accra, Ghana.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
