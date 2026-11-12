@@ -34,7 +34,7 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
     MUNICIPAL_PROJECTS.find((p) => p.id === projectId) || MUNICIPAL_PROJECTS[0];
 
   return (
-    <div className="bg-slate-50 min-h-screen py-8 lg:py-12">
+    <div className="bg-transparent min-h-screen py-8 lg:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-6">
@@ -61,7 +61,7 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
         <div className="mb-6 flex items-center justify-between">
           <button
             onClick={() => onNavigate('projects')}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:border-emerald-300 shadow-sm transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/85 backdrop-blur-sm border border-slate-200 text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:border-emerald-300 shadow-sm transition-all cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to All Projects</span>
@@ -73,7 +73,7 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
         </div>
 
         {/* Main Dossier Card */}
-        <article className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+        <article className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-3xl overflow-hidden shadow-xl">
           {/* Featured Image */}
           <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900">
             <img

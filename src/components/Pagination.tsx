@@ -61,12 +61,12 @@ export const Pagination: React.FC<PaginationProps> = ({
 
       {/* Pagination controls */}
       {totalPages > 1 && (
-        <div className="flex items-center gap-1.5 order-1 sm:order-2">
+        <div className="flex items-center gap-1 sm:gap-1.5 order-1 sm:order-2 overflow-x-auto max-w-full py-1 scrollbar-none justify-center">
           {/* Previous Button */}
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`px-3 py-1.5 rounded-lg border flex items-center gap-1 font-semibold transition-colors cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg border flex items-center gap-1 font-semibold transition-colors cursor-pointer min-h-[36px] min-w-[36px] justify-center ${
               currentPage === 1
                 ? darkTheme
                   ? 'bg-slate-950 border-slate-800 text-slate-600 cursor-not-allowed'
@@ -86,7 +86,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             {getPageNumbers().map((page, idx) => {
               if (page === '...') {
                 return (
-                  <span key={`ellipsis-${idx}`} className={`px-2 py-1 font-mono ${darkTheme ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <span key={`ellipsis-${idx}`} className={`px-1.5 py-1 font-mono ${darkTheme ? 'text-slate-500' : 'text-slate-400'}`}>
                     …
                   </span>
                 );
@@ -99,7 +99,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 <button
                   key={`page-${pageNum}`}
                   onClick={() => onPageChange(pageNum)}
-                  className={`w-8 h-8 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer flex items-center justify-center ${
+                  className={`w-8 h-8 sm:w-8 sm:h-8 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer flex items-center justify-center min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 ${
                     isActive
                       ? darkTheme
                         ? 'bg-emerald-600 text-white shadow'
@@ -120,7 +120,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className={`px-3 py-1.5 rounded-lg border flex items-center gap-1 font-semibold transition-colors cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg border flex items-center gap-1 font-semibold transition-colors cursor-pointer min-h-[36px] min-w-[36px] justify-center ${
               currentPage === totalPages
                 ? darkTheme
                   ? 'bg-slate-950 border-slate-800 text-slate-600 cursor-not-allowed'

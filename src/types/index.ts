@@ -141,6 +141,7 @@ export interface MunicipalDepartment {
   coreFunctions: string[];
   servicesOffered: string[];
   operatingHours: string;
+  headImageUrl?: string;
 }
 
 export interface MunicipalNewsItem {

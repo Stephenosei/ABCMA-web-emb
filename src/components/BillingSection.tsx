@@ -134,7 +134,7 @@ export const BillingSection: React.FC<BillingSectionProps> = ({
   const bopEstimate = calculateBopFee();
 
   return (
-    <section id="billing" className="py-16 bg-slate-50 border-b border-slate-200">
+    <section id="billing" className="py-12 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section Title */}
         <div className="mb-10 text-center max-w-3xl mx-auto">
@@ -152,7 +152,7 @@ export const BillingSection: React.FC<BillingSectionProps> = ({
         {/* 2-Column Split: Bill Search & Payment Card (Left) + Rate Calculator (Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Bill Lookup & Settlement (7 Cols) */}
-          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7 space-y-6">
+          <div className="lg:col-span-7 bg-white/85 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-7 space-y-6">
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
                 <h3 className="text-lg font-bold text-slate-900">
@@ -330,7 +330,7 @@ export const BillingSection: React.FC<BillingSectionProps> = ({
           </div>
 
           {/* Right Column: Rate & Fee Calculator (5 Cols) */}
-          <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7 space-y-5">
+          <div className="lg:col-span-5 bg-white/85 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-7 space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-emerald-800" />
@@ -503,7 +503,7 @@ export const BillingSection: React.FC<BillingSectionProps> = ({
         {/* =========================================================================
             3. MUNICIPAL BILL REGISTRY & RATE NOTICES DIRECTORY (WITH PAGINATION)
             ========================================================================= */}
-        <div className="mt-14 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="mt-14 bg-white/85 backdrop-blur-md rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 uppercase tracking-widest mb-1">

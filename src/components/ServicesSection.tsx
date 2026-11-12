@@ -58,7 +58,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
   };
 
   return (
-    <section id="service" className="py-16 bg-white border-b border-slate-200">
+    <section id="service" className="py-12 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section Header with unboxed metadata discipline */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
@@ -75,14 +75,14 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
           </div>
 
           {/* Interactive Filter Segmented Control */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1 p-1 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-lg overflow-x-auto max-w-full">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
                   activeCategory === cat.id
-                    ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                    ? 'bg-slate-900 text-white shadow-sm font-semibold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -97,7 +97,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
           {filteredServices.map((service) => (
             <div
               key={service.id}
-              className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-between hover:border-emerald-600/40 hover:shadow-md transition-all group"
+              className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between hover:border-emerald-600/50 hover:shadow-xl transition-all group"
             >
               <div>
                 <div className="flex items-center justify-between gap-3 mb-3">

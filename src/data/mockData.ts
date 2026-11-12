@@ -734,7 +734,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Client Service Charters & Public Information Inquiries',
       'Assembly Hall Bookings for Civic Ceremonies'
     ],
-    operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM'
+    operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM',
+    headImageUrl: '/src/assets/images/dept_head_admin_1794482218886.jpg'
   },
   {
     id: 'dept-hr',
@@ -759,7 +760,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Capacity Building Workshops & Civic Leadership Seminars',
       'Staff Verification for Civil Service & Financial Institutions'
     ],
-    operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM'
+    operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM',
+    headImageUrl: '/src/assets/images/dept_head_admin_1794482218886.jpg'
   },
   {
     id: 'dept-mis',
@@ -784,7 +786,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Municipal Open Data Requests & Civic Technology Collaborations',
       'IT Support for Digital Business Operating Permit Applications'
     ],
-    operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM (24/7 Portal Support)'
+    operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM (24/7 Portal Support)',
+    headImageUrl: '/src/assets/images/dept_head_mis_1794482219572.jpg'
   },
   {
     id: 'dept-works',
@@ -809,7 +812,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Drainage Connection Approvals & Culvert Construction Supervision',
       'Right-of-Way Permits for Utility Excavations'
     ],
-    operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM (Emergency Works On-Call)'
+    operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM (Emergency Works On-Call)',
+    headImageUrl: '/src/assets/images/dept_head_engineer_1794482218772.jpg'
   },
   {
     id: 'dept-social-welfare',
@@ -834,7 +838,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'NGO & Community-Based Organization (CBO) Registration & Clearance',
       'Youth Apprenticeship Sponsorship in Tailoring, Auto Mechanics & ICT'
     ],
-    operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM'
+    operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM',
+    headImageUrl: '/src/assets/images/dept_head_welfare_1794482219397.jpg'
   },
   {
     id: 'dept-physical-planning',
@@ -859,7 +864,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Street Naming & Digital Property Identification Certificates',
       'Architectural Layout Consultation for Commercial Hubs'
     ],
-    operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM'
+    operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM',
+    headImageUrl: '/src/assets/images/dept_head_engineer_1794482218772.jpg'
   },
   {
     id: 'dept-finance',
@@ -884,7 +890,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Direct MoMo/Bank Payment Verification & Settlement',
       'Installment Payment Arrangements for Micro-Enterprises'
     ],
-    operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM'
+    operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM',
+    headImageUrl: '/src/assets/images/dept_head_finance_1794482253363.jpg'
   },
   {
     id: 'dept-health-sanitation',
@@ -909,7 +916,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Pest Control, Fumigation & Disinfestation Certification',
       'Communal Waste Bin Distribution & Skip Relocation Requests'
     ],
-    operatingHours: 'Mon - Fri: 7:30 AM - 4:30 PM (Field Inspections Active)'
+    operatingHours: 'Mon - Fri: 7:30 AM - 4:30 PM (Field Inspections Active)',
+    headImageUrl: '/src/assets/images/dept_head_health_1794482254417.jpg'
   },
   {
     id: 'dept-nadmo',
@@ -934,7 +942,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'School & Market Safety Drills and Fire Prevention Workshops',
       'Volunteer Disaster Management Committee Recruitment'
     ],
-    operatingHours: '24/7 Emergency Operations'
+    operatingHours: '24/7 Emergency Operations',
+    headImageUrl: '/src/assets/images/dept_head_finance_1794482253363.jpg'
   },
   {
     id: 'dept-agriculture',
@@ -959,7 +968,8 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Agro-Enterprise Advisory & Value-Addition Training',
       'Veterinary Clinic Consultations & Meat Inspection'
     ],
-    operatingHours: 'Mon - Fri: 8:00 AM - 4:30 PM'
+    operatingHours: 'Mon - Fri: 8:00 AM - 4:30 PM',
+    headImageUrl: '/src/assets/images/dept_head_engineer_1794482218772.jpg'
   }
 ];
 

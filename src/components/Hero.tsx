@@ -186,43 +186,45 @@ export const Hero: React.FC<HeroProps> = ({
               </form>
 
               {/* Direct Jump Buttons to Open Pages */}
-              <div className="flex flex-wrap items-center gap-2.5 pt-1 text-xs">
-                <span className="text-slate-300 font-medium">Quick Open Pages:</span>
-                <a
-                  href="#whats-new"
-                  className="px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-amber-300 border border-amber-500/40 font-semibold transition-colors inline-flex items-center gap-1.5"
-                >
-                  <Bell className="w-3.5 h-3.5" />
-                  <span>What's New</span>
-                </a>
-                <button
-                  onClick={() => onNavigate('departments')}
-                  className="px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Departments</span>
-                </button>
-                <button
-                  onClick={() => onNavigate('service')}
-                  className="px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Services & Rates</span>
-                </button>
-                <button
-                  onClick={() => onNavigate('projects')}
-                  className="px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <HardHat className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Projects Tracker</span>
-                </button>
-                <button
-                  onClick={() => onNavigate('documents')}
-                  className="px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <FileText className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Gazette Records</span>
-                </button>
+              <div className="pt-1 text-xs space-y-1.5">
+                <span className="text-slate-300 font-medium block">Quick Open Pages:</span>
+                <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1 scrollbar-none text-xs">
+                  <a
+                    href="#whats-new"
+                    className="px-3 py-2 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-amber-300 border border-amber-500/40 font-semibold transition-colors inline-flex items-center gap-1.5 whitespace-nowrap min-h-[38px] shrink-0"
+                  >
+                    <Bell className="w-3.5 h-3.5" />
+                    <span>What's New</span>
+                  </a>
+                  <button
+                    onClick={() => onNavigate('departments')}
+                    className="px-3 py-2 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-medium transition-colors inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer min-h-[38px] shrink-0"
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Departments</span>
+                  </button>
+                  <button
+                    onClick={() => onNavigate('service')}
+                    className="px-3 py-2 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-medium transition-colors inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer min-h-[38px] shrink-0"
+                  >
+                    <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Services & Rates</span>
+                  </button>
+                  <button
+                    onClick={() => onNavigate('projects')}
+                    className="px-3 py-2 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-medium transition-colors inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer min-h-[38px] shrink-0"
+                  >
+                    <HardHat className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Projects Tracker</span>
+                  </button>
+                  <button
+                    onClick={() => onNavigate('documents')}
+                    className="px-3 py-2 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-medium transition-colors inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer min-h-[38px] shrink-0"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Gazette Records</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -457,7 +459,7 @@ export const Hero: React.FC<HeroProps> = ({
                 </div>
 
                 {/* Read More Action Bar */}
-                <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="text-xs text-slate-400">
                     <span className="block font-medium text-slate-300">Delivered at the General Assembly Session</span>
                     <span>Accra Metropolitan Area · 2026 Policy Directive</span>
@@ -465,9 +467,10 @@ export const Hero: React.FC<HeroProps> = ({
 
                   <button
                     onClick={() => onNavigate('leadership-address')}
-                    className="px-5 py-3 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer group"
+                    className="w-full sm:w-auto px-5 py-3 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer group min-h-[44px]"
                   >
-                    <span>Read More · Full 2026 MCE Strategic Policy Address</span>
+                    <span className="hidden sm:inline">Read More · Full 2026 MCE Strategic Policy Address</span>
+                    <span className="sm:hidden">Read 2026 MCE Policy Address</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
@@ -617,7 +620,7 @@ export const Hero: React.FC<HeroProps> = ({
               <div
                 key={dept.id}
                 onClick={() => onSelectDepartment(dept)}
-                className="bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-4 flex flex-col justify-between hover:bg-slate-850 transition-all cursor-pointer group shadow-sm"
+                className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 hover:border-emerald-500/50 rounded-2xl p-4 flex flex-col justify-between hover:bg-slate-850/90 transition-all cursor-pointer group shadow-sm"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
@@ -637,13 +640,29 @@ export const Hero: React.FC<HeroProps> = ({
                     {dept.description}
                   </p>
 
-                  <div className="text-[11px] text-slate-400 border-t border-slate-800/80 pt-2 mb-2">
-                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Head:</span>
-                    <span className="text-slate-200 font-medium">{dept.head}</span>
+                  {/* Director / Head Portrait & Name */}
+                  <div className="flex items-center gap-2.5 border-t border-slate-800/80 pt-2.5 mb-2">
+                    {dept.headImageUrl ? (
+                      <img
+                        src={dept.headImageUrl}
+                        alt={dept.head}
+                        className="w-10 h-10 rounded-lg object-cover border border-emerald-500/60 shadow-sm shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-emerald-950 border border-emerald-700/50 flex items-center justify-center text-emerald-400 font-bold text-xs shrink-0">
+                        {dept.shortCode.slice(0, 2)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
+                        Director / Head:
+                      </span>
+                      <span className="text-slate-200 font-semibold text-xs block truncate">{dept.head}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-emerald-400 font-semibold group-hover:underline">
+                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-emerald-400 font-semibold group-hover:underline">
                   <span>Read More Details</span>
                   <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </div>
@@ -727,10 +746,10 @@ export const Hero: React.FC<HeroProps> = ({
                 </div>
               </div>
 
-              <div className="pt-2 flex flex-wrap items-center gap-3">
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <button
                   onClick={() => onOpenProjectDossier(featuredProject.id)}
-                  className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 text-xs font-bold rounded-xl shadow transition-colors flex items-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 text-xs font-bold rounded-xl shadow transition-colors flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
                 >
                   <span>Read More · Full Project Dossier</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -738,9 +757,9 @@ export const Hero: React.FC<HeroProps> = ({
 
                 <button
                   onClick={() => onNavigate('projects')}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl border border-slate-700 transition-colors cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl border border-slate-700 transition-colors cursor-pointer min-h-[44px] flex items-center justify-center"
                 >
-                  <span>View All 4 Municipal Projects</span>
+                  <span>View All 8 Municipal Projects</span>
                 </button>
               </div>
             </div>

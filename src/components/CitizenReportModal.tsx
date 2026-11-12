@@ -98,29 +98,29 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-xl max-h-[92vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-4 sm:my-8">
         {/* Header */}
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-slate-900 text-white px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-400" />
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
             <div>
-              <div className="text-[11px] text-amber-400 font-semibold tracking-wider uppercase">
+              <div className="text-[10px] sm:text-[11px] text-amber-400 font-semibold tracking-wider uppercase">
                 Citizen Reporting Desk
               </div>
-              <h3 className="text-base font-bold">Report Community Fault or Hazard</h3>
+              <h3 className="text-sm sm:text-base font-bold">Report Community Fault or Hazard</h3>
             </div>
           </div>
           <button
             onClick={handleReset}
-            className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {step === 'form' ? (
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Category of Issue / Fault *

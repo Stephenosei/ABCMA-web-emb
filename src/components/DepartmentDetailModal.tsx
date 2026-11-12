@@ -37,11 +37,11 @@ export const DepartmentDetailModal: React.FC<DepartmentDetailModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150"
+        className="relative w-full max-w-2xl bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Civic Crest / Brand */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white p-6 relative">
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white p-6 relative shrink-0">
           <button
             onClick={onClose}
             className="absolute top-5 right-5 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer"
@@ -70,21 +70,29 @@ export const DepartmentDetailModal: React.FC<DepartmentDetailModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* Key Administration Information */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
-                <UserCheck className="w-4 h-4" />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/80 border border-slate-200/80 p-4 rounded-xl text-xs">
+            <div className="flex items-center gap-3.5 sm:col-span-2 p-3 bg-white/80 border border-slate-200/80 rounded-xl shadow-xs">
+              {department.headImageUrl ? (
+                <img
+                  src={department.headImageUrl}
+                  alt={department.head}
+                  className="w-16 h-16 rounded-xl object-cover border-2 border-emerald-600/70 shadow-sm shrink-0"
+                />
+              ) : (
+                <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+              )}
               <div>
                 <span className="text-slate-400 uppercase tracking-wider text-[10px] block font-semibold">
                   Department Head / Director
                 </span>
-                <strong className="text-slate-900 font-sans block text-sm">
+                <strong className="text-slate-900 font-sans block text-sm sm:text-base">
                   {department.head}
                 </strong>
-                <span className="text-slate-600 text-xs">{department.headTitle}</span>
+                <span className="text-slate-600 text-xs block">{department.headTitle}</span>
               </div>
             </div>
 

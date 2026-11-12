@@ -38,9 +38,9 @@ export const TownHallMemoModal: React.FC<TownHallMemoModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden my-auto max-h-[92vh] flex flex-col">
+        <div className="bg-slate-900 text-white px-5 sm:px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-emerald-400" />
             <div>
@@ -52,14 +52,14 @@ export const TownHallMemoModal: React.FC<TownHallMemoModalProps> = ({
           </div>
           <button
             onClick={handleReset}
-            className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors"
+            className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {!isSuccess ? (
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-1">
               <span className="text-slate-500 block">Hearing / Town Hall:</span>
               <strong className="text-slate-900 block">{meeting.title}</strong>

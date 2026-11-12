@@ -124,7 +124,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
   };
 
   return (
-    <section id="assembly" className="py-12 lg:py-16 bg-white border-b border-slate-200 min-h-screen">
+    <section id="assembly" className="py-12 lg:py-16 bg-transparent min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Breadcrumb Navigation when Standalone Page */}
         {isStandalonePage && (
@@ -144,7 +144,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
 
             <button
               onClick={onNavigateHome}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:border-emerald-300 shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/85 backdrop-blur-sm border border-slate-200 text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:border-emerald-300 shadow-sm transition-all cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Home</span>
@@ -466,8 +466,8 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
         {/* Tab 4: Citizen Incident Desk */}
         {activeTab === 'incidents' && (
           <div className="space-y-6">
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <div className="flex items-center gap-1.5 text-xs text-slate-600">
                   <Filter className="w-3.5 h-3.5" />
                   <span>Area:</span>
@@ -475,7 +475,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 <select
                   value={issueAreaFilter}
                   onChange={(e) => setIssueAreaFilter(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-slate-800"
+                  className="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-slate-800 flex-1 sm:flex-none min-w-[140px]"
                 >
                   {electoralAreas.map((area) => (
                     <option key={area} value={area}>
@@ -490,7 +490,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 <select
                   value={issueStatusFilter}
                   onChange={(e) => setIssueStatusFilter(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-slate-800"
+                  className="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-slate-800 flex-1 sm:flex-none min-w-[120px]"
                 >
                   <option value="all">All Statuses</option>
                   <option value="submitted">Submitted</option>
@@ -502,7 +502,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
 
               <button
                 onClick={onOpenReportModal}
-                className="flex items-center gap-1.5 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer min-h-[40px] shrink-0"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>Report Community Fault</span>
@@ -621,7 +621,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 <div
                   key={dept.id}
                   onClick={() => onSelectDepartment?.(dept)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-xs hover:border-emerald-600/50 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+                  className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 space-y-2.5 text-xs hover:border-emerald-600/50 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-1">
@@ -641,12 +641,25 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                       {dept.description}
                     </p>
 
-                    <div className="text-slate-600 mt-2 pt-2 border-t border-slate-200/80">
-                      <span className="text-slate-400 block text-[10px] uppercase font-semibold">
-                        Director / Head:
-                      </span>
-                      <span className="font-medium text-slate-800">{dept.head}</span>
-                      <span className="text-[10px] text-slate-500 block">{dept.headTitle}</span>
+                    <div className="flex items-center gap-2.5 mt-2.5 pt-2.5 border-t border-slate-200/80">
+                      {dept.headImageUrl ? (
+                        <img
+                          src={dept.headImageUrl}
+                          alt={dept.head}
+                          className="w-10 h-10 rounded-lg object-cover border border-emerald-600/40 shadow-sm shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
+                          {dept.shortCode.slice(0, 2)}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <span className="text-slate-400 block text-[9px] uppercase font-semibold">
+                          Director / Head:
+                        </span>
+                        <strong className="font-bold text-slate-900 block text-xs truncate">{dept.head}</strong>
+                        <span className="text-[10px] text-slate-500 block truncate">{dept.headTitle}</span>
+                      </div>
                     </div>
                   </div>
 

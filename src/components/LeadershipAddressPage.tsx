@@ -25,7 +25,7 @@ export const LeadershipAddressPage: React.FC<LeadershipAddressPageProps> = ({
   onOpenReportModal,
 }) => {
   return (
-    <div className="bg-slate-50 min-h-screen py-8 lg:py-12">
+    <div className="bg-transparent min-h-screen py-8 lg:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-6">
@@ -52,7 +52,7 @@ export const LeadershipAddressPage: React.FC<LeadershipAddressPageProps> = ({
         <div className="mb-6">
           <button
             onClick={() => onNavigate('home')}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:border-emerald-300 shadow-sm transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/85 backdrop-blur-sm border border-slate-200 text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:border-emerald-300 shadow-sm transition-all cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Home</span>
@@ -60,7 +60,7 @@ export const LeadershipAddressPage: React.FC<LeadershipAddressPageProps> = ({
         </div>
 
         {/* Main Article Card */}
-        <article className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+        <article className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-3xl overflow-hidden shadow-xl">
           {/* Header Banner */}
           <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 text-white p-6 sm:p-10 relative">
             <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-widest mb-3">

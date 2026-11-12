@@ -22,25 +22,26 @@ export const OfficialReceiptModal: React.FC<OfficialReceiptModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-300 overflow-hidden my-8 print:m-0 print:border-none print:shadow-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-xl max-h-[92vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-300 overflow-hidden my-4 sm:my-8 print:m-0 print:border-none print:shadow-none print:max-h-none">
         {/* Receipt Header Strip */}
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between print:hidden">
+        <div className="bg-slate-900 text-white px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between print:hidden shrink-0">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
-            <span className="text-sm font-bold tracking-tight">Official ACMA Digital Receipt</span>
+            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-tight">Official ACMA Digital Receipt</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer min-h-[36px]"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print / Save PDF</span>
+              <span className="hidden xs:inline">Print / Save PDF</span>
+              <span className="xs:hidden">Print</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -48,7 +49,7 @@ export const OfficialReceiptModal: React.FC<OfficialReceiptModalProps> = ({
         </div>
 
         {/* Printable Official Receipt Body */}
-        <div className="p-8 font-sans text-slate-900 bg-white">
+        <div className="p-4 sm:p-8 font-sans text-slate-900 bg-white overflow-y-auto flex-1">
           {/* Municipal Crest & Republic Header */}
           <div className="text-center pb-6 border-b-2 border-slate-800">
             <div className="inline-block px-3 py-1 bg-slate-100 rounded text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1.5">

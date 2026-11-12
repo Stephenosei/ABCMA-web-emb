@@ -53,7 +53,7 @@ export const ProjectsTracker: React.FC<ProjectsTrackerProps> = ({
   };
 
   return (
-    <section id="projects" className="py-12 lg:py-16 bg-slate-50 border-b border-slate-200 min-h-screen">
+    <section id="projects" className="py-12 lg:py-16 bg-transparent min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Breadcrumb Navigation when Standalone Page */}
         {isStandalonePage && (
@@ -73,7 +73,7 @@ export const ProjectsTracker: React.FC<ProjectsTrackerProps> = ({
 
             <button
               onClick={onNavigateHome}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:border-emerald-300 shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/85 backdrop-blur-sm border border-slate-200 text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:border-emerald-300 shadow-sm transition-all cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Home</span>
@@ -97,12 +97,12 @@ export const ProjectsTracker: React.FC<ProjectsTrackerProps> = ({
           </div>
 
           {/* Status filter buttons */}
-          <div className="flex items-center gap-1 p-1 bg-white border border-slate-200 rounded-lg shadow-sm">
+          <div className="flex items-center gap-1 p-1 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-lg shadow-sm overflow-x-auto max-w-full scrollbar-none">
             {(['All', 'In Progress', 'Near Completion', 'Commissioned'] as const).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer shrink-0 min-h-[36px] ${
                   activeFilter === filter
                     ? 'bg-slate-900 text-white font-semibold'
                     : 'text-slate-600 hover:text-slate-900'
@@ -119,7 +119,7 @@ export const ProjectsTracker: React.FC<ProjectsTrackerProps> = ({
           {paginatedProjects.map((project) => (
             <div
               key={project.id}
-              className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+              className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-emerald-600/40 transition-all flex flex-col justify-between"
             >
               <div>
                 {/* Project Image Header */}
@@ -218,7 +218,7 @@ export const ProjectsTracker: React.FC<ProjectsTrackerProps> = ({
 
         {/* Empty State */}
         {filteredProjects.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 p-8">
+          <div className="text-center py-12 bg-white/85 backdrop-blur-md rounded-2xl border border-slate-200/80 p-8">
             <HardHat className="w-10 h-10 text-slate-400 mx-auto mb-2" />
             <h4 className="text-sm font-bold text-slate-900">No projects found in this category</h4>
             <p className="text-xs text-slate-500 mt-1">
@@ -228,7 +228,7 @@ export const ProjectsTracker: React.FC<ProjectsTrackerProps> = ({
         )}
 
         {/* Pagination Controls */}
-        <div className="mt-8">
+        <div className="mt-8 bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-sm px-4">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

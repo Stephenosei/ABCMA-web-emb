@@ -57,10 +57,10 @@ export const TrackModal: React.FC<TrackModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden my-auto max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-slate-900 text-white px-5 sm:px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <Search className="w-5 h-5 text-emerald-400" />
             <div>
@@ -72,13 +72,13 @@ export const TrackModal: React.FC<TrackModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors"
+            className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1">
           {/* Search Bar */}
           <form onSubmit={handleSearchSubmit} className="space-y-2">
             <label className="block text-xs font-semibold text-slate-700">
