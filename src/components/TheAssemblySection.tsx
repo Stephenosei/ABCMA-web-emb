@@ -14,7 +14,15 @@ import {
   PlusCircle,
   MessageSquare,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Compass,
+  Target,
+  Clock,
+  Send,
+  Building2,
+  Hammer,
+  HeartHandshake,
+  Briefcase
 } from 'lucide-react';
 import { AssemblyMember, TownHallMeeting, CitizenIssue, MunicipalDepartment } from '../types';
 import { MUNICIPAL_DEPARTMENTS } from '../data/mockData';
@@ -33,6 +41,58 @@ interface TheAssemblySectionProps {
   onReadLeadershipAddress?: () => void;
 }
 
+interface CoreFunctionItem {
+  code: string;
+  title: string;
+  description: string;
+  leadUnit: string;
+}
+
+const CORE_ASSEMBLY_FUNCTIONS: CoreFunctionItem[] = [
+  {
+    code: '01',
+    title: 'Overall Municipal Development & Spatial Planning',
+    description:
+      'Formulate and execute medium-term development plans, annual composite budgets, and spatial zoning schemes across all 7 electoral areas under Act 936.',
+    leadUnit: 'Development Planning & Physical Planning',
+  },
+  {
+    code: '02',
+    title: 'Municipal Infrastructure, Roads & Storm Drainage',
+    description:
+      'Construct, rehabilitate, and maintain local access roads, covered U-drains, market stalls, classrooms, and primary municipal health facilities.',
+    leadUnit: 'Municipal Works Department',
+  },
+  {
+    code: '03',
+    title: 'Local Revenue Mobilization & Fiscal Accountability',
+    description:
+      'Assess and collect property rates, Business Operating Permits (BOP), and market tolls in strict compliance with gazetted fee-fixing resolutions.',
+    leadUnit: 'Finance & Budget Rating Units',
+  },
+  {
+    code: '04',
+    title: 'Public Health, Sanitation & Waste Governance',
+    description:
+      'Safeguard environmental cleanliness through scheduled refuse evacuation, drain desilting, market hygiene inspections, and food-vendor health certification.',
+    leadUnit: 'Environmental Health & Sanitation',
+  },
+  {
+    code: '05',
+    title: 'Social Welfare, Education & Vulnerable Support',
+    description:
+      'Administer social protection programs, persons with disability (PWD) allocations, child welfare interventions, and community livelihood initiatives.',
+    leadUnit: 'Social Welfare & Community Development',
+  },
+  {
+    code: '06',
+    title: 'Local Economic Development & Bye-Law Enforcement',
+    description:
+      'Support traders and MSMEs across Abossey Okai and local markets while enforcing municipal bye-laws, public order, and civic safety.',
+    leadUnit: 'Central Administration & Municipal Guard',
+  },
+];
+
 export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
   assemblyMembers,
   townHalls,
@@ -45,7 +105,9 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
   onNavigateHome,
   onReadLeadershipAddress,
 }) => {
-  const [activeTab, setActiveTab] = useState<'leadership' | 'members' | 'townhalls' | 'incidents' | 'departments'>('leadership');
+  const [activeTab, setActiveTab] = useState<
+    'leadership' | 'members' | 'townhalls' | 'incidents' | 'departments' | 'contact'
+  >('leadership');
   const [memberSearch, setMemberSearch] = useState('');
   const [rsvpdMeetings, setRsvpdMeetings] = useState<Record<string, boolean>>({});
 
@@ -59,6 +121,15 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
 
   const [incidentPage, setIncidentPage] = useState(1);
   const INCIDENTS_PER_PAGE = 4;
+
+  // Contact Us interactive state
+  const [contactName, setContactName] = useState('');
+  const [contactPhoneOrEmail, setContactPhoneOrEmail] = useState('');
+  const [contactUnit, setContactUnit] = useState('Client Service Unit / Central Administration');
+  const [contactSubject, setContactSubject] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactSubmittedRef, setContactSubmittedRef] = useState<string | null>(null);
+  const [contactError, setContactError] = useState<string | null>(null);
 
   useEffect(() => {
     setMemberPage(1);
@@ -110,6 +181,26 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
     setRsvpdMeetings((prev) => ({ ...prev, [meetingId]: !prev[meetingId] }));
   };
 
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactName.trim() || !contactPhoneOrEmail.trim() || !contactSubject.trim() || !contactMessage.trim()) {
+      setContactError('Please fill in your name, contact details, subject, and inquiry message.');
+      return;
+    }
+    setContactError(null);
+    const refNumber = `ACMA-INQ-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    setContactSubmittedRef(refNumber);
+  };
+
+  const handleResetContactForm = () => {
+    setContactName('');
+    setContactPhoneOrEmail('');
+    setContactSubject('');
+    setContactMessage('');
+    setContactSubmittedRef(null);
+    setContactError(null);
+  };
+
   const getStatusBadge = (status: CitizenIssue['status']) => {
     switch (status) {
       case 'submitted':
@@ -122,6 +213,244 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
         return <span className="text-xs text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-medium">Resolved & Verified</span>;
     }
   };
+
+  const renderContactUsModule = () => (
+    <div id="assembly-contact" className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      {/* Left Column: Direct Municipal Complex & Hotlines */}
+      <div className="lg:col-span-5 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl p-6 sm:p-7 border border-slate-800 shadow-lg flex flex-col justify-between space-y-6">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-emerald-400">
+            <Building2 className="w-4 h-4" />
+            <span>Contact Us · Citizen Desk</span>
+          </div>
+
+          <h3 className="text-xl sm:text-2xl font-bold font-serif-civic text-white leading-snug">
+            Reach Ablekuma Central Municipal Assembly
+          </h3>
+
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Have an enquiry regarding permits, property billing, council resolutions, or ward services? Visit our Civic Complex in Lartebiokorshie or contact our Client Service Unit directly.
+          </p>
+
+          <div className="space-y-3.5 pt-2 text-xs text-slate-200 border-t border-slate-800">
+            <div className="flex items-start gap-3">
+              <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block">Municipal Assembly Complex</strong>
+                <span className="text-slate-300">Lartebiokorshie Main Road, Accra, Greater Accra</span>
+                <span className="block text-emerald-400 font-mono text-[11px] mt-0.5">
+                  GhanaPostGPS: GA-140-2210
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Phone className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block">Official Hotlines & Client Desk</strong>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-0.5 font-mono">
+                  <a href="tel:0302228900" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
+                    0302-228-900
+                  </a>
+                  <span className="text-slate-500">/</span>
+                  <a href="tel:0302228901" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
+                    0302-228-901
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Mail className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block">Official Electronic Mail</strong>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-0.5">
+                  <a href="mailto:info@acma.gov.gh" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
+                    info@acma.gov.gh
+                  </a>
+                  <span className="text-slate-500">·</span>
+                  <a href="mailto:support@acma.gov.gh" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
+                    support@acma.gov.gh
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Clock className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block">Municipal Operating Hours</strong>
+                <span className="text-slate-300">Monday – Friday: 8:00 AM – 5:00 PM (GMT)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <span className="text-[11px] text-slate-400">
+            Need urgent drainage, sanitation, or streetlamp repairs?
+          </span>
+          <button
+            type="button"
+            onClick={onOpenReportModal}
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>Log Field Fault</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Right Column: Interactive Inquiry Form */}
+      <div className="lg:col-span-7 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 sm:p-7 shadow-sm flex flex-col justify-between">
+        {contactSubmittedRef ? (
+          <div className="my-auto py-8 text-center space-y-4 max-w-md mx-auto">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto border border-emerald-200">
+              <CheckCircle className="w-7 h-7" />
+            </div>
+            <div className="space-y-1.5">
+              <div className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+                Inquiry Registered
+              </div>
+              <h4 className="text-xl font-bold text-slate-900">
+                Thank you, {contactName}
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Your message has been routed to <strong>{contactUnit}</strong>. A Client Service Officer will respond via <strong>{contactPhoneOrEmail}</strong> within 1 business day.
+              </p>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-mono text-slate-700">
+              Reference Ticket: <strong className="text-slate-950">{contactSubmittedRef}</strong>
+            </div>
+            <button
+              type="button"
+              onClick={handleResetContactForm}
+              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+            >
+              Send Another Inquiry
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleContactSubmit} className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200/80">
+              <div>
+                <h4 className="text-base font-bold text-slate-900">
+                  Send a Direct Message to the Assembly
+                </h4>
+                <p className="text-xs text-slate-600">
+                  Routed straight to our Central Administration & Right to Information (RTI) desk.
+                </p>
+              </div>
+              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md shrink-0 whitespace-nowrap">
+                24-Hour Response SLA
+              </span>
+            </div>
+
+            {contactError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg font-medium">
+                {contactError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  placeholder="e.g. Samuel Nii Odartey"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Phone Number or Email *
+                </label>
+                <input
+                  type="text"
+                  value={contactPhoneOrEmail}
+                  onChange={(e) => setContactPhoneOrEmail(e.target.value)}
+                  placeholder="e.g. 024 412 8890 or email"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Recipient Office / Directorate
+                </label>
+                <select
+                  value={contactUnit}
+                  onChange={(e) => setContactUnit(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
+                >
+                  <option value="Client Service Unit / Central Administration">
+                    Client Service Unit / Central Administration
+                  </option>
+                  <option value="Office of the Municipal Chief Executive (MCE)">
+                    Office of the Municipal Chief Executive (MCE)
+                  </option>
+                  <option value="Office of the Municipal Coordinating Director (MCD)">
+                    Office of the Municipal Coordinating Director (MCD)
+                  </option>
+                  {MUNICIPAL_DEPARTMENTS.map((dept) => (
+                    <option key={dept.id} value={dept.name}>
+                      {dept.name} ({dept.shortCode})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Subject *
+                </label>
+                <input
+                  type="text"
+                  value={contactSubject}
+                  onChange={(e) => setContactSubject(e.target.value)}
+                  placeholder="e.g. BOP Certificate Follow-up / RTI Request"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Message / Inquiry Details *
+              </label>
+              <textarea
+                rows={4}
+                value={contactMessage}
+                onChange={(e) => setContactMessage(e.target.value)}
+                placeholder="Describe your inquiry, electoral area, or reference number..."
+                className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 resize-none"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+              <span className="text-[11px] text-slate-500">
+                Protected under the Data Protection Act & Right to Information Act 989.
+              </span>
+              <button
+                type="submit"
+                className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-sm transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shrink-0 min-h-[40px]"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Submit Official Message</span>
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <section id="assembly" className="py-12 lg:py-16 bg-transparent min-h-screen">
@@ -153,7 +482,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
         )}
 
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
           <div>
             <div className="text-xs font-semibold text-emerald-800 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
               <Landmark className="w-4 h-4 text-emerald-700" />
@@ -162,127 +491,321 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
               The Assembly
             </h1>
-            <p className="text-sm text-slate-600 mt-1 max-w-2xl">
-              Meet the executive leadership, your elected Assembly Members across the 7 electoral areas, public town hall sessions, and citizen incident response system.
+            <p className="text-sm text-slate-700 mt-1 max-w-2xl">
+              Explore our municipal vision, mission, and statutory core functions, meet executive leadership and elected Assembly Members across the 7 electoral areas, or contact our Citizen Desk directly.
             </p>
           </div>
 
           {/* Interactive Sub-Navigation Tabs */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1 p-1 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-xl overflow-x-auto max-w-full shadow-sm">
             <button
               onClick={() => setActiveTab('leadership')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'leadership' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                activeTab === 'leadership'
+                  ? 'bg-emerald-800 text-white shadow-sm'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/80'
               }`}
             >
-              Leadership & MCE
+              Mandate & Leadership
             </button>
             <button
               onClick={() => setActiveTab('members')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'members' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                activeTab === 'members'
+                  ? 'bg-emerald-800 text-white shadow-sm'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/80'
               }`}
             >
               Assembly Members ({assemblyMembers.length})
             </button>
             <button
               onClick={() => setActiveTab('townhalls')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'townhalls' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                activeTab === 'townhalls'
+                  ? 'bg-emerald-800 text-white shadow-sm'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/80'
               }`}
             >
-              Town Halls & Hearings
+              Town Halls
             </button>
             <button
               onClick={() => setActiveTab('incidents')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'incidents' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                activeTab === 'incidents'
+                  ? 'bg-emerald-800 text-white shadow-sm'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/80'
               }`}
             >
-              Citizen Incident Desk ({issues.length})
+              Incident Desk ({issues.length})
             </button>
             <button
               onClick={() => setActiveTab('departments')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'departments' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                activeTab === 'departments'
+                  ? 'bg-emerald-800 text-white shadow-sm'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/80'
               }`}
             >
-              Department Directory
+              Departments
+            </button>
+            <button
+              onClick={() => setActiveTab('contact')}
+              className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                activeTab === 'contact'
+                  ? 'bg-emerald-800 text-white shadow-sm'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/80'
+              }`}
+            >
+              Contact Us
             </button>
           </div>
         </div>
 
-        {/* Tab 1: Leadership & Executive Overview */}
+        {/* Tab 1: Mandate, Assembly Picture, Vision & Mission, Core Functions, Leadership & Contact */}
         {activeTab === 'leadership' && (
-          <div className="space-y-8">
-            <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-10 shadow-xl relative overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-8 space-y-4">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-amber-400">
-                    <Landmark className="w-4 h-4" />
-                    <span>Office of the Municipal Chief Executive (MCE)</span>
+          <div className="space-y-10">
+            {/* 1A. Assembly Building Showcase & Executive Leadership Hero */}
+            <div className="bg-slate-900 text-white rounded-3xl overflow-hidden shadow-xl border border-slate-800">
+              <div className="grid grid-cols-1 lg:grid-cols-12">
+                {/* Assembly Building Architectural Photograph */}
+                <div className="lg:col-span-5 relative min-h-[260px] sm:min-h-[320px] bg-slate-950 overflow-hidden">
+                  <img
+                    src="/images/ablekuma_assembly_welcome_1794372179601.jpg"
+                    alt="Ablekuma Central Municipal Assembly Civic Headquarters in Lartebiokorshie"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 space-y-1">
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-amber-400">
+                      Civic Headquarters · Est. 2019 (L.I. 2376)
+                    </div>
+                    <div className="text-sm font-bold text-white">
+                      Ablekuma Central Municipal Assembly Complex
+                    </div>
+                    <div className="text-xs text-slate-300 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Lartebiokorshie, Greater Accra · GA-140-2210</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Executive Overview & MCE Showcase */}
+                <div className="lg:col-span-7 p-6 sm:p-8 lg:p-10 flex flex-col justify-between space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-amber-400">
+                      <Landmark className="w-4 h-4" />
+                      <span>Office of the Municipal Chief Executive (MCE)</span>
+                    </div>
+
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold font-serif-civic leading-snug">
+                      "Building an Inclusive, Modern & Resilient Ablekuma Central for All Residents and Traders"
+                    </h2>
+
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                      Carved out under Legislative Instrument (L.I. 2376) and governed by the Local Governance Act, 2016 (Act 936), Ablekuma Central Municipal Assembly serves as the highest political, planning, rating, and development authority across our 7 vibrant electoral areas.
+                    </p>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold font-serif-civic leading-snug">
-                    "Building an Inclusive, Modern & Resilient Ablekuma Central for All Residents and Traders"
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    Under the Local Governance Act 2016 (Act 936), Ablekuma Central Municipal Assembly serves as the planning authority, rating authority, and infrastructure driver for our 7 electoral areas. Our mandate is to eliminate bureaucratic delays, modernize local markets like Abossey Okai and Town Council Line, expand maternal clinics, and construct engineered storm drains that protect homes and livelihoods from seasonal floods.
-                  </p>
-
-                  <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-300">
-                    <div className="flex flex-wrap items-center gap-6">
-                      <div>
-                        <strong className="text-white block font-sans">Hon. Municipal Chief Executive</strong>
-                        <span className="text-slate-400">Political & Administrative Head of ACMA</span>
-                      </div>
-                      <div>
-                        <strong className="text-white block font-sans">Municipal Coordinating Director</strong>
-                        <span className="text-slate-400">Head of Civil Service & Secretary to the Assembly</span>
+                  {/* Leadership Row with MCE Portrait */}
+                  <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <img
+                        src="/images/acma_mce_portrait_1794438674697.jpg"
+                        alt="Hon. Frank Nkansah, Municipal Chief Executive"
+                        referrerPolicy="no-referrer"
+                        className="w-12 h-14 rounded-xl object-cover border border-emerald-500/50 bg-slate-800 shrink-0"
+                      />
+                      <div className="text-xs">
+                        <strong className="text-white block font-sans text-sm">Hon. Frank Nkansah</strong>
+                        <span className="text-emerald-400 font-medium block">Municipal Chief Executive (MCE)</span>
+                        <span className="text-slate-400">Assisted by the Municipal Coordinating Director</span>
                       </div>
                     </div>
 
-                    {onReadLeadershipAddress && (
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {onReadLeadershipAddress && (
+                        <button
+                          onClick={onReadLeadershipAddress}
+                          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow transition-colors inline-flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
+                        >
+                          <span>2026 Policy Address</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                       <button
-                        onClick={onReadLeadershipAddress}
-                        className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+                        type="button"
+                        onClick={() => {
+                          const el = document.getElementById('assembly-contact');
+                          el?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl border border-slate-700 transition-colors inline-flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
                       >
-                        <span>Read More · Full 2026 MCE Policy Address</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        <Mail className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Contact Us</span>
                       </button>
-                    )}
+                    </div>
                   </div>
-                </div>
-
-                <div className="lg:col-span-4 bg-slate-800/90 border border-slate-700 p-5 rounded-2xl space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                    Core Assembly Principles
-                  </h4>
-                  <ul className="space-y-2.5 text-xs text-slate-300">
-                    <li className="flex items-start gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Accountability:</strong> Transparent administration of public revenue, permits, and procurement.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Client-Focused:</strong> Rapid turnaround on BOP renewals, civil licenses, and building approvals.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Grassroots Democracy:</strong> Empowered Assembly Members and direct citizen participation.</span>
-                    </li>
-                  </ul>
                 </div>
               </div>
             </div>
+
+            {/* 1B. Official Vision & Mission Statements */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 sm:p-7 shadow-sm flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                      <Compass className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-800 block">
+                        Long-Term Direction
+                      </span>
+                      <h3 className="text-lg font-bold text-slate-900">Our Vision</h3>
+                    </div>
+                  </div>
+                  <p className="text-sm sm:text-base text-slate-800 font-serif-civic leading-relaxed">
+                    "To become a model urban municipality in Greater Accra—environmentally clean, economically vibrant, well-planned, and driven by accountable, technology-enabled civic service delivery for every resident."
+                  </p>
+                </div>
+                <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
+                  <span>Strategic Horizon 2026–2030</span>
+                  <span className="text-emerald-800 font-semibold">Ablekuma Central</span>
+                </div>
+              </div>
+
+              <div className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 sm:p-7 shadow-sm flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                      <Target className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-amber-800 block">
+                        Institutional Purpose
+                      </span>
+                      <h3 className="text-lg font-bold text-slate-900">Our Mission</h3>
+                    </div>
+                  </div>
+                  <p className="text-sm sm:text-base text-slate-800 font-serif-civic leading-relaxed">
+                    "The Ablekuma Central Municipal Assembly exists to improve the quality of life of its inhabitants through the mobilization of resources, effective spatial planning, provision of essential socio-economic infrastructure, and inclusive grassroots governance."
+                  </p>
+                </div>
+                <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
+                  <span>Local Governance Act, 2016 (Act 936)</span>
+                  <span className="text-amber-800 font-semibold">Client Charter</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 1C. Listed Statutory Core Functions of the Assembly */}
+            <div className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-slate-200/80">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-widest text-emerald-800 mb-1 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                    <span>Statutory Mandate · Act 936</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
+                    Core Functions of the Municipal Assembly
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+                    In accordance with Section 12 of the Local Governance Act, 2016 (Act 936), ACMA discharges six foundational responsibilities across the municipality.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('departments')}
+                  className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1 cursor-pointer shrink-0 whitespace-nowrap"
+                >
+                  <span>View Implementing Directorates</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {CORE_ASSEMBLY_FUNCTIONS.map((fn, index) => {
+                  const icons = [Landmark, Hammer, Briefcase, ShieldCheck, HeartHandshake, Users];
+                  const IconComp = icons[index % icons.length];
+                  return (
+                    <div
+                      key={fn.code}
+                      className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 flex flex-col justify-between space-y-3 hover:border-emerald-600/40 hover:shadow-md transition-all"
+                    >
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                            <IconComp className="w-4 h-4" />
+                          </div>
+                          <span className="text-xs font-mono font-bold text-slate-400">
+                            FN-{fn.code}
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                          {fn.title}
+                        </h4>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          {fn.description}
+                        </p>
+                      </div>
+                      <div className="pt-2.5 border-t border-slate-200/80 text-[11px] font-medium text-emerald-800">
+                        Lead: {fn.leadUnit}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 1D. Assembly Chamber & Civic Premises Gallery Strip */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="relative rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-900 shadow-sm min-h-[210px]">
+                <img
+                  src="/images/acma_civic_headquarters_1794370608615.jpg"
+                  alt="Ablekuma Central Municipal Administration Block"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-56 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+                    Administration & Client Center
+                  </div>
+                  <div className="text-sm font-bold">
+                    Central Registry, Permits & Revenue Hall
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-900 shadow-sm min-h-[210px]">
+                <img
+                  src="/images/assembly_chamber_backdrop_1794482218382.jpg"
+                  alt="Ablekuma Central General Assembly Legislative Chamber"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-56 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">
+                    General Assembly Hall
+                  </div>
+                  <div className="text-sm font-bold">
+                    Deliberative Chamber for Bye-Laws & Fee-Fixing Sessions
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 1E. Contact Us Feature right on The Assembly overview */}
+            {renderContactUsModule()}
           </div>
         )}
 
         {/* Tab 2: Assembly Members Directory */}
         {activeTab === 'members' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 border border-slate-200 p-4 rounded-xl">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/85 backdrop-blur-md border border-slate-200/80 p-4 rounded-xl">
               <div>
                 <h4 className="text-sm font-bold text-slate-900">
                   Elected Representatives of the 7 Electoral Areas
@@ -305,7 +828,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
             </div>
 
             {filteredMembers.length === 0 ? (
-              <div className="p-10 text-center bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <div className="p-10 text-center bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-xl space-y-2">
                 <Users className="w-8 h-8 text-slate-400 mx-auto" />
                 <h4 className="text-sm font-bold text-slate-800">No Assembly Members Found</h4>
                 <p className="text-xs text-slate-500">
@@ -317,7 +840,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 {paginatedMembers.map((member) => (
                   <div
                     key={member.id}
-                    className="bg-slate-50 border border-slate-200 rounded-xl p-5 hover:border-emerald-600/40 hover:shadow-md transition-all space-y-3"
+                    className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-xl p-5 hover:border-emerald-600/40 hover:shadow-md transition-all space-y-3"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -329,7 +852,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                         </h4>
                         <span className="text-xs text-slate-500">{member.title}</span>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-white border border-slate-300 flex items-center justify-center font-bold text-slate-700 text-sm shadow-sm">
+                      <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center font-bold text-emerald-800 text-sm shadow-sm shrink-0">
                         {member.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                       </div>
                     </div>
@@ -345,7 +868,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-700 font-mono">
+                    <div className="pt-2 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 font-mono">
                       <div className="flex items-center gap-1.5">
                         <Phone className="w-3.5 h-3.5 text-emerald-700" />
                         <span>{member.phone}</span>
@@ -361,7 +884,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
             )}
 
             {filteredMembers.length > 0 && (
-              <div className="mt-4 bg-slate-50 border border-slate-200 rounded-xl px-4">
+              <div className="mt-4 bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-xl px-4">
                 <Pagination
                   currentPage={memberPage}
                   totalPages={totalMemberPages}
@@ -379,7 +902,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
         {activeTab === 'townhalls' && (
           <div className="space-y-6">
             <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-6">
-              <div className="w-full md:w-1/3 rounded-xl overflow-hidden shadow-lg border border-slate-700 shrink-0">
+              <div className="w-full md:w-1/3 rounded-xl overflow-hidden shadow-lg border border-slate-700 shrink-0 bg-slate-950">
                 <img
                   src="/images/acma_townhall_meeting_1794370609788.jpg"
                   alt="Ablekuma Central Town Hall Consultation"
@@ -404,7 +927,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
               {townHalls.map((meeting) => (
                 <div
                   key={meeting.id}
-                  className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all space-y-4"
+                  className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all space-y-4"
                 >
                   <div>
                     <div className="flex items-center gap-2 text-xs text-emerald-800 font-semibold mb-2">
@@ -466,7 +989,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
         {/* Tab 4: Citizen Incident Desk */}
         {activeTab === 'incidents' && (
           <div className="space-y-6">
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <div className="flex items-center gap-1.5 text-xs text-slate-600">
                   <Filter className="w-3.5 h-3.5" />
@@ -510,7 +1033,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
             </div>
 
             {filteredIssues.length === 0 ? (
-              <div className="p-10 text-center bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <div className="p-10 text-center bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-xl space-y-2">
                 <AlertTriangle className="w-8 h-8 text-slate-400 mx-auto" />
                 <h4 className="text-sm font-bold text-slate-800">No Incident Reports Match Your Filters</h4>
                 <p className="text-xs text-slate-500">
@@ -531,7 +1054,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 {paginatedIssues.map((issue) => (
                   <div
                     key={issue.id}
-                    className="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 transition-all flex flex-col justify-between space-y-3"
+                    className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-xl p-5 hover:border-slate-300 transition-all flex flex-col justify-between space-y-3"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
@@ -585,7 +1108,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
             )}
 
             {filteredIssues.length > 0 && (
-              <div className="mt-4 bg-slate-50 border border-slate-200 rounded-xl px-4">
+              <div className="mt-4 bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-xl px-4">
                 <Pagination
                   currentPage={incidentPage}
                   totalPages={totalIncidentPages}
@@ -646,7 +1169,8 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                         <img
                           src={dept.headImageUrl}
                           alt={dept.head}
-                          className="w-10 h-10 rounded-lg object-cover border border-emerald-600/40 shadow-sm shrink-0"
+                          referrerPolicy="no-referrer"
+                          className="w-10 h-10 rounded-lg object-cover border border-emerald-600/40 shadow-sm shrink-0 bg-slate-100"
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
@@ -676,6 +1200,35 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Tab 6: Dedicated Contact Us Tab */}
+        {activeTab === 'contact' && (
+          <div className="space-y-6">
+            <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 shadow-lg">
+              <img
+                src="/images/acma_civic_headquarters_1794370608615.jpg"
+                alt="Ablekuma Central Municipal Assembly Complex Exterior"
+                referrerPolicy="no-referrer"
+                className="w-full h-48 sm:h-56 object-cover opacity-50"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-transparent flex items-center p-6 sm:p-8">
+                <div className="max-w-xl space-y-2 text-white">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
+                    Client Service & Public Enquiries
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-bold font-serif-civic">
+                    Ablekuma Central Municipal Complex · Contact Desk
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-300">
+                    Connect with our directorates, schedule an appointment with the Right to Information officer, or submit an official enquiry online.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {renderContactUsModule()}
           </div>
         )}
       </div>
