@@ -1,5 +1,5 @@
 import React from 'react';
-import { Landmark, Phone, Mail, MapPin, ShieldCheck, Heart } from 'lucide-react';
+import { Phone, Mail, MapPin, ShieldCheck, Heart } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (section: string) => void;
@@ -21,9 +21,14 @@ export const Footer: React.FC<FooterProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Col 1: Brand & Civic Mandate */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-900 flex items-center justify-center text-amber-400 font-bold">
-                <Landmark className="w-4 h-4 text-amber-300" />
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-white border-2 border-emerald-500/40 shadow-md overflow-hidden flex items-center justify-center shrink-0">
+                <img
+                  src="/assets/aistudio/abcma_logo_74f7cef4.jpeg"
+                  alt="Ablekuma Central Municipal Assembly Crest"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-contain scale-[1.42]"
+                />
               </div>
               <span className="text-base font-bold text-white tracking-tight">
                 Ablekuma Central Municipal Assembly

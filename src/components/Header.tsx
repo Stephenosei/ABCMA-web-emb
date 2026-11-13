@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Phone, ShieldCheck, MapPin, Menu, X, Landmark } from 'lucide-react';
+import { Search, Phone, ShieldCheck, MapPin, Menu, X } from 'lucide-react';
 
 interface HeaderProps {
   onOpenTrackModal: (initialCode?: string) => void;
@@ -63,10 +63,15 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Zone 1: Brand Wordmark */}
         <button
           onClick={() => handleNavClick('home')}
-          className="flex items-center gap-2 sm:gap-2.5 text-left text-slate-900 hover:text-emerald-800 transition-colors shrink min-w-0 group cursor-pointer"
+          className="flex items-center gap-2.5 sm:gap-3 text-left text-slate-900 hover:text-emerald-800 transition-colors shrink min-w-0 group cursor-pointer"
         >
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-900 flex items-center justify-center text-amber-400 font-bold shadow-sm shrink-0">
-            <Landmark className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-emerald-700/25 shadow-sm overflow-hidden flex items-center justify-center shrink-0">
+            <img
+              src="/assets/aistudio/abcma_logo_74f7cef4.jpeg"
+              alt="Ablekuma Central Municipal Assembly Crest"
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-contain scale-[1.42] transition-transform duration-300 group-hover:scale-[1.48]"
+            />
           </div>
           <div className="min-w-0">
             <span className="text-sm sm:text-base lg:text-lg font-bold tracking-tight text-slate-900 block leading-tight truncate">

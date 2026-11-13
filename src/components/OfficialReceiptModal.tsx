@@ -52,6 +52,14 @@ export const OfficialReceiptModal: React.FC<OfficialReceiptModalProps> = ({
         <div className="p-4 sm:p-8 font-sans text-slate-900 bg-white overflow-y-auto flex-1">
           {/* Municipal Crest & Republic Header */}
           <div className="text-center pb-6 border-b-2 border-slate-800">
+            <div className="w-16 h-16 mx-auto mb-2.5 rounded-full bg-white border border-slate-200 shadow-sm overflow-hidden flex items-center justify-center">
+              <img
+                src="/assets/aistudio/abcma_logo_74f7cef4.jpeg"
+                alt="Ablekuma Central Municipal Assembly Crest"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-contain scale-[1.42]"
+              />
+            </div>
             <div className="inline-block px-3 py-1 bg-slate-100 rounded text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1.5">
               Republic of Ghana · Local Governance System
             </div>
