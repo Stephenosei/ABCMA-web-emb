@@ -59,8 +59,8 @@ export const Hero: React.FC<HeroProps> = ({
   const [currentNewsPage, setCurrentNewsPage] = useState(1);
   const NEWS_PER_PAGE = 3;
 
-  const assemblyImagePath = '/src/assets/images/ablekuma_assembly_welcome_1794372179601.jpg';
-  const mcePortraitPath = '/src/assets/images/acma_mce_portrait_1794438674697.jpg';
+  const assemblyImagePath = '/images/ablekuma_assembly_welcome_1794372179601.jpg';
+  const mcePortraitPath = '/images/acma_mce_portrait_1794438674697.jpg';
   const featuredProject = MUNICIPAL_PROJECTS[0]; // Abossey Okai Stormwater Channel
 
   const handleQuickSearchSubmit = (e: React.FormEvent) => {

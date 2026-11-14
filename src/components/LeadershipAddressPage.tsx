@@ -91,7 +91,7 @@ export const LeadershipAddressPage: React.FC<LeadershipAddressPageProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center p-6 rounded-2xl bg-emerald-50/80 border border-emerald-200">
               <div className="sm:col-span-4 shrink-0 flex flex-col items-center sm:items-start">
                 <img
-                  src="/src/assets/images/acma_mce_portrait_1794438674697.jpg"
+                  src="/images/acma_mce_portrait_1794438674697.jpg"
                   alt="Hon. Kwaku Addo Mensah, Municipal Chief Executive"
                   className="w-36 aspect-[3/4] object-cover rounded-xl border-2 border-emerald-700 shadow-md"
                 />

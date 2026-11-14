@@ -381,7 +381,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
             <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-6">
               <div className="w-full md:w-1/3 rounded-xl overflow-hidden shadow-lg border border-slate-700 shrink-0">
                 <img
-                  src="/src/assets/images/acma_townhall_meeting_1794370609788.jpg"
+                  src="/images/acma_townhall_meeting_1794370609788.jpg"
                   alt="Ablekuma Central Town Hall Consultation"
                   referrerPolicy="no-referrer"
                   className="w-full h-44 object-cover"

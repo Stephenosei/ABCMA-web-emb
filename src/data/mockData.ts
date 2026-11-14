@@ -512,7 +512,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     contractor: 'Ofori-Atta Civil Engineering Consortium Ltd',
     startDate: 'November 2025',
     estimatedCompletion: 'May 2026',
-    imageUrl: '/src/assets/images/municipal_works_project_1794370610757.jpg',
+    imageUrl: '/images/municipal_works_project_1794370610757.jpg',
     status: 'In Progress'
   },
   {
@@ -526,7 +526,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     contractor: 'Apex Horizon Built Environments Ltd',
     startDate: 'August 2025',
     estimatedCompletion: 'April 2026',
-    imageUrl: '/src/assets/images/acma_civic_headquarters_1794370608615.jpg',
+    imageUrl: '/images/acma_civic_headquarters_1794370608615.jpg',
     status: 'Near Completion'
   },
   {
@@ -540,7 +540,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     contractor: 'Dan-Adams Highway Contractors Ghana',
     startDate: 'January 2026',
     estimatedCompletion: 'July 2026',
-    imageUrl: '/src/assets/images/municipal_works_project_1794370610757.jpg',
+    imageUrl: '/images/municipal_works_project_1794370610757.jpg',
     status: 'In Progress'
   },
   {
@@ -554,7 +554,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     contractor: 'Klenam Green Sanitation Services Ltd',
     startDate: 'September 2025',
     estimatedCompletion: 'Completed February 2026',
-    imageUrl: '/src/assets/images/abossey_okai_district_1794370608977.jpg',
+    imageUrl: '/images/abossey_okai_district_1794370608977.jpg',
     status: 'Commissioned'
   },
   {
@@ -568,7 +568,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     contractor: 'Nana Yaw Built Works Ltd',
     startDate: 'December 2025',
     estimatedCompletion: 'June 2026',
-    imageUrl: '/src/assets/images/acma_civic_headquarters_1794370608615.jpg',
+    imageUrl: '/images/acma_civic_headquarters_1794370608615.jpg',
     status: 'In Progress'
   },
   {
@@ -582,7 +582,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     contractor: 'Metro Standard Civil Engineering Ltd',
     startDate: 'February 2026',
     estimatedCompletion: 'August 2026',
-    imageUrl: '/src/assets/images/abossey_okai_district_1794370608977.jpg',
+    imageUrl: '/images/abossey_okai_district_1794370608977.jpg',
     status: 'In Progress'
   },
   {
@@ -596,7 +596,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     contractor: 'Silicon Horizon Infrastructure Ltd',
     startDate: 'October 2025',
     estimatedCompletion: 'April 2026',
-    imageUrl: '/src/assets/images/municipal_works_project_1794370610757.jpg',
+    imageUrl: '/images/municipal_works_project_1794370610757.jpg',
     status: 'Near Completion'
   },
   {
@@ -610,7 +610,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     contractor: 'Golden Coast Builders Consortium',
     startDate: 'June 2025',
     estimatedCompletion: 'Handed Over January 2026',
-    imageUrl: '/src/assets/images/acma_civic_headquarters_1794370608615.jpg',
+    imageUrl: '/images/acma_civic_headquarters_1794370608615.jpg',
     status: 'Commissioned'
   }
 ];
@@ -735,7 +735,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Assembly Hall Bookings for Civic Ceremonies'
     ],
     operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM',
-    headImageUrl: '/src/assets/images/dept_head_admin_1794482218886.jpg'
+    headImageUrl: '/images/dept_head_admin_1794482218886.jpg'
   },
   {
     id: 'dept-hr',
@@ -761,7 +761,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Staff Verification for Civil Service & Financial Institutions'
     ],
     operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM',
-    headImageUrl: '/src/assets/images/dept_head_admin_1794482218886.jpg'
+    headImageUrl: '/images/dept_head_admin_1794482218886.jpg'
   },
   {
     id: 'dept-mis',
@@ -787,7 +787,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'IT Support for Digital Business Operating Permit Applications'
     ],
     operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM (24/7 Portal Support)',
-    headImageUrl: '/src/assets/images/dept_head_mis_1794482219572.jpg'
+    headImageUrl: '/images/dept_head_mis_1794482219572.jpg'
   },
   {
     id: 'dept-works',
@@ -813,7 +813,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Right-of-Way Permits for Utility Excavations'
     ],
     operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM (Emergency Works On-Call)',
-    headImageUrl: '/src/assets/images/dept_head_engineer_1794482218772.jpg'
+    headImageUrl: '/images/dept_head_engineer_1794482218772.jpg'
   },
   {
     id: 'dept-social-welfare',
@@ -839,7 +839,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Youth Apprenticeship Sponsorship in Tailoring, Auto Mechanics & ICT'
     ],
     operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM',
-    headImageUrl: '/src/assets/images/dept_head_welfare_1794482219397.jpg'
+    headImageUrl: '/images/dept_head_welfare_1794482219397.jpg'
   },
   {
     id: 'dept-physical-planning',
@@ -865,7 +865,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Architectural Layout Consultation for Commercial Hubs'
     ],
     operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM',
-    headImageUrl: '/src/assets/images/dept_head_engineer_1794482218772.jpg'
+    headImageUrl: '/images/dept_head_engineer_1794482218772.jpg'
   },
   {
     id: 'dept-finance',
@@ -891,7 +891,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Installment Payment Arrangements for Micro-Enterprises'
     ],
     operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM',
-    headImageUrl: '/src/assets/images/dept_head_finance_1794482253363.jpg'
+    headImageUrl: '/images/dept_head_finance_1794482253363.jpg'
   },
   {
     id: 'dept-health-sanitation',
@@ -917,7 +917,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Communal Waste Bin Distribution & Skip Relocation Requests'
     ],
     operatingHours: 'Mon - Fri: 7:30 AM - 4:30 PM (Field Inspections Active)',
-    headImageUrl: '/src/assets/images/dept_head_health_1794482254417.jpg'
+    headImageUrl: '/images/dept_head_health_1794482254417.jpg'
   },
   {
     id: 'dept-nadmo',
@@ -943,7 +943,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Volunteer Disaster Management Committee Recruitment'
     ],
     operatingHours: '24/7 Emergency Operations',
-    headImageUrl: '/src/assets/images/dept_head_finance_1794482253363.jpg'
+    headImageUrl: '/images/dept_head_finance_1794482253363.jpg'
   },
   {
     id: 'dept-agriculture',
@@ -969,7 +969,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Veterinary Clinic Consultations & Meat Inspection'
     ],
     operatingHours: 'Mon - Fri: 8:00 AM - 4:30 PM',
-    headImageUrl: '/src/assets/images/dept_head_engineer_1794482218772.jpg'
+    headImageUrl: '/images/dept_head_engineer_1794482218772.jpg'
   }
 ];
 

@@ -199,7 +199,7 @@ export default function App() {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.22] scale-105 transition-all duration-700"
           style={{
-            backgroundImage: `url('/src/assets/images/assembly_chamber_backdrop_1794482218382.jpg')`,
+            backgroundImage: `url('/images/assembly_chamber_backdrop_1794482218382.jpg')`,
             backgroundAttachment: 'fixed',
           }}
         />
@@ -207,7 +207,7 @@ export default function App() {
         <div
           className="absolute inset-0 bg-cover bg-bottom bg-no-repeat opacity-[0.14] mix-blend-overlay"
           style={{
-            backgroundImage: `url('/src/assets/images/acma_civic_plaza_bg_1794482218453.jpg')`,
+            backgroundImage: `url('/images/acma_civic_plaza_bg_1794482218453.jpg')`,
             backgroundAttachment: 'fixed',
           }}
         />
