@@ -1049,7 +1049,7 @@ export const MUNICIPAL_NEWS: MunicipalNewsItem[] = [
     author: 'Municipal Education Directorate & Works',
     readTime: '3 min read',
     badgeColor: 'bg-amber-950 text-amber-400 border-amber-700/50',
-    excerpt: 'The Municipal Chief Executive Hon. Kwaku Addo Mensah formally handed over keys to a newly constructed multi-storey educational facility equipped with modern ICT laboratory and sanitation facilities.',
+    excerpt: 'The Municipal Chief Executive Hon. Frank Nkansah formally handed over keys to a newly constructed multi-storey educational facility equipped with modern ICT laboratory and sanitation facilities.',
     content: 'Funded under the District Assembly Common Fund and GETFund, the facility will accommodate over 350 pupils and eliminate the double-shift school schedule in the sub-metro area.',
     targetPage: 'projects',
     targetLabel: 'View Education Project'

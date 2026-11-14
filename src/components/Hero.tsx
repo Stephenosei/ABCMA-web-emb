@@ -401,12 +401,12 @@ export const Hero: React.FC<HeroProps> = ({
                   <div className="relative w-56 sm:w-64 aspect-[3/4] rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-2xl bg-slate-900">
                     <img
                       src={mcePortraitPath}
-                      alt="Hon. Kwaku Addo Mensah, Municipal Chief Executive of Ablekuma Central"
+                      alt="Hon. Frank Nkansah, Municipal Chief Executive of Ablekuma Central"
                       className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent p-3 text-left">
                       <div className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">
-                        Hon. Kwaku Addo Mensah
+                        Hon. Frank Nkansah
                       </div>
                       <div className="text-[10px] text-slate-300">
                         Municipal Chief Executive (MCE)

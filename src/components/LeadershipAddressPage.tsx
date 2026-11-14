@@ -92,10 +92,10 @@ export const LeadershipAddressPage: React.FC<LeadershipAddressPageProps> = ({
               <div className="sm:col-span-4 shrink-0 flex flex-col items-center sm:items-start">
                 <img
                   src="/images/acma_mce_portrait_1794438674697.jpg"
-                  alt="Hon. Kwaku Addo Mensah, Municipal Chief Executive"
+                  alt="Hon. Frank Nkansah, Municipal Chief Executive"
                   className="w-36 aspect-[3/4] object-cover rounded-xl border-2 border-emerald-700 shadow-md"
                 />
-                <span className="text-xs font-bold text-slate-900 mt-2">Hon. Kwaku Addo Mensah</span>
+                <span className="text-xs font-bold text-slate-900 mt-2">Hon. Frank Nkansah</span>
                 <span className="text-[11px] text-emerald-800 font-medium">Municipal Chief Executive (MCE)</span>
               </div>
               <div className="sm:col-span-8 text-emerald-950 text-sm leading-relaxed font-medium space-y-2">
