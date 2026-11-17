@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Phone, ShieldCheck, MapPin, Menu, X } from 'lucide-react';
+import { Search, Phone, Menu, X } from 'lucide-react';
 
 interface HeaderProps {
   onOpenTrackModal: (initialCode?: string) => void;
@@ -16,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const navLinks = [
     { id: 'home', label: 'Home' },
+    { id: 'news', label: 'News' },
     { id: 'departments', label: 'Departments' },
     { id: 'service', label: 'Service' },
     { id: 'projects', label: 'Projects' },
@@ -84,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         {/* Zone 2: Single-line Text Nav Links */}
-        <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-700">
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-sm font-medium text-slate-700">
           {navLinks.map((link) => {
             const isActive =
               activeSection === link.id ||
@@ -147,7 +148,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => handleNavClick(link.id)}
                 className={`block w-full text-left px-3.5 py-2.5 text-sm font-medium rounded-xl transition-colors cursor-pointer min-h-[44px] flex items-center ${
                   isActive
-                    ? 'bg-emerald-50 text-emerald-900 font-bold border-l-4 border-emerald-700 pl-3'
+                    ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200'
                     : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-800'
                 }`}
               >

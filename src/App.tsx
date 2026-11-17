@@ -16,6 +16,7 @@ import { Footer } from './components/Footer';
 import { DepartmentsPage } from './components/DepartmentsPage';
 import { LeadershipAddressPage } from './components/LeadershipAddressPage';
 import { ProjectDossierPage } from './components/ProjectDossierPage';
+import { NewsPage } from './components/NewsPage';
 
 import { ServiceApplicationModal } from './components/ServiceApplicationModal';
 import { CitizenReportModal } from './components/CitizenReportModal';
@@ -46,6 +47,7 @@ import { CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react';
 export default function App() {
   const [activeSection, setActiveSection] = useState('home');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('proj-1');
+  const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null);
 
   // Application Data States (persistent in memory during session)
   const [bills, setBills] = useState<BillRecord[]>(INITIAL_BILLS);
@@ -179,8 +181,18 @@ export default function App() {
   };
 
   const handleNavigate = (pageId: string) => {
+    if (pageId === 'news') {
+      setSelectedNewsId(null);
+    }
     setActiveSection(pageId);
     window.location.hash = `#${pageId}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenNewsArticle = (newsId: string) => {
+    setSelectedNewsId(newsId);
+    setActiveSection('news');
+    window.location.hash = '#news';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -243,6 +255,16 @@ export default function App() {
             onOpenServiceModal={handleOpenServiceModal}
             onSelectDepartment={handleOpenDepartmentDetail}
             onOpenProjectDossier={handleOpenProjectDossier}
+            onOpenNewsArticle={handleOpenNewsArticle}
+          />
+        )}
+
+        {/* 1b. News Open Page (Local & Other News) */}
+        {activeSection === 'news' && (
+          <NewsPage
+            onNavigate={handleNavigate}
+            selectedArticleId={selectedNewsId}
+            onSelectArticleId={setSelectedNewsId}
           />
         )}
 

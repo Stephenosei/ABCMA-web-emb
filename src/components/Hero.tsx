@@ -40,6 +40,7 @@ interface HeroProps {
   onOpenServiceModal: (serviceId?: string) => void;
   onSelectDepartment: (dept: MunicipalDepartment) => void;
   onOpenProjectDossier: (projectId: string) => void;
+  onOpenNewsArticle?: (newsId: string) => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({
@@ -49,9 +50,11 @@ export const Hero: React.FC<HeroProps> = ({
   onOpenServiceModal,
   onSelectDepartment,
   onOpenProjectDossier,
+  onOpenNewsArticle,
 }) => {
   const [quickSearchInput, setQuickSearchInput] = useState('');
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [activeNewsScope, setActiveNewsScope] = useState<'all' | 'local' | 'other'>('all');
   const [activeNewsCategory, setActiveNewsCategory] = useState<string>('all');
   const [previewNewsItem, setPreviewNewsItem] = useState<MunicipalNewsItem | null>(null);
 
@@ -72,15 +75,22 @@ export const Hero: React.FC<HeroProps> = ({
     }
   };
 
+  const handleNewsScopeChange = (scope: 'all' | 'local' | 'other') => {
+    setActiveNewsScope(scope);
+    setCurrentNewsPage(1);
+  };
+
   const handleNewsCategoryChange = (catId: string) => {
     setActiveNewsCategory(catId);
     setCurrentNewsPage(1);
   };
 
-  const filteredNews =
-    activeNewsCategory === 'all'
-      ? MUNICIPAL_NEWS
-      : MUNICIPAL_NEWS.filter((n) => n.category.toLowerCase() === activeNewsCategory.toLowerCase());
+  const filteredNews = MUNICIPAL_NEWS.filter((n) => {
+    const matchScope = activeNewsScope === 'all' || n.newsScope === activeNewsScope;
+    const matchCategory =
+      activeNewsCategory === 'all' || n.category.toLowerCase() === activeNewsCategory.toLowerCase();
+    return matchScope && matchCategory;
+  });
 
   const totalNewsPages = Math.ceil(filteredNews.length / NEWS_PER_PAGE) || 1;
   const paginatedNews = filteredNews.slice(
@@ -481,29 +491,61 @@ export const Hero: React.FC<HeroProps> = ({
       </section>
 
       {/* =========================================================================
-          3. "WHAT'S NEW" / MUNICIPAL NEWS & PUBLIC BULLETINS
+          3. FEATURED ASSEMBLY ACTIVITIES & NEWS ("WHAT'S NEW")
           ========================================================================= */}
       <section className="py-14 bg-slate-900 text-white border-b border-slate-800" id="whats-new">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Section Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-6">
             <div>
               <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-1.5">
-                <Bell className="w-4 h-4 text-amber-400" />
-                <span>What's New in Ablekuma Central</span>
+                <Newspaper className="w-4 h-4 text-amber-400" />
+                <span>Assembly Activities & News Feed</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Official Municipal Bulletins & Announcements
+                What's New: Local & Regional Assembly News
               </h2>
               <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-                Stay updated on statutory compliance windows, infrastructure handovers, town hall schedules, and public health campaigns across the municipality.
+                Follow live Ablekuma Central Assembly activities, ward infrastructure milestones, and regional governance announcements.
               </p>
             </div>
 
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl overflow-x-auto max-w-full">
+            <button
+              onClick={() => onNavigate('news')}
+              className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl shadow transition-colors inline-flex items-center gap-2 cursor-pointer self-start lg:self-auto shrink-0 whitespace-nowrap"
+            >
+              <span>Explore All News & Activities</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* News Scope & Category Filter Bar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-8">
+            {/* Local vs Other News Toggle */}
+            <div className="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl overflow-x-auto max-w-full">
               {[
-                { id: 'all', label: 'All News' },
+                { id: 'all' as const, label: 'All News' },
+                { id: 'local' as const, label: 'Local News (Assembly)' },
+                { id: 'other' as const, label: 'Other News (Regional)' },
+              ].map((scope) => (
+                <button
+                  key={scope.id}
+                  onClick={() => handleNewsScopeChange(scope.id)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                    activeNewsScope === scope.id
+                      ? 'bg-amber-500 text-slate-950 shadow'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  {scope.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Category Filters */}
+            <div className="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl overflow-x-auto max-w-full">
+              {[
+                { id: 'all', label: 'All Topics' },
                 { id: 'notice', label: 'Notices' },
                 { id: 'infrastructure', label: 'Works' },
                 { id: 'welfare', label: 'Welfare' },
@@ -513,7 +555,7 @@ export const Hero: React.FC<HeroProps> = ({
                 <button
                   key={cat.id}
                   onClick={() => handleNewsCategoryChange(cat.id)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                     activeNewsCategory === cat.id
                       ? 'bg-emerald-600 text-white shadow'
                       : 'text-slate-400 hover:text-white'
@@ -530,41 +572,60 @@ export const Hero: React.FC<HeroProps> = ({
             {paginatedNews.map((item) => (
               <div
                 key={item.id}
-                className="bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-6 transition-all shadow-md flex flex-col justify-between group hover:bg-slate-850"
+                className="bg-slate-950/85 border border-slate-800 hover:border-emerald-500/50 rounded-2xl overflow-hidden transition-all shadow-md flex flex-col justify-between group"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${item.badgeColor}`}>
-                      {item.category}
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-mono">
-                      {item.date}
-                    </span>
+                  {item.imageUrl && (
+                    <div className="relative h-40 bg-slate-900 overflow-hidden">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                      <div className="absolute bottom-2.5 left-4 right-4 flex items-center justify-between text-[11px] text-slate-200 font-medium">
+                        <span className="text-emerald-300 font-semibold">
+                          {item.newsScope === 'local' ? 'Local News' : 'Other News'}
+                        </span>
+                        <span className="font-mono">{item.date}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="p-5 sm:p-6">
+                    <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
+                      <span className="font-semibold text-amber-400">{item.category}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{item.readTime}</span>
+                    </div>
+
+                    <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-emerald-300 transition-colors leading-snug mb-2.5">
+                      {item.title}
+                    </h3>
+
+                    <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
+                      {item.excerpt}
+                    </p>
                   </div>
-
-                  <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-emerald-300 transition-colors leading-snug mb-2.5">
-                    {item.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-300 leading-relaxed mb-4 line-clamp-3">
-                    {item.excerpt}
-                  </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                <div className="px-5 sm:px-6 py-4 border-t border-slate-800/80 flex items-center justify-between gap-2">
                   <button
                     onClick={() => setPreviewNewsItem(item)}
                     className="text-xs text-slate-400 hover:text-white font-medium inline-flex items-center gap-1 cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    <span>Read Brief</span>
+                    <span>Quick Brief</span>
                   </button>
 
                   <button
-                    onClick={() => onNavigate(item.targetPage)}
-                    className="text-xs text-emerald-400 hover:text-emerald-300 font-bold inline-flex items-center gap-1 cursor-pointer group-hover:underline"
+                    onClick={() =>
+                      onOpenNewsArticle ? onOpenNewsArticle(item.id) : setPreviewNewsItem(item)
+                    }
+                    className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
                   >
-                    <span>{item.targetLabel}</span>
+                    <span>Read More</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>

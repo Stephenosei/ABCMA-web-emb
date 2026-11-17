@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Eye, Search, Filter, CheckCircle, ShieldCheck, ArrowLeft, ArrowRight } from 'lucide-react';
+import { FileText, Download, Eye, Search, CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { GazettedDocument } from '../types';
 import { GAZETTED_DOCUMENTS } from '../data/mockData';
 import { Pagination } from './Pagination';
+import { downloadOfficialPdf, getDocumentFilename } from '../utils/pdfGenerator';
 
 interface DocumentsSectionProps {
   onDocumentDownloaded?: (title: string) => void;
@@ -20,7 +21,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   const [previewDoc, setPreviewDoc] = useState<GazettedDocument | null>(null);
   const [downloadSuccessDoc, setDownloadSuccessDoc] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 4;
+  const ITEMS_PER_PAGE = 6;
 
   const categories = [
     { id: 'all', label: 'All Documents' },
@@ -28,6 +29,8 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     { id: 'Bye-Laws', label: 'Municipal Bye-Laws' },
     { id: 'Budget', label: 'Composite Budget & IGF' },
     { id: 'Tenders', label: 'Procurement & Tenders' },
+    { id: 'Reports', label: 'Development Reports & Minutes' },
+    { id: 'Guides', label: 'Citizen Guides & Checklists' },
   ];
 
   // Reset to page 1 on filter/search change
@@ -51,13 +54,14 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   );
 
   const handleDownload = (doc: GazettedDocument) => {
-    setDownloadSuccessDoc(doc.title);
+    const fileName = downloadOfficialPdf(doc);
+    setDownloadSuccessDoc(`${doc.title} (${fileName})`);
     if (onDocumentDownloaded) {
       onDocumentDownloaded(doc.title);
     }
     setTimeout(() => {
       setDownloadSuccessDoc(null);
-    }, 3500);
+    }, 4000);
   };
 
   return (
@@ -157,16 +161,20 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                   <span className="text-[11px] font-mono font-semibold text-emerald-800 uppercase tracking-wider">
                     {doc.category} · {doc.gazetteNumber}
                   </span>
-                  <span className="text-xs text-slate-400 font-mono">{doc.fileSize}</span>
+                  <span className="text-xs text-slate-500 font-mono shrink-0">PDF · {doc.fileSize}</span>
                 </div>
 
                 <h3 className="text-base font-bold text-slate-900 mb-2 leading-snug">
                   {doc.title}
                 </h3>
 
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed mb-3">
                   {doc.summary}
                 </p>
+
+                <div className="text-[11px] text-slate-500 font-mono truncate">
+                  File: {getDocumentFilename(doc)}
+                </div>
               </div>
 
               <div className="pt-3 border-t border-slate-200 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5">
@@ -182,8 +190,8 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                   className="flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer min-h-[38px]"
                 >
                   <Download className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                  <span className="hidden xs:inline">Download Gazetted PDF</span>
-                  <span className="xs:hidden">Download PDF</span>
+                  <span className="hidden xs:inline">Download PDF</span>
+                  <span className="xs:hidden">PDF</span>
                 </button>
               </div>
             </div>
@@ -265,11 +273,27 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
 
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2 text-slate-700">
               <div><strong>Gazette / L.I. Reference:</strong> {previewDoc.gazetteNumber}</div>
-              <div><strong>Gazetted Year:</strong> {previewDoc.year}</div>
-              <div><strong>File Size:</strong> {previewDoc.fileSize}</div>
+              <div><strong>File Name:</strong> <span className="font-mono">{getDocumentFilename(previewDoc)}</span></div>
+              {previewDoc.department && (
+                <div><strong>Issuing Directorate:</strong> {previewDoc.department}</div>
+              )}
+              <div><strong>Gazetted Year:</strong> {previewDoc.year} · <strong>File Size:</strong> {previewDoc.fileSize}</div>
               <div className="pt-2 border-t border-slate-200 leading-relaxed">
                 <strong>Executive Purpose:</strong> {previewDoc.summary}
               </div>
+              {previewDoc.keyProvisions && previewDoc.keyProvisions.length > 0 && (
+                <div className="pt-2 border-t border-slate-200">
+                  <strong className="block mb-1.5 text-slate-900">Key Contents Included in PDF:</strong>
+                  <ul className="space-y-1 text-slate-600">
+                    {previewDoc.keyProvisions.map((prov, idx) => (
+                      <li key={idx} className="flex items-start gap-1.5">
+                        <span className="text-emerald-700 font-bold">•</span>
+                        <span>{prov}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <div className="text-[11px] text-slate-500">

@@ -120,11 +120,14 @@ export interface MunicipalProject {
 export interface GazettedDocument {
   id: string;
   title: string;
-  category: 'Bye-Laws' | 'Fee-Fixing' | 'Budget' | 'Tenders';
+  category: 'Bye-Laws' | 'Fee-Fixing' | 'Budget' | 'Tenders' | 'Reports' | 'Guides';
   gazetteNumber: string;
   year: number;
   fileSize: string;
   summary: string;
+  fileName?: string;
+  department?: string;
+  keyProvisions?: string[];
 }
 
 export interface MunicipalDepartment {
@@ -147,15 +150,17 @@ export interface MunicipalDepartment {
 export interface MunicipalNewsItem {
   id: string;
   title: string;
+  newsScope: 'local' | 'other';
   category: 'Notice' | 'Infrastructure' | 'Welfare' | 'Health' | 'Assembly';
   date: string;
   excerpt: string;
   content: string;
+  fullStory?: string[];
   author: string;
+  location?: string;
+  imageUrl?: string;
   readTime: string;
   badgeColor: string;
   targetPage: string;
   targetLabel: string;
 }
-
-

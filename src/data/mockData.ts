@@ -623,7 +623,14 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'Ghana Local Government Bulletin No. 14 / ABCMA-2026',
     year: 2026,
     fileSize: '3.8 MB',
-    summary: 'Statutory schedule of all rates, fees, fines, and licenses payable across commercial, residential, industrial, and transport categories in Ablekuma Central.'
+    fileName: 'ABCMA_2026_Gazetted_Fee_Fixing_Resolution.pdf',
+    department: 'Finance & Budget Rating Directorate',
+    summary: 'Statutory schedule of all rates, fees, fines, and licenses payable across commercial, residential, industrial, and transport categories in Ablekuma Central.',
+    keyProvisions: [
+      'Property rate impost schedules for 1st, 2nd, and 3rd Class residential and commercial zones.',
+      'Business Operating Permit (BOP) annual classifications for Abossey Okai spare parts dealers, pharmacies, hospitality, and MSMEs.',
+      'Prescribed mobile money (MoMo) and GH-Link electronic settlement channels with instant QR receipts.'
+    ]
   },
   {
     id: 'doc-2',
@@ -632,7 +639,14 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'Local Government Instrument L.I. 2248',
     year: 2024,
     fileSize: '2.1 MB',
-    summary: 'Regulations governing food safety, public health screening, commercial waste disposal obligations, quiet hours, and penalties for indiscriminate dumping.'
+    fileName: 'ABCMA_Sanitation_Noise_Abatement_ByeLaws.pdf',
+    department: 'Environmental Health & Sanitation Unit (EHSU)',
+    summary: 'Regulations governing food safety, public health screening, commercial waste disposal obligations, quiet hours, and penalties for indiscriminate dumping.',
+    keyProvisions: [
+      'Mandatory registration with accredited solid waste concessionaires for all households and commercial stores.',
+      'Decibel ceiling thresholds for religious centres, pubs, and event venues after 10:00 PM in residential quarters.',
+      'On-the-spot sanitation court summons procedures and administrative spot fines for open drain dumping.'
+    ]
   },
   {
     id: 'doc-3',
@@ -641,7 +655,14 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'ABCMA-FIN-REP-2026-VOL1',
     year: 2026,
     fileSize: '5.2 MB',
-    summary: 'Approved municipal budget allocation across capital infrastructure, health, education, administration, and projected revenue streams.'
+    fileName: 'ABCMA_2026_Annual_Composite_Budget.pdf',
+    department: 'Budget & Finance Unit',
+    summary: 'Approved municipal budget allocation across capital infrastructure, health, education, administration, and projected revenue streams.',
+    keyProvisions: [
+      'Capital expenditure allocations prioritizing Abossey Okai and Sukura flood mitigation storm drains.',
+      'Projected Internally Generated Funds (IGF) targets alongside District Assembly Common Fund (DACF) transfers.',
+      'Quarterly public accountability disclosure benchmarks aligned with the Public Financial Management Act (Act 921).'
+    ]
   },
   {
     id: 'doc-4',
@@ -650,7 +671,14 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'ABCMA/PROC/NCT/2026/08',
     year: 2026,
     fileSize: '1.4 MB',
-    summary: 'Invitation for sealed bids from Ministry of Works and Housing registered contractors (Category D1/K1) for 2026 municipal projects.'
+    fileName: 'ABCMA_NCT_2026_08_Drainage_Road_Paving_Tender.pdf',
+    department: 'Procurement & Municipal Works Directorate',
+    summary: 'Invitation for sealed bids from Ministry of Works and Housing registered contractors (Category D1/K1) for 2026 municipal projects.',
+    keyProvisions: [
+      'Eligibility requirements: Valid PPA registration, GRA Tax Clearance, SSNIT, and MWH Category D1/K1 certificates.',
+      'Bill of Quantities summary covering reinforced concrete U-drains, kerbs, and asphaltic surfacing lots.',
+      'Bid security submission rules and public tender opening schedule at Block A Conference Hall.'
+    ]
   },
   {
     id: 'doc-5',
@@ -659,7 +687,14 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'L.I. 2380 / ABCMA-PPD-2025',
     year: 2025,
     fileSize: '2.8 MB',
-    summary: 'Mandatory structural regulations for new commercial buildings, setback requirements along stormwater easements, and temporary structure licensing.'
+    fileName: 'ABCMA_Building_Permitting_Spatial_ByeLaws.pdf',
+    department: 'Physical Planning & Works Department',
+    summary: 'Mandatory structural regulations for new commercial buildings, setback requirements along stormwater easements, and temporary structure licensing.',
+    keyProvisions: [
+      'Prohibition of permanent or temporary structures encroaching on statutory storm drain reservations and road corridors.',
+      '30-day statutory Spatial Planning Committee review timeline for complete architectural & structural submissions.',
+      'Mandatory soil test and structural engineer endorsement for developments exceeding two storeys.'
+    ]
   },
   {
     id: 'doc-6',
@@ -668,7 +703,14 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'Bulletin No. 22 / ABCMA-TRANS-2026',
     year: 2026,
     fileSize: '1.9 MB',
-    summary: 'Prescribed daily toll rates for trotros, taxis, and hawkers across Abossey Okai, Flamingo, and Town Council Line terminals.'
+    fileName: 'ABCMA_Market_Tolls_Transport_ByeLaws_2026.pdf',
+    department: 'Transport & Revenue Operations Unit',
+    summary: 'Prescribed daily toll rates for trotros, taxis, and hawkers across Abossey Okai, Flamingo, and Town Council Line terminals.',
+    keyProvisions: [
+      'Authorized market stall daily ticket denominations and monthly lockable store rent schedules.',
+      'Designated loading bay regulations for GPRTU, PROTOA, and cooperative commercial drivers.',
+      'Sticker renewal verification protocol along commercial spare parts loading zones.'
+    ]
   },
   {
     id: 'doc-7',
@@ -677,7 +719,14 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'ABCMA-AUDIT-2025-FIN',
     year: 2026,
     fileSize: '4.6 MB',
-    summary: 'Comprehensive financial statement and value-for-money audit of revenue collected and disbursed across municipal drainage and lighting.'
+    fileName: 'ABCMA_2025_Audited_IGF_Performance_Report.pdf',
+    department: 'Internal Audit & Finance Directorate',
+    summary: 'Comprehensive financial statement and value-for-money audit of revenue collected and disbursed across municipal drainage and lighting.',
+    keyProvisions: [
+      'Audited year-on-year IGF revenue growth breakdown across Property Rates, BOP, and Market Fees.',
+      'Capital project disbursement reconciliation and contractor retention account audit summary.',
+      'Internal Audit Committee compliance certifications per Ghana Audit Service standards.'
+    ]
   },
   {
     id: 'doc-8',
@@ -686,7 +735,14 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'ABCMA/PROC/WM/2026/03',
     year: 2026,
     fileSize: '1.7 MB',
-    summary: 'Bidding guidelines for accredited private waste management contractors to service domestic zones and market skips in Sukura and Gbortsui.'
+    fileName: 'ABCMA_Solid_Waste_Concessionaires_Tender_2026.pdf',
+    department: 'Procurement & EHSU',
+    summary: 'Bidding guidelines for accredited private waste management contractors to service domestic zones and market skips in Sukura and Gbortsui.',
+    keyProvisions: [
+      'Compactor fleet capacity minimums, GPS tracking compliance, and daily skip evacuation guarantees.',
+      'Environmental Protection Agency (EPA) operational clearance requirements for haulage contractors.',
+      'Service level penalty clauses for missed residential collection cycles.'
+    ]
   },
   {
     id: 'doc-9',
@@ -695,7 +751,14 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'Local Government Bulletin No. 09 / ABCMA-EHSU',
     year: 2025,
     fileSize: '2.3 MB',
-    summary: 'Sanitary protocols requiring annual medical examinations, clean water source certification, and disinfestation for restaurants, bakeries, and chop bars.'
+    fileName: 'ABCMA_Food_Handlers_Public_Health_ByeLaws.pdf',
+    department: 'Environmental Health & Sanitation Unit',
+    summary: 'Sanitary protocols requiring annual medical examinations, clean water source certification, and disinfestation for restaurants, bakeries, and chop bars.',
+    keyProvisions: [
+      'Annual typhoid, hepatitis, and general medical screening certification requirement for all food preparers.',
+      'Premises hygiene grading display mandate for restaurants, cold stores, and sachet water depots.',
+      'Routine quarterly fumigation and vector control verification.'
+    ]
   },
   {
     id: 'doc-10',
@@ -704,7 +767,110 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     gazetteNumber: 'ABCMA/PPA/APP/2026/01',
     year: 2026,
     fileSize: '3.1 MB',
-    summary: 'Approved Public Procurement Authority (PPA) schedule of hospital beds, medical consumables, school desks, and IT equipment tenders.'
+    fileName: 'ABCMA_2026_Composite_Procurement_Plan.pdf',
+    department: 'Procurement Unit',
+    summary: 'Approved Public Procurement Authority (PPA) schedule of hospital beds, medical consumables, school desks, and IT equipment tenders.',
+    keyProvisions: [
+      'Procurement schedule for Lartebiokorshie Mother & Child Health Pavilion medical equipment.',
+      'Mono and dual classroom desk supply timelines for basic schools across Mataheko and Sukura.',
+      'E-GP portal submission guidelines for prospective domestic suppliers.'
+    ]
+  },
+  {
+    id: 'doc-11',
+    title: '2026–2029 Medium Term Development Plan (MTDP) Executive Summary & Ward Matrix',
+    category: 'Reports',
+    gazetteNumber: 'NDPC / ABCMA-MPCU-2026',
+    year: 2026,
+    fileSize: '6.4 MB',
+    fileName: 'ABCMA_MTDP_2026_2029_Executive_Summary.pdf',
+    department: 'Municipal Planning Coordinating Unit (MPCU)',
+    summary: 'Four-year strategic development blueprint outlining priority infrastructure, climate resilience, education, and local economic interventions across all 7 electoral areas.',
+    keyProvisions: [
+      'Ward-by-ward needs assessment compiled from public town hall consultations in all 7 electoral areas.',
+      'Multi-year stormwater drainage, solar streetlight expansion, and maternal healthcare capacity goals.',
+      'Monitoring and Evaluation (M&E) key performance indicators reported to NDPC.'
+    ]
+  },
+  {
+    id: 'doc-12',
+    title: 'ABCMA Client Service Charter & Statutory Service Turnaround Handbook',
+    category: 'Guides',
+    gazetteNumber: 'OHLCS / ABCMA-CSC-2026',
+    year: 2026,
+    fileSize: '1.6 MB',
+    fileName: 'ABCMA_Client_Service_Charter_2026.pdf',
+    department: 'Central Administration & Client Service Unit',
+    summary: 'Official citizen service standards detailing processing timelines, required documents, walk-in room numbers, and complaint escalation channels at Block A.',
+    keyProvisions: [
+      'Guaranteed turnaround times: 3–5 days for BOP renewals, 21 days for Ordinance Marriage, 30 days for Building Permits.',
+      'Right to Information (RTI Act 989) formal request form and officer contact directory.',
+      'Zero-bribery and cashless digital payment charter protecting ratepayers.'
+    ]
+  },
+  {
+    id: 'doc-13',
+    title: 'Business Operating Permit (BOP) & Commercial Zoning Application Guide',
+    category: 'Guides',
+    gazetteNumber: 'ABCMA-REV-GUIDE-2026-02',
+    year: 2026,
+    fileSize: '1.8 MB',
+    fileName: 'ABCMA_BOP_Application_Compliance_Guide.pdf',
+    department: 'Revenue & Physical Planning Units',
+    summary: 'Step-by-step PDF handbook for traders, shopkeepers, auto spare-parts dealers, and corporate entities registering or renewing their annual BOP.',
+    keyProvisions: [
+      'Checklist of required documents: Registrar General Certificate, Ghana Card, TIN, and GhanaPostGPS address.',
+      'Commercial zoning compatibility rules for workshops, warehouses, and retail stores.',
+      'Step-by-step instructions for online MoMo renewal and instant e-Tax Clearance download.'
+    ]
+  },
+  {
+    id: 'doc-14',
+    title: 'Building & Development Permit Architectural Submission Checklist',
+    category: 'Guides',
+    gazetteNumber: 'ABCMA-PPD-CHECKLIST-2026',
+    year: 2026,
+    fileSize: '2.5 MB',
+    fileName: 'ABCMA_Development_Permit_Submission_Checklist.pdf',
+    department: 'Physical Planning & Works Directorate',
+    summary: 'Technical specification checklist for landowners, architects, and developers submitting residential or multi-storey commercial building plans for approval.',
+    keyProvisions: [
+      'Required architectural, structural, electrical, and fire-service endorsed drawing sets (4 copies).',
+      'Lands Commission land title / indenture search verification and block plan scale standards.',
+      'Mandatory EPA & Fire Certificate conditions for commercial, fuel station, or multi-storey complexes.'
+    ]
+  },
+  {
+    id: 'doc-15',
+    title: '2026 General Assembly Town Hall Minutes & Citizens Resolutions Compendium',
+    category: 'Reports',
+    gazetteNumber: 'ABCMA-GA-MINUTES-2026-Q1',
+    year: 2026,
+    fileSize: '3.2 MB',
+    fileName: 'ABCMA_2026_TownHall_Minutes_Resolutions.pdf',
+    department: 'Office of the Presiding Member & Central Admin',
+    summary: 'Published minutes and formal policy resolutions adopted during the First Ordinary General Assembly sitting and public fee-fixing hearings.',
+    keyProvisions: [
+      'Summary of citizen memoranda submitted by residents of Mataheko, Sukura, Abossey Okai, and Lartebiokorshie.',
+      'Approved Assembly recommendations on Abossey Okai traffic decongestion and market illumination.',
+      'Attendance roll of Elected & Government-Appointed Assembly Members and Sub-Committee chairs.'
+    ]
+  },
+  {
+    id: 'doc-16',
+    title: 'District Assembly Common Fund (DACF) & 3% Disability Support Guidelines',
+    category: 'Reports',
+    gazetteNumber: 'ABCMA-SWCD-PWD-2026',
+    year: 2026,
+    fileSize: '1.5 MB',
+    fileName: 'ABCMA_3Percent_Disability_Fund_Guidelines.pdf',
+    department: 'Social Welfare & Community Development',
+    summary: 'Eligibility criteria, vetting committee schedule, and application requirements for Persons with Disabilities seeking business, medical, or educational grants.',
+    keyProvisions: [
+      'Application requirements: Ghana Card, PWD Federation verification, and itemized startup or assistive-aid request.',
+      'Priority support tracks covering vocational trade equipment, medical surgeries, and tertiary tuition.',
+      'Quarterly vetting calendar and Social Services Sub-Committee transparency audit procedures.'
+    ]
   }
 ];
 
@@ -979,106 +1145,261 @@ export const MUNICIPAL_NEWS: MunicipalNewsItem[] = [
   {
     id: 'news-1',
     title: '2026 BOP & Property Rates Early-Bird Compliance Window Now Open with Instant MoMo Reconciliation',
+    newsScope: 'local',
     category: 'Notice',
     date: '10 March 2026',
     author: 'Finance & Revenue Directorate',
+    location: 'Municipal Assembly Complex, Lartebiokorshie',
+    imageUrl: '/images/acma_civic_headquarters_1794370608615.jpg',
     readTime: '3 min read',
     badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-700/50',
     excerpt: 'All shop owners, automotive dealers in Abossey Okai, pharmacies, and property owners across Ablekuma Central are reminded to verify their 2026 assessments. Direct payments via MTN MoMo, Telecel Cash, and AT Money now provide instant official e-receipts and compliance certificates.',
     content: 'Under the Local Governance Act 2016 (Act 936) and the 2026 Gazetted Fee-Fixing Resolution, rate notices have been dispatched. Business owners are urged to settle before March 31, 2026 to avoid statutory enforcement penalties.',
+    fullStory: [
+      'The Finance & Revenue Mobilization Directorate of Ablekuma Central Municipal Assembly (ABCMA) has officially opened the 2026 Early-Bird Business Operating Permit (BOP) and Property Rate compliance window for all commercial operators, landlords, and institutional property owners.',
+      'Under the Local Governance Act, 2016 (Act 936) and the 2026 Gazetted Fee-Fixing Resolution, updated assessment demand notices have been served across Abossey Okai, Lartebiokorshie, Mataheko, Gbortsui, Sukura, Town Council Line, and Mabrouk.',
+      'To eliminate manual paper delays and revenue leakages, ratepayers can look up their Bill Number online through the ABCMA Billing Portal and complete full or partial settlements via MTN MoMo, Telecel Cash, AT Money, or GH-Link debit cards. Each transaction automatically generates a QR-verifiable digital receipt recognized by banking institutions and municipal compliance inspectors.',
+      'Commercial enterprises that clear their 2026 dues before March 31, 2026 automatically qualify for instant digital Municipal Tax Clearance generation without visiting Block A.'
+    ],
     targetPage: 'service',
     targetLabel: 'Pay Rates & BOP Now'
   },
   {
     id: 'news-2',
     title: 'Abossey Okai Stormwater Channel Phase 1 Reaches 85% Completion Ahead of Seasonal Rains',
+    newsScope: 'local',
     category: 'Infrastructure',
     date: '8 March 2026',
     author: 'Municipal Works Department',
+    location: 'Abossey Okai Spare Parts Corridor',
+    imageUrl: '/images/municipal_works_project_1794370610757.jpg',
     readTime: '4 min read',
     badgeColor: 'bg-amber-950 text-amber-400 border-amber-700/50',
     excerpt: 'The 1.2km engineered reinforced concrete stormwater box culvert along the commercial spare parts corridor has reached critical milestones, diverting peak stormwater runoff into the primary Odaw channel and protecting over 400 spare parts retail shops.',
     content: 'Municipal Works Engineer Ing. Stephen Annan inspected the ongoing pouring of twin-cell culverts. Paving of approach aprons and safety guardrails will be finalized by April 2026.',
+    fullStory: [
+      'Civil engineering works on the 1.2-kilometer Abossey Okai Reinforced Concrete Stormwater Channel have crossed the 85% completion mark following intensive concrete box-culvert casting by the contracted D1/K1 consortium.',
+      'During a technical site inspection led by Municipal Works Engineer Ing. Stephen Kwaku Annan alongside Works Subcommittee Assembly Members, engineers confirmed that all three twin-cell junction culverts tying into the primary Odaw outflow basin are structurally complete.',
+      'For years, heavy June and September rains flooded automotive spare-parts shops and disrupted vehicular traffic along the Abossey Okai corridor. The widened hydraulic cross-section is engineered to double peak discharge capacity and prevent backflow into adjoining side lanes.',
+      'Final works over the next four weeks will focus on sidewalk slab decking, pedestrian safety guardrails, and asphaltic reinstatement of driveway aprons ahead of official commissioning.'
+    ],
     targetPage: 'projects',
     targetLabel: 'View Projects Tracker'
   },
   {
     id: 'news-3',
     title: 'Social Welfare Department Disburses 3% DACF Disability Fund & Distributes Youth Artisan Toolkits',
+    newsScope: 'local',
     category: 'Welfare',
     date: '4 March 2026',
     author: 'Social Welfare & Community Development',
+    location: 'ABCMA Civic Plaza Forecourt, Lartebiokorshie',
+    imageUrl: '/images/acma_civic_plaza_bg_1794482218453.jpg',
     readTime: '3 min read',
     badgeColor: 'bg-rose-950 text-rose-400 border-rose-700/50',
     excerpt: 'Over 120 beneficiaries received customized trade equipment including industrial sewing machines, heavy-duty automotive toolboxes, welding machines, and assistive mobility devices funded by the District Assembly Common Fund.',
     content: 'Hon. Municipal Chief Executive emphasized that economic inclusion for Persons with Disabilities (PWDs) remains a non-negotiable pillar of ABCMA civic governance.',
+    fullStory: [
+      'Ablekuma Central Municipal Assembly has disbursed the first-quarter tranche of the 3% District Assembly Common Fund (DACF) allocation for Persons with Disabilities alongside customized startup toolkits for 120 youth apprentices.',
+      'Items distributed at the Lartebiokorshie Municipal Forecourt included heavy-duty industrial sewing machines, deep freezers for micro-retailing, automotive diagnostic kits, welding sets, wheelchairs, and educational tuition support cheques.',
+      'Speaking at the ceremony, Hon. Frank Nkansah (MCE) underscored that providing productive capital equipment—rather than one-off cash handouts—empowers beneficiaries to run sustainable household enterprises across all 7 electoral areas.',
+      'Prospective applicants for the Q2 vetting cycle can download the official 3% DACF Eligibility Guidelines PDF in the Documents repository or visit Block C, Room 015.'
+    ],
     targetPage: 'departments',
     targetLabel: 'Read on Social Welfare Dept'
   },
   {
     id: 'news-4',
     title: 'General Assembly Announces Public Hearings for 2026/2027 Medium Term Development Plan (MTDP)',
+    newsScope: 'local',
     category: 'Assembly',
     date: '28 February 2026',
     author: 'Office of the Presiding Member',
+    location: 'General Assembly Chamber, Lartebiokorshie',
+    imageUrl: '/images/acma_townhall_meeting_1794370609788.jpg',
     readTime: '2 min read',
     badgeColor: 'bg-blue-950 text-blue-400 border-blue-700/50',
     excerpt: 'Residents, market women associations, transport unions, and youth leaders are invited to participate in open consultative hearings across Lartebiokorshie, Sukura, and Town Council Line to prioritize communal projects.',
     content: 'Submissions of memoranda and oral deliberations will inform the final gazetted budget allocation for school expansions and solar streetlight networks.',
+    fullStory: [
+      'The Office of the Presiding Member and the Municipal Planning Coordinating Unit (MPCU) have published the schedule for town hall public hearings informing the 2026/2027 Medium Term Development Plan (MTDP) and Composite Budget.',
+      'Sessions are open to all residents, traditional authorities, market queens, artisans, religious leaders, and civil society organizations across the 7 electoral areas.',
+      'Priority agenda items include siting of additional communal refuse transfer bays, prioritization of inner-lane solar street lighting in Sukura and Gbortsui, and expansion of public basic school ICT laboratories.',
+      'Citizens who cannot attend in person may submit formal written memoranda directly through the Town Halls & Hearings portal under The Assembly tab.'
+    ],
     targetPage: 'assembly',
     targetLabel: 'Attend Assembly Town Hall'
   },
   {
     id: 'news-5',
     title: 'Environmental Health Unit Launches Intensive Medical Screening for Food Handlers & Vendors',
+    newsScope: 'local',
     category: 'Health',
     date: '24 February 2026',
     author: 'Environmental Health & Sanitation Unit (EHSU)',
+    location: 'Mataheko Flamingo & Town Council Line Markets',
+    imageUrl: '/images/abossey_okai_district_1794370608977.jpg',
     readTime: '3 min read',
     badgeColor: 'bg-teal-950 text-teal-400 border-teal-700/50',
     excerpt: 'Mobile clinical screening vans have deployed to Mataheko Flamingo Market, Town Council Line Market, and Abossey Okai to test and issue certified medical clearance cards for commercial food preparers.',
     content: 'The mandatory exercise aims to eliminate foodborne pathogens and ensure hygienic public consumption across food joints, chop bars, and restaurants.',
+    fullStory: [
+      'The Environmental Health & Sanitation Unit (EHSU), led by Sanitary Inspector Patience Korkor Tetteh, has launched a municipality-wide mobile clinical screening campaign for commercial food handlers, caterers, bakers, and street food vendors.',
+      'Mobile screening stations operated in partnership with the Municipal Health Directorate are stationed sequentially at Mataheko Flamingo Market, Town Council Line Market, and Abossey Okai to minimize travel disruption for traders.',
+      'Vendors who complete screening receive tamper-resistant annual Health Clearance ID Cards valid across Greater Accra as mandated by the ABCMA Public Health & Food Handlers Certification Bye-Laws.',
+      'Following the 21-day mobile screening window, sanitary inspectors will conduct routine compliance audits across chop bars, cold stores, and school feeding kitchens.'
+    ],
     targetPage: 'service',
     targetLabel: 'Apply for Health Clearance'
   },
   {
     id: 'news-6',
     title: 'Commissioning of 6-Unit Modern Primary Block at Lartebiokorshie Cluster of Schools',
+    newsScope: 'local',
     category: 'Infrastructure',
     date: '20 February 2026',
     author: 'Municipal Education Directorate & Works',
+    location: 'Lartebiokorshie Electoral Area',
+    imageUrl: '/images/ablekuma_assembly_welcome_1794372179601.jpg',
     readTime: '3 min read',
     badgeColor: 'bg-amber-950 text-amber-400 border-amber-700/50',
     excerpt: 'The Municipal Chief Executive Hon. Frank Nkansah formally handed over keys to a newly constructed multi-storey educational facility equipped with modern ICT laboratory and sanitation facilities.',
     content: 'Funded under the District Assembly Common Fund and GETFund, the facility will accommodate over 350 pupils and eliminate the double-shift school schedule in the sub-metro area.',
+    fullStory: [
+      'Hon. Frank Nkansah, Municipal Chief Executive for Ablekuma Central, joined traditional leaders, teachers, and parents to commission a newly completed 6-unit two-storey classroom block at the Lartebiokorshie Cluster of Schools.',
+      'Jointly financed through the District Assembly Common Fund (DACF) and GETFund, the facility houses six sunlit classrooms, a 35-seat networked ICT computer laboratory, headteacher and staff offices, and disability-accessible modern water-closet sanitation blocks.',
+      'The Municipal Director of Education noted that the addition of 350 pupil seats immediately relieves overcrowding and phases out the double-shift teaching timetable in Lartebiokorshie.',
+      'A dedicated solar-powered borehole connected to elevated poly-tanks guarantees uninterrupted clean drinking water for pupils and staff throughout the academic year.'
+    ],
     targetPage: 'projects',
     targetLabel: 'View Education Project'
   },
   {
     id: 'news-7',
     title: 'ABCMA Management Information Systems (MIS) Deploys Instant E-Tax Clearance Portal',
+    newsScope: 'local',
     category: 'Notice',
     date: '16 February 2026',
     author: 'Management Information Systems (MIS) Unit',
+    location: 'Block A Tech Hub, Lartebiokorshie',
+    imageUrl: '/images/assembly_chamber_backdrop_1794482218382.jpg',
     readTime: '2 min read',
     badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-700/50',
     excerpt: 'Business owners who settle their 2026 Business Operating Permits online can now instantly download digitally signed, QR-verifiable Municipal Tax Clearance certificates for banking and commercial compliance.',
     content: 'The new system links directly to the Ghana Revenue Authority TIN database and ABCMA revenue vaults, eliminating bureaucratic paper queues.',
+    fullStory: [
+      'Led by Head of MIS Mr. Justice Marfo, Ablekuma Central Municipal Assembly has rolled out an automated E-Tax Clearance and Digital Verification Engine integrated directly into the municipal portal.',
+      'Previously, local enterprises bidding for public procurement tenders or renewing commercial bank credit facilities waited several working days for stamped paper clearance letters.',
+      'With the new MIS portal upgrade, any taxpayer whose 2026 Business Operating Permit or Property Rate balance reads zero receives an instant cryptographically signed verification token and printable receipt.',
+      'Additionally, property owners can cross-check their GhanaPostGPS coordinates with GIS rating parcels to resolve billing discrepancies online.'
+    ],
     targetPage: 'departments',
     targetLabel: 'Read on MIS Department'
   },
   {
     id: 'news-8',
     title: 'Zonal Pre-Rainy Season Desilting Taskforce Deploys Across Mataheko & Abossey Okai Corridors',
+    newsScope: 'local',
     category: 'Infrastructure',
     date: '12 February 2026',
     author: 'Urban Roads & Disaster Prevention',
+    location: 'Mataheko & Abossey Okai Corridors',
+    imageUrl: '/images/municipal_works_project_1794370610757.jpg',
     readTime: '3 min read',
     badgeColor: 'bg-amber-950 text-amber-400 border-amber-700/50',
     excerpt: 'A combined taskforce of Urban Roads engineers, NADMO rapid responders, and communal sanitation squads has commenced dredging critical culverts along the Odaw tributary line.',
     content: 'Residents and commercial shopkeepers are requested to desist from discarding solid plastics into open stormwater channels as offenders face municipal court prosecution.',
+    fullStory: [
+      'Ahead of the major rainy season, ABCMA has mobilized its Urban Roads maintenance unit, NADMO field responders, and contracted waste haulage tippers to desilt primary and secondary drains along the Mataheko, Sukura, and Abossey Okai corridors.',
+      'Over 420 metric tonnes of compacted silt, plastic waste, and construction debris have already been cleared and transported directly to accredited landfill transfer sites rather than left along road shoulders.',
+      'Municipal Guard officers and Environmental Health Inspectors are patrolling commercial streets to enforce anti-littering bye-laws; residents can also pin choked drains or collapsed slabs in real time via the Citizen Incident Desk.'
+    ],
     targetPage: 'projects',
     targetLabel: 'Inspect Works Program'
+  },
+  {
+    id: 'news-9',
+    title: 'GARCC Synchronizes Greater Accra Municipal Sanitation & Clean Corridors Operation',
+    newsScope: 'other',
+    category: 'Health',
+    date: '11 March 2026',
+    author: 'Greater Accra Regional Coordinating Council (GARCC)',
+    location: 'Greater Accra Region',
+    imageUrl: '/images/acma_civic_plaza_bg_1794482218453.jpg',
+    readTime: '3 min read',
+    badgeColor: 'bg-cyan-950 text-cyan-300 border-cyan-700/50',
+    excerpt: 'All 29 Metropolitan, Municipal, and District Assemblies in Greater Accra have aligned first-Saturday clean-up exercises and bulk waste transfer logistics along major arterial markets and transport corridors.',
+    content: 'The Greater Accra Regional Minister commended frontline assemblies including Ablekuma Central for deploying skip transfer pads and digital sanitation enforcement.',
+    fullStory: [
+      'The Greater Accra Regional Coordinating Council (GARCC) has unveiled an updated Regional Sanitation Synchronization Framework bringing together all 29 Metropolitan, Municipal, and District Assemblies across Greater Accra.',
+      'Under the regional initiative, boundary markets and shared drainage corridors—such as the Kaneshie–Abossey Okai–Odaw arterial belt—receive coordinated mechanized sweepers, joint municipal guard patrols, and synchronized tipper dispatch schedules on the first Saturday of every month.',
+      'Residents and traders within Ablekuma Central are encouraged to register with accredited door-to-door waste collectors and utilize the six paved communal skip transfer stations commissioned across the municipality.'
+    ],
+    targetPage: 'assembly',
+    targetLabel: 'View Citizen Incident Desk'
+  },
+  {
+    id: 'news-10',
+    title: 'Ministry of Local Government Issues 2026 Digital IGF & Public Accountability Directives',
+    newsScope: 'other',
+    category: 'Assembly',
+    date: '5 March 2026',
+    author: 'Ministry of Local Government, Decentralisation & Rural Development',
+    location: 'National · Accra',
+    imageUrl: '/images/assembly_chamber_backdrop_1794482218382.jpg',
+    readTime: '4 min read',
+    badgeColor: 'bg-indigo-950 text-indigo-300 border-indigo-700/50',
+    excerpt: 'New national guidelines mandate all MMDAs to publish quarterly Composite Budget performance summaries online and expand cashless mobile money collection portals to boost citizen trust.',
+    content: 'The Ministry highlighted digital ratepayer portals and open document repositories as mandatory benchmarks under the District Performance Assessment Tool (DPAT).',
+    fullStory: [
+      'The Ministry of Local Government, Decentralisation and Rural Development (MLGDRD) has circulated the 2026 Composite Budget Transparency & Digital Revenue Guidelines for implementation across all 261 MMDAs nationwide.',
+      'Key directives require Assemblies to transition commercial Business Operating Permits and Property Rate billing onto cashless mobile money and card gateways, publish audited Internally Generated Funds (IGF) reports openly, and maintain accessible citizen Right to Information (RTI) submission channels.',
+      'Ablekuma Central Municipal Assembly already satisfies core DPAT digital transparency benchmarks through its public Gazetted Documents Repository and QR-verified digital payment receipts.'
+    ],
+    targetPage: 'documents',
+    targetLabel: 'Browse Gazetted Documents'
+  },
+  {
+    id: 'news-11',
+    title: 'NADMO & Ghana Meteorological Agency Release 2026 Coastal Rainy Season Flood Early-Warning Advisory',
+    newsScope: 'other',
+    category: 'Notice',
+    date: '1 March 2026',
+    author: 'National NADMO & GMet Joint Desk',
+    location: 'Greater Accra Coastal Belt',
+    imageUrl: '/images/abossey_okai_district_1794370608977.jpg',
+    readTime: '3 min read',
+    badgeColor: 'bg-amber-950 text-amber-300 border-amber-700/50',
+    excerpt: 'Meteorological forecasts indicate above-average peak rainfall bursts between May and July across low-lying Accra basins. Citizens are advised to inspect household roof gutters and keep drainage easements clear.',
+    content: 'Emergency flood hotlines remain active 24/7 across municipal NADMO rapid response stations.',
+    fullStory: [
+      'A joint seasonal forecast bulletin issued by the Ghana Meteorological Agency (GMet) and the National Disaster Management Organization (NADMO) urges households and market associations across coastal Greater Accra to complete roof, culvert, and electrical safety checks ahead of May.',
+      'Flood resilience engineers advise motorists and pedestrians never to attempt crossing fast-moving storm channels during intense cloudbursts and to elevate inventory pallets in ground-level commercial warehouses.',
+      'Within Ablekuma Central, residents spotting blocked street gratings, fallen trees, or damaged utility lines can log GPS-tagged alerts directly via the Incident Desk for dispatch to the Municipal NADMO unit in Block C.'
+    ],
+    targetPage: 'departments',
+    targetLabel: 'Contact ABCMA NADMO Desk'
+  },
+  {
+    id: 'news-12',
+    title: 'Ghana Enterprises Agency & GIFEC Open Digital Trade & Artisan MSME Support Window',
+    newsScope: 'other',
+    category: 'Welfare',
+    date: '22 February 2026',
+    author: 'Ghana Enterprises Agency & GIFEC Partner Desk',
+    location: 'Greater Accra Business Hub',
+    imageUrl: '/images/acma_townhall_meeting_1794370609788.jpg',
+    readTime: '3 min read',
+    badgeColor: 'bg-violet-950 text-violet-300 border-violet-700/50',
+    excerpt: 'Registered artisans, spare parts retailers, seamstresses, and youth-led micro-enterprises holding valid municipal Business Operating Permits can apply for subsidized business formalization and digital bookkeeping training.',
+    content: 'The ABCMA Social Welfare and Central Administration desks are assisting eligible local entrepreneurs with introductory endorsement letters.',
+    fullStory: [
+      'The Ghana Enterprises Agency (GEA), working in collaboration with GIFEC and Municipal Business Advisory desks, has opened applications for the 2026 Urban MSME Growth & Digital Commerce Support Window.',
+      'Eligible sole proprietors, fashion designers, automotive mechanics, and cold-chain traders in Ablekuma Central receive subsidized access to accounting software training, e-commerce onboarding, and equipment matching grants.',
+      'Applicants must present a valid Ghana Card, active GRA TIN, and a current 2026 Municipal Business Operating Permit (BOP). Visit the Social Welfare Department or apply for your BOP online through the ABCMA Services section to qualify.'
+    ],
+    targetPage: 'service',
+    targetLabel: 'Apply for Business Permit'
   }
 ];
 
