@@ -353,12 +353,8 @@ export const NewsPage: React.FC<NewsPageProps> = ({
           {/* Topic Filter Tabs */}
           <div className="flex items-center gap-1 p-1 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-xl overflow-x-auto max-w-full">
             {[
-              { id: 'all', label: 'All Topics' },
+              { id: 'all', label: 'All News' },
               { id: 'notice', label: 'Notices' },
-              { id: 'infrastructure', label: 'Infrastructure' },
-              { id: 'assembly', label: 'Assembly' },
-              { id: 'welfare', label: 'Welfare' },
-              { id: 'health', label: 'Health' },
             ].map((cat) => (
               <button
                 key={cat.id}

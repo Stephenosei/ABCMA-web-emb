@@ -545,12 +545,8 @@ export const Hero: React.FC<HeroProps> = ({
             {/* Category Filters */}
             <div className="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl overflow-x-auto max-w-full">
               {[
-                { id: 'all', label: 'All Topics' },
+                { id: 'all', label: 'All News' },
                 { id: 'notice', label: 'Notices' },
-                { id: 'infrastructure', label: 'Works' },
-                { id: 'welfare', label: 'Welfare' },
-                { id: 'assembly', label: 'Assembly' },
-                { id: 'health', label: 'Health' },
               ].map((cat) => (
                 <button
                   key={cat.id}
