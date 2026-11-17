@@ -52,7 +52,7 @@ export const DepartmentDetailModal: React.FC<DepartmentDetailModalProps> = ({
 
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-1.5">
             <Building2 className="w-4 h-4" />
-            <span>ACMA Directorate & Department Directory</span>
+            <span>ABCMA Directorate & Department Directory</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -107,7 +107,7 @@ export const DepartmentDetailModal: React.FC<DepartmentDetailModalProps> = ({
                 <strong className="text-slate-900 font-sans block text-sm">
                   {department.room}
                 </strong>
-                <span className="text-slate-600 text-xs">ACMA Municipal Complex, Lartebiokorshie</span>
+                <span className="text-slate-600 text-xs">ABCMA Municipal Complex, Lartebiokorshie</span>
               </div>
             </div>
 

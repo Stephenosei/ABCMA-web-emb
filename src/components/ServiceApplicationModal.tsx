@@ -47,7 +47,7 @@ export const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = (
     setIsSubmitting(true);
 
     setTimeout(() => {
-      const prefix = service.id === 'srv-bop' ? 'ACMA-BOP' : service.id === 'srv-building-permit' ? 'ACMA-DEV' : service.id === 'srv-marriage' ? 'ACMA-MAR' : 'ACMA-SRV';
+      const prefix = service.id === 'srv-bop' ? 'ABCMA-BOP' : service.id === 'srv-building-permit' ? 'ABCMA-DEV' : service.id === 'srv-marriage' ? 'ABCMA-MAR' : 'ABCMA-SRV';
       const randomNum = Math.floor(1000 + Math.random() * 9000);
       const code = `${prefix}-2026-${randomNum}`;
 
@@ -80,7 +80,7 @@ export const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = (
         {/* Modal Header */}
         <div className="bg-slate-900 text-white px-5 sm:px-6 py-4 flex items-center justify-between shrink-0">
           <div>
-            <div className="text-xs text-emerald-400 font-medium">ACMA Electronic Services Desk</div>
+            <div className="text-xs text-emerald-400 font-medium">ABCMA Electronic Services Desk</div>
             <h3 className="text-lg font-bold tracking-tight">{service.title}</h3>
           </div>
           <button
@@ -283,7 +283,7 @@ export const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = (
             </p>
 
             <div className="bg-slate-100 p-4 rounded-xl max-w-sm mx-auto text-center border border-slate-200">
-              <span className="text-xs text-slate-500 block mb-1">Your Official ACMA Tracking Code</span>
+              <span className="text-xs text-slate-500 block mb-1">Your Official ABCMA Tracking Code</span>
               <span className="text-lg font-mono font-bold text-emerald-900 tracking-wider">
                 {generatedCode}
               </span>

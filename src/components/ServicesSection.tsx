@@ -173,7 +173,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                 Need Help with Development Plans or Business Zoning?
               </h4>
               <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-                Visit the ACMA Client Service Unit at the Lartebiokorshie Head Office, or book a free technical pre-application consultation with the Town Planning Officer.
+                Visit the ABCMA Client Service Unit at the Lartebiokorshie Head Office, or book a free technical pre-application consultation with the Town Planning Officer.
               </p>
             </div>
           </div>
@@ -195,7 +195,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
             <div className="flex items-start justify-between">
               <div>
                 <span className="text-xs font-semibold text-emerald-800 uppercase tracking-widest">
-                  ACMA Service Overview
+                  ABCMA Service Overview
                 </span>
                 <h3 className="text-lg font-bold text-slate-900 mt-1">
                   {selectedServiceForInfo.title}

@@ -369,7 +369,7 @@ export const Hero: React.FC<HeroProps> = ({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
             <div>
               <div className="text-2xl lg:text-3xl font-bold font-mono tabular-nums text-white">7</div>
-              <div className="text-xs text-slate-400 mt-1">Electoral Areas in ACMA</div>
+              <div className="text-xs text-slate-400 mt-1">Electoral Areas in ABCMA</div>
             </div>
             <div>
               <div className="text-2xl lg:text-3xl font-bold font-mono tabular-nums text-emerald-400">10</div>
@@ -417,7 +417,7 @@ export const Hero: React.FC<HeroProps> = ({
 
                 <div className="mt-4 flex items-center gap-2 text-xs text-amber-400 font-semibold">
                   <Landmark className="w-4 h-4" />
-                  <span>Political & Administrative Head · ACMA</span>
+                  <span>Political & Administrative Head · ABCMA</span>
                 </div>
               </div>
 
@@ -787,7 +787,7 @@ export const Hero: React.FC<HeroProps> = ({
             </div>
 
             <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-              <span className="text-[11px] text-slate-400 font-mono">Bulletin No. 14 / ACMA</span>
+              <span className="text-[11px] text-slate-400 font-mono">Bulletin No. 14 / ABCMA</span>
               <button
                 onClick={() => onNavigate('documents')}
                 className="text-xs text-emerald-400 hover:text-emerald-300 font-bold inline-flex items-center gap-1 cursor-pointer"
@@ -843,7 +843,7 @@ export const Hero: React.FC<HeroProps> = ({
                 <div className="w-3 h-3 rounded-full bg-emerald-400" />
                 <div>
                   <h3 className="text-sm font-bold text-white">
-                    Ablekuma Central Municipal Assembly (ACMA) Complex
+                    Ablekuma Central Municipal Assembly (ABCMA) Complex
                   </h3>
                   <p className="text-xs text-slate-400">
                     Lartebiokorshie, Greater Accra Region · Civic Headquarters & Assembly Chambers

@@ -173,7 +173,7 @@ export const LeadershipAddressPage: React.FC<LeadershipAddressPageProps> = ({
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <div className="text-[10px] uppercase font-bold text-slate-400">Authored by</div>
                 <div className="text-sm font-bold text-slate-900 mt-1">Hon. Municipal Chief Executive</div>
-                <div className="text-slate-600">Political & Administrative Head · ACMA</div>
+                <div className="text-slate-600">Political & Administrative Head · ABCMA</div>
               </div>
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <div className="text-[10px] uppercase font-bold text-slate-400">Countersigned by</div>

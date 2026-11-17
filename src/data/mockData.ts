@@ -29,7 +29,7 @@ export const INITIAL_SERVICES: MunicipalService[] = [
     id: 'srv-building-permit',
     category: 'permits',
     title: 'Building & Development Permit',
-    description: 'Legal authorization for new building construction, fence walls, structural renovations, and commercial installations in ACMA.',
+    description: 'Legal authorization for new building construction, fence walls, structural renovations, and commercial installations in ABCMA.',
     processingTime: '14 - 30 Working Days',
     statutoryFee: 'Based on Gross Floor Area & Class',
     department: 'Physical Planning & Works Directorate',
@@ -144,7 +144,7 @@ export const INITIAL_BILLS: BillRecord[] = [
     dueDate: '2026-05-31',
     status: 'paid',
     lastPaymentDate: '2026-02-14',
-    receiptNumber: 'ACMA-REC-2026-004812'
+    receiptNumber: 'ABCMA-REC-2026-004812'
   },
   {
     id: 'bill-4',
@@ -218,7 +218,7 @@ export const INITIAL_BILLS: BillRecord[] = [
     dueDate: '2026-06-30',
     status: 'paid',
     lastPaymentDate: '2026-02-18',
-    receiptNumber: 'ACMA-REC-2026-005118'
+    receiptNumber: 'ABCMA-REC-2026-005118'
   },
   {
     id: 'bill-8',
@@ -254,7 +254,7 @@ export const INITIAL_ISSUES: CitizenIssue[] = [
     status: 'in_progress',
     dateReported: '2026-03-02',
     departmentAssigned: 'Works Directorate & Waste Management',
-    resolutionNotes: 'ACMA mechanized excavator and desilting crew mobilized on site. 70% of concrete box culvert cleared; final truck carting scheduled for Wednesday.',
+    resolutionNotes: 'ABCMA mechanized excavator and desilting crew mobilized on site. 70% of concrete box culvert cleared; final truck carting scheduled for Wednesday.',
     lastUpdated: '2026-03-04'
   },
   {
@@ -286,7 +286,7 @@ export const INITIAL_ISSUES: CitizenIssue[] = [
     status: 'resolved',
     dateReported: '2026-02-24',
     departmentAssigned: 'Department of Urban Roads',
-    resolutionNotes: 'Base course stabilized and asphaltic overlay patching successfully completed by ACMA road maintenance unit on Feb 28.',
+    resolutionNotes: 'Base course stabilized and asphaltic overlay patching successfully completed by ABCMA road maintenance unit on Feb 28.',
     lastUpdated: '2026-02-28'
   },
   {
@@ -302,7 +302,7 @@ export const INITIAL_ISSUES: CitizenIssue[] = [
     status: 'submitted',
     dateReported: '2026-03-05',
     departmentAssigned: 'Environmental Health & Sanitation Taskforce',
-    resolutionNotes: 'Ticket acknowledged by ACMA Taskforce. Sanitary inspector assigned for site inspection and placement of warning signage.',
+    resolutionNotes: 'Ticket acknowledged by ABCMA Taskforce. Sanitary inspector assigned for site inspection and placement of warning signage.',
     lastUpdated: '2026-03-05'
   },
   {
@@ -350,7 +350,7 @@ export const INITIAL_ISSUES: CitizenIssue[] = [
     status: 'in_progress',
     dateReported: '2026-03-08',
     departmentAssigned: 'Department of Urban Roads',
-    resolutionNotes: 'Backfilling with boulders and gravel ongoing by ACMA road graders to restore stability prior to asphalt seal.',
+    resolutionNotes: 'Backfilling with boulders and gravel ongoing by ABCMA road graders to restore stability prior to asphalt seal.',
     lastUpdated: '2026-03-09'
   },
   {
@@ -379,7 +379,7 @@ export const ASSEMBLY_MEMBERS: AssemblyMember[] = [
     electoralArea: 'Abossey Okai Electoral Area',
     committee: 'Convener, Works & Development Planning Subcommittee',
     phone: '0244-882-190',
-    email: 'abosseyokai@acma.gov.gh',
+    email: 'abosseyokai@abcma.gov.gh',
     term: '2024 - 2028',
     officeHours: 'Tuesdays & Thursdays, 10:00 AM - 2:00 PM (Zonal Council Office)'
   },
@@ -390,9 +390,9 @@ export const ASSEMBLY_MEMBERS: AssemblyMember[] = [
     electoralArea: 'Lartebiokorshie Electoral Area',
     committee: 'Executive Committee & Finance Subcommittee',
     phone: '0208-114-552',
-    email: 'lartebiokorshie@acma.gov.gh',
+    email: 'lartebiokorshie@abcma.gov.gh',
     term: '2024 - 2028',
-    officeHours: 'Mondays & Wednesdays, 9:00 AM - 1:00 PM (ACMA Assembly Complex)'
+    officeHours: 'Mondays & Wednesdays, 9:00 AM - 1:00 PM (ABCMA Assembly Complex)'
   },
   {
     id: 'am-3',
@@ -401,7 +401,7 @@ export const ASSEMBLY_MEMBERS: AssemblyMember[] = [
     electoralArea: 'Mataheko Electoral Area',
     committee: 'Environmental Health & Sanitation Subcommittee',
     phone: '0277-331-894',
-    email: 'mataheko@acma.gov.gh',
+    email: 'mataheko@abcma.gov.gh',
     term: '2024 - 2028',
     officeHours: 'Wednesdays & Fridays, 11:00 AM - 3:00 PM (Mataheko Community Hall)'
   },
@@ -412,7 +412,7 @@ export const ASSEMBLY_MEMBERS: AssemblyMember[] = [
     electoralArea: 'Gbortsui Electoral Area',
     committee: 'Social Services & Education Subcommittee',
     phone: '0243-772-108',
-    email: 'gbortsui@acma.gov.gh',
+    email: 'gbortsui@abcma.gov.gh',
     term: '2024 - 2028',
     officeHours: 'Mondays & Thursdays, 10:00 AM - 2:00 PM'
   },
@@ -423,7 +423,7 @@ export const ASSEMBLY_MEMBERS: AssemblyMember[] = [
     electoralArea: 'Sukura Electoral Area',
     committee: 'Gender, Children & Community Protection',
     phone: '0555-449-210',
-    email: 'sukura@acma.gov.gh',
+    email: 'sukura@abcma.gov.gh',
     term: '2024 - 2028',
     officeHours: 'Tuesdays & Saturdays, 10:00 AM - 1:00 PM (Sukura Post Point)'
   },
@@ -434,7 +434,7 @@ export const ASSEMBLY_MEMBERS: AssemblyMember[] = [
     electoralArea: 'Town Council Line Electoral Area',
     committee: 'Revenue Mobilization & Commerce Subcommittee',
     phone: '0246-990-412',
-    email: 'towncouncilline@acma.gov.gh',
+    email: 'towncouncilline@abcma.gov.gh',
     term: '2024 - 2028',
     officeHours: 'Mondays & Fridays, 9:00 AM - 12:00 PM'
   },
@@ -445,7 +445,7 @@ export const ASSEMBLY_MEMBERS: AssemblyMember[] = [
     electoralArea: 'Mabrouk Electoral Area',
     committee: 'Disaster Prevention & Security Subcommittee',
     phone: '0209-661-338',
-    email: 'mabrouk@acma.gov.gh',
+    email: 'mabrouk@abcma.gov.gh',
     term: '2024 - 2028',
     officeHours: 'Wednesdays & Thursdays, 10:00 AM - 2:00 PM'
   }
@@ -473,7 +473,7 @@ export const TOWN_HALLS: TownHallMeeting[] = [
     title: 'Town Council Line & Sukura Flood Mitigation & Drainage Hearing',
     date: 'Tuesday, May 12, 2026',
     time: '10:30 AM - 1:00 PM',
-    venue: 'ACMA Municipal Conference Auditorium, Lartebiokorshie',
+    venue: 'ABCMA Municipal Conference Auditorium, Lartebiokorshie',
     electoralArea: 'Town Council Line / Sukura',
     agenda: [
       'Pre-monsoon season drainage desilting masterplan review',
@@ -491,9 +491,9 @@ export const TOWN_HALLS: TownHallMeeting[] = [
     venue: 'Mataheko Community Centre Forecourt',
     electoralArea: 'Mataheko',
     agenda: [
-      'Rollout of ACMA Youth Vocational Apprenticeship Scheme (auto mechanics, fashion, ICT)',
+      'Rollout of ABCMA Youth Vocational Apprenticeship Scheme (auto mechanics, fashion, ICT)',
       'Subsidized startup toolkits for accredited trade trainees',
-      'Registration desk for National Youth Authority & ACMA Social Welfare support'
+      'Registration desk for National Youth Authority & ABCMA Social Welfare support'
     ],
     documentsAttached: 'Youth_Apprenticeship_Guidelines_ACMA.pdf',
     rsvpsCount: 215
@@ -508,7 +508,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     description: 'Construction of a 1.2km reinforced concrete U-drain and three twin-cell box culverts to permanently end perennial flooding across the commercial spare parts corridor.',
     percentageComplete: 85,
     budgetGHS: 'GHS 4,250,000',
-    fundingSource: 'GoG District Assembly Common Fund (DACF) & ACMA IGF',
+    fundingSource: 'GoG District Assembly Common Fund (DACF) & ABCMA IGF',
     contractor: 'Ofori-Atta Civil Engineering Consortium Ltd',
     startDate: 'November 2025',
     estimatedCompletion: 'May 2026',
@@ -522,7 +522,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     description: 'Modern 40-bed maternal health wing with dedicated ultrasound diagnostics, surgical theater for emergencies, and 10 incubator neonatal intensive care unit (NICU).',
     percentageComplete: 92,
     budgetGHS: 'GHS 3,100,000',
-    fundingSource: 'Secondary Cities Infrastructure Support & ACMA Capital Fund',
+    fundingSource: 'Secondary Cities Infrastructure Support & ABCMA Capital Fund',
     contractor: 'Apex Horizon Built Environments Ltd',
     startDate: 'August 2025',
     estimatedCompletion: 'April 2026',
@@ -536,7 +536,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     description: 'Asphaltic overlay of 4.8km link roads, road line markings, speed tables near schools, and installation of 220 high-output solar LED streetlight poles.',
     percentageComplete: 65,
     budgetGHS: 'GHS 2,800,000',
-    fundingSource: 'Ministry of Roads & Highways / ACMA Joint Works',
+    fundingSource: 'Ministry of Roads & Highways / ABCMA Joint Works',
     contractor: 'Dan-Adams Highway Contractors Ghana',
     startDate: 'January 2026',
     estimatedCompletion: 'July 2026',
@@ -550,7 +550,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     description: 'Construction of 6 paved, odor-controlled communal waste transfer pads with modern roll-on roll-off skips and 24/7 sanitary warden posts.',
     percentageComplete: 100,
     budgetGHS: 'GHS 950,000',
-    fundingSource: 'ACMA Sanitation Levy & Environmental Protection Grant',
+    fundingSource: 'ABCMA Sanitation Levy & Environmental Protection Grant',
     contractor: 'Klenam Green Sanitation Services Ltd',
     startDate: 'September 2025',
     estimatedCompletion: 'Completed February 2026',
@@ -578,7 +578,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     description: 'Paving of central market stalls, installation of high-pressure fire hydrants, stormwater grates, and secure lockable storage units for dry food traders.',
     percentageComplete: 50,
     budgetGHS: 'GHS 2,150,000',
-    fundingSource: 'ACMA Internally Generated Revenue (IGF) & Trade Facility',
+    fundingSource: 'ABCMA Internally Generated Revenue (IGF) & Trade Facility',
     contractor: 'Metro Standard Civil Engineering Ltd',
     startDate: 'February 2026',
     estimatedCompletion: 'August 2026',
@@ -592,7 +592,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     description: 'Establishment of a 50-workstation e-library facility with high-speed internet, coding laboratory, and quiet civic research room for students and teachers.',
     percentageComplete: 90,
     budgetGHS: 'GHS 1,200,000',
-    fundingSource: 'ACMA Special Education Fund & Ghana Investment Fund for Electronic Communications (GIFEC)',
+    fundingSource: 'ABCMA Special Education Fund & Ghana Investment Fund for Electronic Communications (GIFEC)',
     contractor: 'Silicon Horizon Infrastructure Ltd',
     startDate: 'October 2025',
     estimatedCompletion: 'April 2026',
@@ -606,7 +606,7 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
     description: 'Completed multi-storey primary school block with modern teacher staffroom, computer laboratory, library, and disability-accessible modern water-closet washrooms.',
     percentageComplete: 100,
     budgetGHS: 'GHS 1,850,000',
-    fundingSource: 'GoG GETFund / ACMA Joint Educational Development Grant',
+    fundingSource: 'GoG GETFund / ABCMA Joint Educational Development Grant',
     contractor: 'Golden Coast Builders Consortium',
     startDate: 'June 2025',
     estimatedCompletion: 'Handed Over January 2026',
@@ -618,16 +618,16 @@ export const MUNICIPAL_PROJECTS: MunicipalProject[] = [
 export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
   {
     id: 'doc-1',
-    title: 'ACMA Gazetted Fee-Fixing Resolution (2026 Fiscal Year)',
+    title: 'ABCMA Gazetted Fee-Fixing Resolution (2026 Fiscal Year)',
     category: 'Fee-Fixing',
-    gazetteNumber: 'Ghana Local Government Bulletin No. 14 / ACMA-2026',
+    gazetteNumber: 'Ghana Local Government Bulletin No. 14 / ABCMA-2026',
     year: 2026,
     fileSize: '3.8 MB',
     summary: 'Statutory schedule of all rates, fees, fines, and licenses payable across commercial, residential, industrial, and transport categories in Ablekuma Central.'
   },
   {
     id: 'doc-2',
-    title: 'ACMA Environmental Sanitation & Noise Abatement Bye-Laws',
+    title: 'ABCMA Environmental Sanitation & Noise Abatement Bye-Laws',
     category: 'Bye-Laws',
     gazetteNumber: 'Local Government Instrument L.I. 2248',
     year: 2024,
@@ -638,7 +638,7 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     id: 'doc-3',
     title: '2026 Annual Composite Budget & Internally Generated Funds Plan',
     category: 'Budget',
-    gazetteNumber: 'ACMA-FIN-REP-2026-VOL1',
+    gazetteNumber: 'ABCMA-FIN-REP-2026-VOL1',
     year: 2026,
     fileSize: '5.2 MB',
     summary: 'Approved municipal budget allocation across capital infrastructure, health, education, administration, and projected revenue streams.'
@@ -647,16 +647,16 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     id: 'doc-4',
     title: 'National Competitive Tender: Desilting & Road Paving Lots 1 to 4',
     category: 'Tenders',
-    gazetteNumber: 'ACMA/PROC/NCT/2026/08',
+    gazetteNumber: 'ABCMA/PROC/NCT/2026/08',
     year: 2026,
     fileSize: '1.4 MB',
     summary: 'Invitation for sealed bids from Ministry of Works and Housing registered contractors (Category D1/K1) for 2026 municipal projects.'
   },
   {
     id: 'doc-5',
-    title: 'ACMA Building Permitting & Physical Spatial Planning Bye-Laws',
+    title: 'ABCMA Building Permitting & Physical Spatial Planning Bye-Laws',
     category: 'Bye-Laws',
-    gazetteNumber: 'L.I. 2380 / ACMA-PPD-2025',
+    gazetteNumber: 'L.I. 2380 / ABCMA-PPD-2025',
     year: 2025,
     fileSize: '2.8 MB',
     summary: 'Mandatory structural regulations for new commercial buildings, setback requirements along stormwater easements, and temporary structure licensing.'
@@ -665,7 +665,7 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     id: 'doc-6',
     title: 'Market Tolls, Lorry Stations & Commercial Transport Operations Bye-Laws',
     category: 'Fee-Fixing',
-    gazetteNumber: 'Bulletin No. 22 / ACMA-TRANS-2026',
+    gazetteNumber: 'Bulletin No. 22 / ABCMA-TRANS-2026',
     year: 2026,
     fileSize: '1.9 MB',
     summary: 'Prescribed daily toll rates for trotros, taxis, and hawkers across Abossey Okai, Flamingo, and Town Council Line terminals.'
@@ -674,7 +674,7 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     id: 'doc-7',
     title: '2025 Audited Internally Generated Funds (IGF) Financial Performance Report',
     category: 'Budget',
-    gazetteNumber: 'ACMA-AUDIT-2025-FIN',
+    gazetteNumber: 'ABCMA-AUDIT-2025-FIN',
     year: 2026,
     fileSize: '4.6 MB',
     summary: 'Comprehensive financial statement and value-for-money audit of revenue collected and disbursed across municipal drainage and lighting.'
@@ -683,16 +683,16 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     id: 'doc-8',
     title: 'Tender Invitation: Solid Waste Concessionaires & Communal Transfer Stations',
     category: 'Tenders',
-    gazetteNumber: 'ACMA/PROC/WM/2026/03',
+    gazetteNumber: 'ABCMA/PROC/WM/2026/03',
     year: 2026,
     fileSize: '1.7 MB',
     summary: 'Bidding guidelines for accredited private waste management contractors to service domestic zones and market skips in Sukura and Gbortsui.'
   },
   {
     id: 'doc-9',
-    title: 'ACMA Public Health & Food Handlers Certification Bye-Laws',
+    title: 'ABCMA Public Health & Food Handlers Certification Bye-Laws',
     category: 'Bye-Laws',
-    gazetteNumber: 'Local Government Bulletin No. 09 / ACMA-EHSU',
+    gazetteNumber: 'Local Government Bulletin No. 09 / ABCMA-EHSU',
     year: 2025,
     fileSize: '2.3 MB',
     summary: 'Sanitary protocols requiring annual medical examinations, clean water source certification, and disinfestation for restaurants, bakeries, and chop bars.'
@@ -701,7 +701,7 @@ export const GAZETTED_DOCUMENTS: GazettedDocument[] = [
     id: 'doc-10',
     title: '2026 Composite Annual Procurement Plan for Educational & Medical Facilities',
     category: 'Tenders',
-    gazetteNumber: 'ACMA/PPA/APP/2026/01',
+    gazetteNumber: 'ABCMA/PPA/APP/2026/01',
     year: 2026,
     fileSize: '3.1 MB',
     summary: 'Approved Public Procurement Authority (PPA) schedule of hospital beds, medical consumables, school desks, and IT equipment tenders.'
@@ -720,7 +720,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
     headTitle: 'Municipal Coordinating Director (MCD)',
     room: 'Block A, First Floor, Room 102 & 104',
     phone: '+233 (0) 302 228 901',
-    email: 'centraladmin@acma.gov.gh',
+    email: 'centraladmin@abcma.gov.gh',
     description: 'The Secretariat of the Assembly responsible for overall administrative coordination, executive decision implementation, protocol, legal affairs, and public relations.',
     coreFunctions: [
       'Serving as the General Secretariat of the Assembly & Executive Committee',
@@ -735,19 +735,19 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Assembly Hall Bookings for Civic Ceremonies'
     ],
     operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM',
-    headImageUrl: '/images/dept_head_admin_1794482218886.jpg'
+    headImageUrl: '/images/director.jpg'
   },
   {
     id: 'dept-hr',
     name: 'Human Resource Department',
     shortCode: 'HR',
     category: 'admin',
-    head: 'Mrs. Abigail Adobea Mensah',
+    head: 'Mrs. Lydia Afriyie',
     headTitle: 'Municipal Human Resource Manager',
     room: 'Block A, Second Floor, Room 205',
     phone: '+233 (0) 302 228 903',
-    email: 'hr@acma.gov.gh',
-    description: 'Manages staff recruitment, postings, continuous capacity building, staff welfare, internships, and performance management across all ACMA directorates.',
+    email: 'hr@abcma.gov.gh',
+    description: 'Manages staff recruitment, postings, continuous capacity building, staff welfare, internships, and performance management across all ABCMA directorates.',
     coreFunctions: [
       'Staff development, training needs assessment, and capacity building programs',
       'Civil service human resource management & local government service appraisal',
@@ -761,21 +761,21 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Staff Verification for Civil Service & Financial Institutions'
     ],
     operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM',
-    headImageUrl: '/images/dept_head_admin_1794482218886.jpg'
+    headImageUrl: '/images/hr.jpg'
   },
   {
     id: 'dept-mis',
     name: 'Management Information Systems Department',
     shortCode: 'MIS',
     category: 'technical',
-    head: 'Ing. David Kwabena Asare',
+    head: 'Mr Justice Marfo',
     headTitle: 'Head of Management Information Systems',
     room: 'Block A, Ground Floor, Room 012 (Tech Hub)',
     phone: '+233 (0) 302 228 906',
-    email: 'mis@acma.gov.gh',
+    email: 'mis@abcma.gov.gh',
     description: 'Spearheads ACMA’s digital transformation, portal infrastructure, online revenue billing gateways, GIS municipal mapping, database administration, and cyber security.',
     coreFunctions: [
-      'Managing ACMA public digital portal, revenue collection APIs & MoMo gateways',
+      'Managing ABCMA public digital portal, revenue collection APIs & MoMo gateways',
       'Geographic Information Systems (GIS) mapping of properties and street naming',
       'Hardware maintenance, network infrastructure, and database administration',
       'Data analytics on internally generated funds (IGF) and service delivery turnaround'
@@ -787,7 +787,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'IT Support for Digital Business Operating Permit Applications'
     ],
     operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM (24/7 Portal Support)',
-    headImageUrl: '/images/dept_head_mis_1794482219572.jpg'
+    headImageUrl: '/images/uknown.jpg'
   },
   {
     id: 'dept-works',
@@ -798,7 +798,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
     headTitle: 'Municipal Works Engineer',
     room: 'Block B, First Floor, Room 112 & 114',
     phone: '+233 (0) 302 228 907',
-    email: 'works@acma.gov.gh',
+    email: 'works@abcma.gov.gh',
     description: 'Supervises capital projects, feeder roads, storm drainage infrastructure, street lighting maintenance, and physical structural inspections of residential & commercial developments.',
     coreFunctions: [
       'Execution and monitoring of municipal civil works, drainage culverts, and roads',
@@ -824,7 +824,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
     headTitle: 'Municipal Social Welfare & Community Officer',
     room: 'Block C, Ground Floor, Room 015',
     phone: '+233 (0) 302 228 909',
-    email: 'socialwelfare@acma.gov.gh',
+    email: 'socialwelfare@abcma.gov.gh',
     description: 'Promotes social justice, child protection, family reconciliation, disability inclusion funds, youth apprenticeship, and community-driven development initiatives.',
     coreFunctions: [
       'Administration of the 3% District Assembly Common Fund for Persons with Disabilities (PWDs)',
@@ -839,7 +839,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Youth Apprenticeship Sponsorship in Tailoring, Auto Mechanics & ICT'
     ],
     operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM',
-    headImageUrl: '/images/dept_head_welfare_1794482219397.jpg'
+    headImageUrl: '/images/uknown.jpg'
   },
   {
     id: 'dept-physical-planning',
@@ -850,7 +850,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
     headTitle: 'Municipal Town Planning Officer',
     room: 'Block B, Ground Floor, Room 04',
     phone: '+233 (0) 302 228 904',
-    email: 'planning@acma.gov.gh',
+    email: 'planning@abcma.gov.gh',
     description: 'Controls spatial layout, zoning schemes, land-use planning, masterplans, and development permit statutory committee secretariat.',
     coreFunctions: [
       'Formulating spatial development frameworks and local zoning schemes',
@@ -865,18 +865,18 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Architectural Layout Consultation for Commercial Hubs'
     ],
     operatingHours: 'Mon - Fri: 8:30 AM - 4:30 PM',
-    headImageUrl: '/images/dept_head_engineer_1794482218772.jpg'
+    headImageUrl: '/images/Physical_planning.jpg'
   },
   {
     id: 'dept-finance',
     name: 'Finance & Revenue Mobilization Directorate',
     shortCode: 'Finance',
     category: 'finance',
-    head: 'Mr. Joseph Nii Armah',
+    head: 'Mr. Sakibu Ahmed',
     headTitle: 'Municipal Finance Officer (MFO)',
     room: 'Block A, Ground Floor, Room 08',
     phone: '+233 (0) 302 228 910',
-    email: 'finance@acma.gov.gh',
+    email: 'finance@abcma.gov.gh',
     description: 'Manages municipal public funds, internally generated revenue (IGF), property rates billing, commercial licenses collection, and statutory financial reporting.',
     coreFunctions: [
       'Collection and accounting of property rates, business operating permits, and market tolls',
@@ -891,7 +891,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Installment Payment Arrangements for Micro-Enterprises'
     ],
     operatingHours: 'Mon - Fri: 8:00 AM - 5:00 PM',
-    headImageUrl: '/images/dept_head_finance_1794482253363.jpg'
+    headImageUrl: '/images/uknown.jpg'
   },
   {
     id: 'dept-health-sanitation',
@@ -902,7 +902,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
     headTitle: 'Municipal Environmental Health Officer',
     room: 'Block C, Ground Floor, Room 02',
     phone: '+233 (0) 302 228 915',
-    email: 'sanitation@acma.gov.gh',
+    email: 'sanitation@abcma.gov.gh',
     description: 'Ensures public health standards, food vendor screening, market hygiene, cemetery management, and solid waste collection enforcement.',
     coreFunctions: [
       'Routine sanitary inspection of domestic and commercial premises',
@@ -917,7 +917,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Communal Waste Bin Distribution & Skip Relocation Requests'
     ],
     operatingHours: 'Mon - Fri: 7:30 AM - 4:30 PM (Field Inspections Active)',
-    headImageUrl: '/images/dept_head_health_1794482254417.jpg'
+    headImageUrl: '/images/uknown.jpg'
   },
   {
     id: 'dept-nadmo',
@@ -928,7 +928,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
     headTitle: 'Municipal NADMO Director',
     room: 'Block C, Room 10',
     phone: '+233 (0) 302 228 920',
-    email: 'nadmo@acma.gov.gh',
+    email: 'nadmo@abcma.gov.gh',
     description: 'Coordinates emergency disaster response, flood contingency planning, public safety education, and relief item distributions.',
     coreFunctions: [
       'Pre-flood vulnerability assessment along critical drainage basins',
@@ -943,7 +943,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Volunteer Disaster Management Committee Recruitment'
     ],
     operatingHours: '24/7 Emergency Operations',
-    headImageUrl: '/images/dept_head_finance_1794482253363.jpg'
+    headImageUrl: '/images/uknown.jpg'
   },
   {
     id: 'dept-agriculture',
@@ -954,7 +954,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
     headTitle: 'Municipal Director of Agriculture',
     room: 'Block C, First Floor, Room 108',
     phone: '+233 (0) 302 228 924',
-    email: 'agriculture@acma.gov.gh',
+    email: 'agriculture@abcma.gov.gh',
     description: 'Supports peri-urban farming, backyard gardening, mushroom cultivation, aquaculture, veterinary health care, and farmer-market linkages.',
     coreFunctions: [
       'Agricultural extension services to urban vegetable growers and livestock keepers',
@@ -969,7 +969,7 @@ export const MUNICIPAL_DEPARTMENTS: MunicipalDepartment[] = [
       'Veterinary Clinic Consultations & Meat Inspection'
     ],
     operatingHours: 'Mon - Fri: 8:00 AM - 4:30 PM',
-    headImageUrl: '/images/dept_head_engineer_1794482218772.jpg'
+    headImageUrl: '/images/uknown.jpg'
   }
 ];
 
@@ -1011,7 +1011,7 @@ export const MUNICIPAL_NEWS: MunicipalNewsItem[] = [
     readTime: '3 min read',
     badgeColor: 'bg-rose-950 text-rose-400 border-rose-700/50',
     excerpt: 'Over 120 beneficiaries received customized trade equipment including industrial sewing machines, heavy-duty automotive toolboxes, welding machines, and assistive mobility devices funded by the District Assembly Common Fund.',
-    content: 'Hon. Municipal Chief Executive emphasized that economic inclusion for Persons with Disabilities (PWDs) remains a non-negotiable pillar of ACMA civic governance.',
+    content: 'Hon. Municipal Chief Executive emphasized that economic inclusion for Persons with Disabilities (PWDs) remains a non-negotiable pillar of ABCMA civic governance.',
     targetPage: 'departments',
     targetLabel: 'Read on Social Welfare Dept'
   },
@@ -1056,14 +1056,14 @@ export const MUNICIPAL_NEWS: MunicipalNewsItem[] = [
   },
   {
     id: 'news-7',
-    title: 'ACMA Management Information Systems (MIS) Deploys Instant E-Tax Clearance Portal',
+    title: 'ABCMA Management Information Systems (MIS) Deploys Instant E-Tax Clearance Portal',
     category: 'Notice',
     date: '16 February 2026',
     author: 'Management Information Systems (MIS) Unit',
     readTime: '2 min read',
     badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-700/50',
     excerpt: 'Business owners who settle their 2026 Business Operating Permits online can now instantly download digitally signed, QR-verifiable Municipal Tax Clearance certificates for banking and commercial compliance.',
-    content: 'The new system links directly to the Ghana Revenue Authority TIN database and ACMA revenue vaults, eliminating bureaucratic paper queues.',
+    content: 'The new system links directly to the Ghana Revenue Authority TIN database and ABCMA revenue vaults, eliminating bureaucratic paper queues.',
     targetPage: 'departments',
     targetLabel: 'Read on MIS Department'
   },

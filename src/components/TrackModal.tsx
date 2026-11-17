@@ -65,7 +65,7 @@ export const TrackModal: React.FC<TrackModalProps> = ({
             <Search className="w-5 h-5 text-emerald-400" />
             <div>
               <div className="text-[11px] text-emerald-400 font-semibold tracking-wider uppercase">
-                ACMA Verification & Tracking Center
+                ABCMA Verification & Tracking Center
               </div>
               <h3 className="text-base font-bold">Track Any Permit, Bill or Report</h3>
             </div>
@@ -87,7 +87,7 @@ export const TrackModal: React.FC<TrackModalProps> = ({
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="e.g. REP-2026-1049, PROP-2026-4019, ACMA-..."
+                placeholder="e.g. REP-2026-1049, PROP-2026-4019, ABCMA-..."
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
                 className="flex-1 px-3.5 py-2 text-xs sm:text-sm font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-700"

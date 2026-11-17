@@ -41,7 +41,7 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
       }) + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       const randomReceiptSeq = Math.floor(10000 + Math.random() * 90000);
-      const receiptNo = `ACMA-REC-2026-${randomReceiptSeq}`;
+      const receiptNo = `ABCMA-REC-2026-${randomReceiptSeq}`;
       const ref = `GH-TXN-${Date.now()}`;
 
       const transaction: PaymentTransaction = {
@@ -55,7 +55,7 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
         timestamp: formattedDate,
         referenceId: ref,
         status: 'successful',
-        qrCodeToken: `https://acma.gov.gh/verify/${receiptNo}`,
+        qrCodeToken: `https://abcma.gov.gh/verify/${receiptNo}`,
       };
 
       const newAmountPaid = bill.amountPaidGHS + customAmount;
@@ -88,7 +88,7 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
             <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
             <div>
               <div className="text-[10px] sm:text-[11px] text-emerald-400 font-semibold tracking-wider uppercase">
-                ACMA Secure Revenue Gateway
+                ABCMA Secure Revenue Gateway
               </div>
               <h3 className="text-sm sm:text-base font-bold">Pay Municipal Rate</h3>
             </div>
@@ -310,7 +310,7 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
             </div>
             <h4 className="text-xl font-bold text-slate-900">Payment Successful!</h4>
             <p className="text-xs text-slate-600 max-w-sm mx-auto">
-              GHS {customAmount.toFixed(2)} has been credited to the ACMA Municipal Revenue Account. Your official digital receipt has been generated.
+              GHS {customAmount.toFixed(2)} has been credited to the ABCMA Municipal Revenue Account. Your official digital receipt has been generated.
             </p>
             <div className="pt-2">
               <button

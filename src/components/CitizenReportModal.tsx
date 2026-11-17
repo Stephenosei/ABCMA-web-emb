@@ -73,7 +73,7 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
       status: 'submitted',
       dateReported: new Date().toISOString().split('T')[0],
       departmentAssigned,
-      resolutionNotes: 'Citizen report acknowledged by ACMA Client Service Desk. Assigned to field inspection team.',
+      resolutionNotes: 'Citizen report acknowledged by ABCMA Client Service Desk. Assigned to field inspection team.',
       lastUpdated: 'Just now',
     };
 

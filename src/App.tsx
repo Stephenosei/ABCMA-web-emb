@@ -130,7 +130,7 @@ export default function App() {
 
   const handleViewExistingReceipt = (bill: BillRecord) => {
     const mockTx: PaymentTransaction = {
-      receiptNumber: bill.receiptNumber || 'ACMA-REC-2026-004812',
+      receiptNumber: bill.receiptNumber || 'ABCMA-REC-2026-004812',
       billNumber: bill.billNumber,
       taxpayerName: bill.taxpayerName,
       billType: bill.type,
@@ -140,7 +140,7 @@ export default function App() {
       timestamp: bill.lastPaymentDate || '14 Feb 2026 11:42 AM',
       referenceId: 'GH-TXN-VERIFIED-9912',
       status: 'successful',
-      qrCodeToken: `https://acma.gov.gh/verify/${bill.receiptNumber}`,
+      qrCodeToken: `https://abcma.gov.gh/verify/${bill.receiptNumber}`,
     };
     setActiveTransaction(mockTx);
     setReceiptBill(bill);

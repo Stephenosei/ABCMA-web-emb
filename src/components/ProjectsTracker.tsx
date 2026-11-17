@@ -249,7 +249,7 @@ export const ProjectsTracker: React.FC<ProjectsTrackerProps> = ({
               Need to contact the supervising Works Department or check building permits?
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
-              Civil projects are supervised by the ACMA Works Department and Physical Planning Directorate under municipal legislative oversight.
+              Civil projects are supervised by the ABCMA Works Department and Physical Planning Directorate under municipal legislative oversight.
             </p>
           </div>
 

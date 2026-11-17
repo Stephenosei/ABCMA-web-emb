@@ -155,7 +155,7 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
                     {project.fundingSource}
                   </span>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    GoG District Assembly Common Fund & ACMA Internally Generated Funds
+                    GoG District Assembly Common Fund & ABCMA Internally Generated Funds
                   </p>
                 </div>
 
@@ -167,7 +167,7 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
                     {project.contractor}
                   </span>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Category D1/K1 certified contractor supervised by ACMA Works Department Engineer Ing. Stephen Annan.
+                    Category D1/K1 certified contractor supervised by ABCMA Works Department Engineer Ing. Stephen Annan.
                   </p>
                 </div>
               </div>

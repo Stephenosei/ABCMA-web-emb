@@ -165,7 +165,7 @@ export const Footer: React.FC<FooterProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>info@acma.gov.gh / support@acma.gov.gh</span>
+                <span>info@abcma.gov.gh / support@abcma.gov.gh</span>
               </div>
             </div>
 
@@ -181,7 +181,7 @@ export const Footer: React.FC<FooterProps> = ({
       <div className="border-t border-slate-900 bg-slate-950/90 py-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
           <div>
-            © 2026 Ablekuma Central Municipal Assembly (ACMA). Republic of Ghana. All statutory rights reserved.
+            © 2026 Ablekuma Central Municipal Assembly (ABCMA). Republic of Ghana. All statutory rights reserved.
           </div>
           <div className="flex items-center gap-4 text-slate-400">
             <span>Local Governance Act 2016</span>

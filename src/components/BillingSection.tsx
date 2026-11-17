@@ -97,7 +97,7 @@ export const BillingSection: React.FC<BillingSectionProps> = ({
     }
   };
 
-  // Property calculation math based on ACMA 2026 Fee-Fixing Resolution
+  // Property calculation math based on ABCMA 2026 Fee-Fixing Resolution
   const calculatePropertyRate = () => {
     let rateImpost = 0.0018; // default
     if (calcPropertyClass === 'res_1st') rateImpost = 0.0022;
@@ -495,7 +495,7 @@ export const BillingSection: React.FC<BillingSectionProps> = ({
             )}
 
             <div className="text-[11px] text-slate-500 leading-tight">
-              *Estimates are calculated per the approved ACMA 2026 Fee-Fixing Resolution gazetted under the Local Governance Act 2016 (Act 936).
+              *Estimates are calculated per the approved ABCMA 2026 Fee-Fixing Resolution gazetted under the Local Governance Act 2016 (Act 936).
             </div>
           </div>
         </div>

@@ -28,7 +28,7 @@ export const OfficialReceiptModal: React.FC<OfficialReceiptModalProps> = ({
         <div className="bg-slate-900 text-white px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between print:hidden shrink-0">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" />
-            <span className="text-xs sm:text-sm font-bold tracking-tight">Official ACMA Digital Receipt</span>
+            <span className="text-xs sm:text-sm font-bold tracking-tight">Official ABCMA Digital Receipt</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -163,8 +163,8 @@ export const OfficialReceiptModal: React.FC<OfficialReceiptModalProps> = ({
                 <QrCode className="w-full h-full text-slate-800" />
               </div>
               <div className="text-[10px] text-slate-500 leading-tight">
-                <span className="font-bold text-slate-700 block">ACMA Digital Verification Token</span>
-                <span>Scan with any camera to verify validity with the ACMA Revenue Directorate database.</span>
+                <span className="font-bold text-slate-700 block">ABCMA Digital Verification Token</span>
+                <span>Scan with any camera to verify validity with the ABCMA Revenue Directorate database.</span>
                 <span className="font-mono text-emerald-800 block mt-0.5">AUTH-KEY: {transaction.referenceId.slice(0, 12)}</span>
               </div>
             </div>

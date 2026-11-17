@@ -188,7 +188,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
       return;
     }
     setContactError(null);
-    const refNumber = `ACMA-INQ-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const refNumber = `ABCMA-INQ-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     setContactSubmittedRef(refNumber);
   };
 
@@ -265,12 +265,12 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
               <div>
                 <strong className="text-white block">Official Electronic Mail</strong>
                 <div className="flex flex-wrap gap-x-3 gap-y-1 mt-0.5">
-                  <a href="mailto:info@acma.gov.gh" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
-                    info@acma.gov.gh
+                  <a href="mailto:info@abcma.gov.gh" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
+                    info@abcma.gov.gh
                   </a>
                   <span className="text-slate-500">·</span>
-                  <a href="mailto:support@acma.gov.gh" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
-                    support@acma.gov.gh
+                  <a href="mailto:support@abcma.gov.gh" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
+                    support@abcma.gov.gh
                   </a>
                 </div>
               </div>
@@ -711,7 +711,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                     Core Functions of the Municipal Assembly
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
-                    In accordance with Section 12 of the Local Governance Act, 2016 (Act 936), ACMA discharges six foundational responsibilities across the municipality.
+                    In accordance with Section 12 of the Local Governance Act, 2016 (Act 936), ABCMA discharges six foundational responsibilities across the municipality.
                   </p>
                 </div>
                 <button
