@@ -1,11 +1,14 @@
 import React from 'react';
-import { Phone, Mail, MapPin, ShieldCheck, Heart } from 'lucide-react';
+import { Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
+import { useCms } from '../context/CmsContext';
 
 interface FooterProps {
   onNavigate: (section: string) => void;
   onOpenTrackModal: () => void;
   onOpenReportModal: () => void;
   onOpenServiceModal: (id?: string) => void;
+  onOpenAdmin?: () => void;
+  isAuthenticatedAdmin?: boolean;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -13,7 +16,19 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenTrackModal,
   onOpenReportModal,
   onOpenServiceModal,
+  onOpenAdmin,
+  isAuthenticatedAdmin = false,
 }) => {
+  const { settings } = useCms();
+  const adminHref = isAuthenticatedAdmin ? '/admin' : '/admin/login';
+
+  const socialItems = [
+    { key: 'facebook', label: 'Facebook', url: settings.social_links?.facebook },
+    { key: 'twitter', label: 'X / Twitter', url: settings.social_links?.twitter },
+    { key: 'instagram', label: 'Instagram', url: settings.social_links?.instagram },
+    { key: 'youtube', label: 'YouTube', url: settings.social_links?.youtube },
+  ].filter((s) => Boolean(s.url && s.url.trim()));
+
   return (
     <footer className="bg-slate-950/90 backdrop-blur-md text-slate-300 border-t border-slate-800/80 relative z-10">
       {/* Upper Footer Grid */}
@@ -24,23 +39,38 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-white border-2 border-emerald-500/40 shadow-md overflow-hidden flex items-center justify-center shrink-0">
                 <img
-                  src="/assets/aistudio/abcma_logo_74f7cef4.jpeg"
-                  alt="Ablekuma Central Municipal Assembly Crest"
+                  src={settings.logo_url || '/assets/aistudio/abcma_logo_74f7cef4.jpeg'}
+                  alt={`${settings.site_title} Crest`}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-contain scale-[1.42]"
                 />
               </div>
               <span className="text-base font-bold text-white tracking-tight">
-                Ablekuma Central Municipal Assembly
+                {settings.site_title}
               </span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Serving the residents, commercial trading zones, and communities of Ablekuma Central under the Local Governance Act 2016 (Act 936).
+              {settings.footer_text}
             </p>
             <div className="text-xs text-slate-400 space-y-1 pt-1 font-mono">
-              <div>GhanaPostGPS: GA-140-2210</div>
-              <div>Digital Portal Version 2026.1</div>
+              <div>GhanaPostGPS: {settings.gps_address}</div>
+              {settings.postal_address && <div>{settings.postal_address}</div>}
             </div>
+            {socialItems.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {socialItems.map((s) => (
+                  <a
+                    key={s.key}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-emerald-500/50 text-[11px] font-semibold text-slate-300 hover:text-emerald-400 transition-colors"
+                  >
+                    {s.label}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Col 2: Public Services */}
@@ -148,10 +178,18 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <button
+                  onClick={() => onNavigate('gallery')}
+                  className="hover:text-emerald-400 transition-colors cursor-pointer"
+                >
+                  Photo Gallery & Civic Media
+                </button>
+              </li>
+              <li>
+                <button
                   onClick={() => onNavigate('documents')}
                   className="hover:text-emerald-400 transition-colors cursor-pointer"
                 >
-                  Gazetted 2026 Fee-Fixing Resolution
+                  Gazetted Documents & Downloads
                 </button>
               </li>
             </ul>
@@ -165,21 +203,23 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="text-xs text-slate-400 space-y-2">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Municipal Assembly Complex, Lartebiokorshie, Accra</span>
+                <span>{settings.office_location}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Hotline: 0302-228-900 / 0302-228-901</span>
+                <span>Hotline: {settings.contact_phones.join(' / ')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>info@abcma.gov.gh / support@abcma.gov.gh</span>
+                <span>{settings.contact_emails.join(' / ')}</span>
               </div>
             </div>
 
             <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
-              <span className="font-semibold text-slate-300 block mb-0.5">Municipal Operating Hours:</span>
-              <span>Monday – Friday: 8:00 AM – 5:00 PM (GMT)</span>
+              <span className="font-semibold text-slate-300 block mb-0.5">
+                Municipal Operating Hours:
+              </span>
+              <span>{settings.working_hours}</span>
             </div>
           </div>
         </div>
@@ -188,18 +228,31 @@ export const Footer: React.FC<FooterProps> = ({
       {/* Bottom Bar */}
       <div className="border-t border-slate-900 bg-slate-950/90 py-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <div>
-            © 2026 Ablekuma Central Municipal Assembly (ABCMA). Republic of Ghana. All statutory rights reserved.
-          </div>
-          <div className="flex items-center gap-4 text-slate-400">
+          <div>{settings.copyright_text}</div>
+          <div className="flex flex-wrap items-center justify-center gap-4 text-slate-400">
             <span>Local Governance Act 2016</span>
             <span aria-hidden="true">·</span>
             <span>Right to Information (RTI Act 989)</span>
             <span aria-hidden="true">·</span>
             <span>Public Financial Management Act (Act 921)</span>
+            <span aria-hidden="true">·</span>
+            <a
+              href={adminHref}
+              onClick={(e) => {
+                if (onOpenAdmin) {
+                  e.preventDefault();
+                  onOpenAdmin();
+                }
+              }}
+              className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-amber-300 font-semibold transition-colors"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{isAuthenticatedAdmin ? 'Admin Dashboard' : 'Admin Portal'}</span>
+            </a>
           </div>
         </div>
       </div>
     </footer>
   );
 };
+

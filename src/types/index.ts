@@ -117,15 +117,30 @@ export interface MunicipalProject {
   status: 'In Progress' | 'Near Completion' | 'Commissioned';
 }
 
+export type DocumentCategory =
+  | 'Bye-Laws'
+  | 'Fee-Fixing'
+  | 'Budget'
+  | 'Tenders'
+  | 'Reports'
+  | 'Guides'
+  | 'Policies'
+  | 'Procurement'
+  | 'Public Notices'
+  | 'Forms'
+  | 'Strategic Plans'
+  | 'Other';
+
 export interface GazettedDocument {
   id: string;
   title: string;
-  category: 'Bye-Laws' | 'Fee-Fixing' | 'Budget' | 'Tenders' | 'Reports' | 'Guides';
+  category: DocumentCategory | string;
   gazetteNumber: string;
   year: number;
   fileSize: string;
   summary: string;
   fileName?: string;
+  fileUrl?: string;
   department?: string;
   keyProvisions?: string[];
 }
@@ -145,13 +160,14 @@ export interface MunicipalDepartment {
   servicesOffered: string[];
   operatingHours: string;
   headImageUrl?: string;
+  bannerImageUrl?: string;
 }
 
 export interface MunicipalNewsItem {
   id: string;
   title: string;
   newsScope: 'local' | 'other';
-  category: 'Notice' | 'Infrastructure' | 'Welfare' | 'Health' | 'Assembly';
+  category: string;
   date: string;
   excerpt: string;
   content: string;
@@ -163,4 +179,5 @@ export interface MunicipalNewsItem {
   badgeColor: string;
   targetPage: string;
   targetLabel: string;
+  isFeaturedHomepage?: boolean;
 }

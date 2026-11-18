@@ -25,7 +25,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { AssemblyMember, TownHallMeeting, CitizenIssue, MunicipalDepartment } from '../types';
-import { MUNICIPAL_DEPARTMENTS } from '../data/mockData';
+import { useCms } from '../context/CmsContext';
 import { Pagination } from './Pagination';
 
 interface TheAssemblySectionProps {
@@ -105,6 +105,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
   onNavigateHome,
   onReadLeadershipAddress,
 }) => {
+  const { settings, departments, events } = useCms();
   const [activeTab, setActiveTab] = useState<
     'leadership' | 'members' | 'townhalls' | 'incidents' | 'departments' | 'contact'
   >('leadership');
@@ -237,10 +238,20 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
               <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <strong className="text-white block">Municipal Assembly Complex</strong>
-                <span className="text-slate-300">Lartebiokorshie Main Road, Accra, Greater Accra</span>
+                <span className="text-slate-300">{settings.office_location}</span>
                 <span className="block text-emerald-400 font-mono text-[11px] mt-0.5">
-                  GhanaPostGPS: GA-140-2210
+                  GhanaPostGPS: {settings.gps_address}
                 </span>
+                {settings.google_maps_url && (
+                  <a
+                    href={settings.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block text-[11px] text-amber-300 hover:underline mt-0.5"
+                  >
+                    Open Location on Google Maps
+                  </a>
+                )}
               </div>
             </div>
 
@@ -249,13 +260,17 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
               <div>
                 <strong className="text-white block">Official Hotlines & Client Desk</strong>
                 <div className="flex flex-wrap gap-x-3 gap-y-1 mt-0.5 font-mono">
-                  <a href="tel:0302228900" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
-                    0302-228-900
-                  </a>
-                  <span className="text-slate-500">/</span>
-                  <a href="tel:0302228901" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
-                    0302-228-901
-                  </a>
+                  {settings.contact_phones.map((phone, idx) => (
+                    <React.Fragment key={phone}>
+                      {idx > 0 && <span className="text-slate-500">/</span>}
+                      <a
+                        href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
+                        className="hover:text-emerald-300 transition-colors underline underline-offset-2"
+                      >
+                        {phone}
+                      </a>
+                    </React.Fragment>
+                  ))}
                 </div>
               </div>
             </div>
@@ -265,13 +280,17 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
               <div>
                 <strong className="text-white block">Official Electronic Mail</strong>
                 <div className="flex flex-wrap gap-x-3 gap-y-1 mt-0.5">
-                  <a href="mailto:info@abcma.gov.gh" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
-                    info@abcma.gov.gh
-                  </a>
-                  <span className="text-slate-500">·</span>
-                  <a href="mailto:support@abcma.gov.gh" className="hover:text-emerald-300 transition-colors underline underline-offset-2">
-                    support@abcma.gov.gh
-                  </a>
+                  {settings.contact_emails.map((emailAddr, idx) => (
+                    <React.Fragment key={emailAddr}>
+                      {idx > 0 && <span className="text-slate-500">·</span>}
+                      <a
+                        href={`mailto:${emailAddr}`}
+                        className="hover:text-emerald-300 transition-colors underline underline-offset-2"
+                      >
+                        {emailAddr}
+                      </a>
+                    </React.Fragment>
+                  ))}
                 </div>
               </div>
             </div>
@@ -280,7 +299,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
               <Clock className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <strong className="text-white block">Municipal Operating Hours</strong>
-                <span className="text-slate-300">Monday – Friday: 8:00 AM – 5:00 PM (GMT)</span>
+                <span className="text-slate-300">{settings.working_hours}</span>
               </div>
             </div>
           </div>
@@ -399,7 +418,7 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                   <option value="Office of the Municipal Coordinating Director (MCD)">
                     Office of the Municipal Coordinating Director (MCD)
                   </option>
-                  {MUNICIPAL_DEPARTMENTS.map((dept) => (
+                  {departments.map((dept) => (
                     <option key={dept.id} value={dept.name}>
                       {dept.name} ({dept.shortCode})
                     </option>
@@ -570,8 +589,8 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 {/* Assembly Building Architectural Photograph */}
                 <div className="lg:col-span-5 relative min-h-[260px] sm:min-h-[320px] bg-slate-950 overflow-hidden">
                   <img
-                    src="/images/ablekuma_assembly_welcome_1794372179601.jpg"
-                    alt="Ablekuma Central Municipal Assembly Civic Headquarters in Lartebiokorshie"
+                    src={settings.hero_image_url || '/images/ablekuma_assembly_welcome_1794372179601.jpg'}
+                    alt={`${settings.site_title} Civic Headquarters`}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover object-center"
                   />
@@ -581,11 +600,13 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                       Civic Headquarters · Est. 2019 (L.I. 2376)
                     </div>
                     <div className="text-sm font-bold text-white">
-                      Ablekuma Central Municipal Assembly Complex
+                      {settings.site_title} Complex
                     </div>
                     <div className="text-xs text-slate-300 flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span>Lartebiokorshie, Greater Accra · GA-140-2210</span>
+                      <span>
+                        {settings.office_location} · {settings.gps_address}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -924,15 +945,40 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {townHalls.map((meeting) => (
+              {townHalls.map((meeting) => {
+                const cmsEv = events.find((e) => e.id === meeting.id);
+                return (
                 <div
                   key={meeting.id}
                   className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all space-y-4"
                 >
                   <div>
-                    <div className="flex items-center gap-2 text-xs text-emerald-800 font-semibold mb-2">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{meeting.date}</span>
+                    {cmsEv?.banner_url && (
+                      <div className="h-32 -mx-5 -mt-5 mb-3 overflow-hidden rounded-t-xl bg-slate-900">
+                        <img
+                          src={cmsEv.banner_url}
+                          alt={meeting.title}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-2 text-xs text-emerald-800 font-semibold mb-2">
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>{meeting.date}</span>
+                      </span>
+                      {cmsEv && (
+                        <span
+                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
+                            cmsEv.event_status === 'completed'
+                              ? 'bg-slate-200 text-slate-700'
+                              : 'bg-emerald-100 text-emerald-800'
+                          }`}
+                        >
+                          {cmsEv.event_status}
+                        </span>
+                      )}
                     </div>
 
                     <h4 className="text-base font-bold text-slate-900 mb-2 leading-snug">
@@ -981,7 +1027,8 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1135,12 +1182,12 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 </p>
               </div>
               <span className="text-xs text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                10 Active Municipal Directorates
+                {departments.length} Active Municipal Directorates
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {MUNICIPAL_DEPARTMENTS.map((dept) => (
+              {departments.map((dept) => (
                 <div
                   key={dept.id}
                   onClick={() => onSelectDepartment?.(dept)}

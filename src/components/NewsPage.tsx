@@ -11,8 +11,8 @@ import {
   Globe,
   Landmark
 } from 'lucide-react';
-import { MUNICIPAL_NEWS } from '../data/mockData';
 import { MunicipalNewsItem } from '../types';
+import { useCms } from '../context/CmsContext';
 import { Pagination } from './Pagination';
 
 interface NewsPageProps {
@@ -26,6 +26,7 @@ export const NewsPage: React.FC<NewsPageProps> = ({
   selectedArticleId = null,
   onSelectArticleId,
 }) => {
+  const { news } = useCms();
   const [scopeFilter, setScopeFilter] = useState<'all' | 'local' | 'other'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,10 +54,10 @@ export const NewsPage: React.FC<NewsPageProps> = ({
   };
 
   const selectedArticle: MunicipalNewsItem | undefined = activeArticleId
-    ? MUNICIPAL_NEWS.find((item) => item.id === activeArticleId)
+    ? news.find((item) => item.id === activeArticleId)
     : undefined;
 
-  const filteredNews = MUNICIPAL_NEWS.filter((item) => {
+  const filteredNews = news.filter((item) => {
     const matchesScope = scopeFilter === 'all' || item.newsScope === scopeFilter;
     const matchesCat =
       categoryFilter === 'all' || item.category.toLowerCase() === categoryFilter.toLowerCase();
@@ -76,12 +77,12 @@ export const NewsPage: React.FC<NewsPageProps> = ({
     currentPage * ITEMS_PER_PAGE
   );
 
-  const localCount = MUNICIPAL_NEWS.filter((n) => n.newsScope === 'local').length;
-  const otherCount = MUNICIPAL_NEWS.filter((n) => n.newsScope === 'other').length;
+  const localCount = news.filter((n) => n.newsScope === 'local').length;
+  const otherCount = news.filter((n) => n.newsScope === 'other').length;
 
   // Full Editorial Article Detail View when user clicks "Read More"
   if (selectedArticle) {
-    const relatedStories = MUNICIPAL_NEWS.filter(
+    const relatedStories = news.filter(
       (n) => n.id !== selectedArticle.id && n.newsScope === selectedArticle.newsScope
     ).slice(0, 3);
 
@@ -324,7 +325,7 @@ export const NewsPage: React.FC<NewsPageProps> = ({
               }`}
             >
               <Newspaper className="w-3.5 h-3.5" />
-              <span>All News ({MUNICIPAL_NEWS.length})</span>
+              <span>All News ({news.length})</span>
             </button>
             <button
               onClick={() => setScopeFilter('local')}
@@ -353,12 +354,8 @@ export const NewsPage: React.FC<NewsPageProps> = ({
           {/* Topic Filter Tabs */}
           <div className="flex items-center gap-1 p-1 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-xl overflow-x-auto max-w-full">
             {[
-              { id: 'all', label: 'All Topics' },
+              { id: 'all', label: 'All News' },
               { id: 'notice', label: 'Notices' },
-              { id: 'infrastructure', label: 'Infrastructure' },
-              { id: 'assembly', label: 'Assembly' },
-              { id: 'welfare', label: 'Welfare' },
-              { id: 'health', label: 'Health' },
             ].map((cat) => (
               <button
                 key={cat.id}
