@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, Eye, Search, CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { GazettedDocument } from '../types';
-import { GAZETTED_DOCUMENTS } from '../data/mockData';
+import { useCms } from '../context/CmsContext';
 import { Pagination } from './Pagination';
 import { downloadOfficialPdf, getDocumentFilename } from '../utils/pdfGenerator';
 
@@ -16,6 +16,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   isStandalonePage = false,
   onNavigateHome,
 }) => {
+  const { documents } = useCms();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [previewDoc, setPreviewDoc] = useState<GazettedDocument | null>(null);
@@ -23,22 +24,36 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 6;
 
-  const categories = [
+  const baseCategories = [
     { id: 'all', label: 'All Documents' },
     { id: 'Fee-Fixing', label: 'Fee-Fixing Resolution' },
     { id: 'Bye-Laws', label: 'Municipal Bye-Laws' },
     { id: 'Budget', label: 'Composite Budget & IGF' },
     { id: 'Tenders', label: 'Procurement & Tenders' },
-    { id: 'Reports', label: 'Development Reports & Minutes' },
+    { id: 'Reports', label: 'Reports & Minutes' },
+    { id: 'Policies', label: 'Policies' },
+    { id: 'Procurement', label: 'Procurement' },
+    { id: 'Public Notices', label: 'Public Notices' },
+    { id: 'Forms', label: 'Forms' },
+    { id: 'Strategic Plans', label: 'Strategic Plans' },
     { id: 'Guides', label: 'Citizen Guides & Checklists' },
+    { id: 'Other', label: 'Other Documents' },
   ];
+
+  const availableCategoryIds = new Set(documents.map((d) => d.category));
+  const categories = baseCategories.filter(
+    (c) =>
+      c.id === 'all' ||
+      availableCategoryIds.has(c.id) ||
+      ['Fee-Fixing', 'Bye-Laws', 'Budget', 'Tenders', 'Reports', 'Guides'].includes(c.id)
+  );
 
   // Reset to page 1 on filter/search change
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory, searchQuery]);
 
-  const filteredDocs = GAZETTED_DOCUMENTS.filter((doc) => {
+  const filteredDocs = documents.filter((doc) => {
     const matchesCategory = selectedCategory === 'all' || doc.category === selectedCategory;
     const matchesSearch =
       doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -54,8 +69,20 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   );
 
   const handleDownload = (doc: GazettedDocument) => {
-    const fileName = downloadOfficialPdf(doc);
-    setDownloadSuccessDoc(`${doc.title} (${fileName})`);
+    if (doc.fileUrl) {
+      const link = document.createElement('a');
+      link.href = doc.fileUrl;
+      link.download = doc.fileName || getDocumentFilename(doc);
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setDownloadSuccessDoc(`${doc.title} (${doc.fileName || getDocumentFilename(doc)})`);
+    } else {
+      const fileName = downloadOfficialPdf(doc);
+      setDownloadSuccessDoc(`${doc.title} (${fileName})`);
+    }
     if (onDocumentDownloaded) {
       onDocumentDownloaded(doc.title);
     }

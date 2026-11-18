@@ -2,35 +2,28 @@ import React, { useState } from 'react';
 import {
   CreditCard,
   FileText,
-  AlertTriangle,
   Users,
   ArrowRight,
   Search,
   ShieldCheck,
   Building2,
-  Cpu,
-  UserCheck,
-  Wrench,
-  HeartHandshake,
   MapPin,
   Clock,
-  Phone,
   Maximize2,
   Sparkles,
-  TrendingUp,
   Landmark,
   HardHat,
-  Download,
   CheckCircle2,
   ChevronRight,
   Bell,
   Newspaper,
-  Calendar,
+  Megaphone,
   Eye,
-  X
+  X,
 } from 'lucide-react';
-import { MUNICIPAL_DEPARTMENTS, MUNICIPAL_PROJECTS, MUNICIPAL_NEWS } from '../data/mockData';
+import { MUNICIPAL_PROJECTS } from '../data/mockData';
 import { MunicipalDepartment, MunicipalNewsItem } from '../types';
+import { useCms } from '../context/CmsContext';
 import { Pagination } from './Pagination';
 
 interface HeroProps {
@@ -52,6 +45,7 @@ export const Hero: React.FC<HeroProps> = ({
   onOpenProjectDossier,
   onOpenNewsArticle,
 }) => {
+  const { settings, news, departments, announcements } = useCms();
   const [quickSearchInput, setQuickSearchInput] = useState('');
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [activeNewsScope, setActiveNewsScope] = useState<'all' | 'local' | 'other'>('all');
@@ -62,7 +56,8 @@ export const Hero: React.FC<HeroProps> = ({
   const [currentNewsPage, setCurrentNewsPage] = useState(1);
   const NEWS_PER_PAGE = 3;
 
-  const assemblyImagePath = '/images/ablekuma_assembly_welcome_1794372179601.jpg';
+  const assemblyImagePath =
+    settings.hero_image_url || '/images/ablekuma_assembly_welcome_1794372179601.jpg';
   const mcePortraitPath = '/images/acma_mce_portrait_1794438674697.jpg';
   const featuredProject = MUNICIPAL_PROJECTS[0]; // Abossey Okai Stormwater Channel
 
@@ -85,7 +80,13 @@ export const Hero: React.FC<HeroProps> = ({
     setCurrentNewsPage(1);
   };
 
-  const filteredNews = MUNICIPAL_NEWS.filter((n) => {
+  const sortedNews = [...news].sort((a, b) => {
+    const aFeat = a.isFeaturedHomepage ? 1 : 0;
+    const bFeat = b.isFeaturedHomepage ? 1 : 0;
+    return bFeat - aFeat;
+  });
+
+  const filteredNews = sortedNews.filter((n) => {
     const matchScope = activeNewsScope === 'all' || n.newsScope === activeNewsScope;
     const matchCategory =
       activeNewsCategory === 'all' || n.category.toLowerCase() === activeNewsCategory.toLowerCase();
@@ -105,6 +106,12 @@ export const Hero: React.FC<HeroProps> = ({
       elem.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const heroHeadingWords = (settings.hero_heading || 'Ablekuma Central Municipal Assembly').trim();
+  const splitIdx = heroHeadingWords.lastIndexOf('Municipal Assembly');
+  const headlineMain =
+    splitIdx > 0 ? heroHeadingWords.slice(0, splitIdx).trim() : heroHeadingWords;
+  const headlineAccent = splitIdx > 0 ? heroHeadingWords.slice(splitIdx).trim() : '';
 
   return (
     <div className="bg-slate-900 text-white" id="home">
@@ -153,23 +160,45 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="lg:col-span-8 space-y-6">
               <div>
                 <span className="text-amber-400 font-bold uppercase tracking-wider text-xs sm:text-sm block mb-2 drop-shadow">
-                  Akwaaba · Official Digital Portal
+                  {settings.hero_subheading}
                 </span>
                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.1] drop-shadow-md">
-                  Ablekuma Central <br />
-                  <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-200 bg-clip-text text-transparent">
-                    Municipal Assembly
-                  </span>
+                  {headlineMain}{' '}
+                  {headlineAccent && (
+                    <>
+                      <br />
+                      <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-200 bg-clip-text text-transparent">
+                        {headlineAccent}
+                      </span>
+                    </>
+                  )}
                 </h1>
               </div>
 
               <p className="text-base sm:text-lg text-slate-200 leading-relaxed max-w-2xl drop-shadow">
-                Welcoming residents, corporate institutions, and commercial traders across{' '}
-                <strong className="text-white font-semibold">
-                  Abossey Okai, Lartebiokorshie, Mataheko, Sukura, Town Council Line, Gbortsui, and Mabrouk
-                </strong>
-                . Pay property rates, renew Business Operating Permits, review capital projects, and engage your local government.
+                {settings.welcome_message}
               </p>
+
+              {/* Dynamic Homepage CTA Buttons */}
+              {settings.homepage_cta && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(settings.homepage_cta.primaryTarget || 'service')}
+                    className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold rounded-xl shadow-lg transition-colors inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>{settings.homepage_cta.primaryLabel || 'Open Services Page'}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(settings.homepage_cta.secondaryTarget || 'news')}
+                    className="px-5 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/25 text-xs sm:text-sm font-semibold rounded-xl transition-colors inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>{settings.homepage_cta.secondaryLabel || 'Explore All News'}</span>
+                  </button>
+                </div>
+              )}
 
               {/* Instant Search / Tracking Input Box */}
               <form
@@ -263,11 +292,11 @@ export const Hero: React.FC<HeroProps> = ({
                 <div className="p-3 bg-white/5 border border-white/10 rounded-2xl text-xs space-y-1.5 text-slate-300">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span>Lartebiokorshie, Greater Accra</span>
+                    <span>{settings.office_location}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span>Mon - Fri: 8:00 AM – 5:00 PM</span>
+                    <span>{settings.working_hours}</span>
                   </div>
                 </div>
 
@@ -377,25 +406,131 @@ export const Hero: React.FC<HeroProps> = ({
         {/* 4-Column KPI Trust Strip */}
         <div className="relative z-10 border-t border-slate-800 bg-slate-950/90 py-5 mt-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-            <div>
-              <div className="text-2xl lg:text-3xl font-bold font-mono tabular-nums text-white">7</div>
-              <div className="text-xs text-slate-400 mt-1">Electoral Areas in ABCMA</div>
-            </div>
-            <div>
-              <div className="text-2xl lg:text-3xl font-bold font-mono tabular-nums text-emerald-400">10</div>
-              <div className="text-xs text-slate-400 mt-1">Active Municipal Departments</div>
-            </div>
-            <div>
-              <div className="text-2xl lg:text-3xl font-bold font-mono tabular-nums text-amber-400">4,280+</div>
-              <div className="text-xs text-slate-400 mt-1">Registered Commercial Businesses</div>
-            </div>
-            <div>
-              <div className="text-2xl lg:text-3xl font-bold font-mono tabular-nums text-white">24/7</div>
-              <div className="text-xs text-slate-400 mt-1">Instant MoMo & Card Gateway</div>
-            </div>
+            {settings.homepage_stats.slice(0, 4).map((stat, idx) => (
+              <div key={`${stat.label}-${idx}`}>
+                <div
+                  className={`text-2xl lg:text-3xl font-bold font-mono tabular-nums ${
+                    idx === 1 ? 'text-emerald-400' : idx === 2 ? 'text-amber-400' : 'text-white'
+                  }`}
+                >
+                  {stat.value}
+                </div>
+                <div className="text-xs text-slate-400 mt-1">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* =========================================================================
+          CMS ANNOUNCEMENTS, BANNERS & HIGHLIGHTS (WHEN PUBLISHED IN ADMIN CMS)
+          ========================================================================= */}
+      {(announcements.length > 0 ||
+        settings.homepage_banners.length > 0 ||
+        settings.homepage_highlights.length > 0) && (
+        <section className="py-10 bg-slate-900 border-b border-slate-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
+            {announcements.length > 0 && (
+              <div className="bg-slate-950 border border-amber-500/40 rounded-2xl p-5 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400">
+                    <Megaphone className="w-4 h-4" />
+                    <span>Public Notices & Announcements</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    {announcements.length} active
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {announcements.slice(0, 3).map((ann) => (
+                    <div
+                      key={ann.id}
+                      className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between"
+                    >
+                      <div className="space-y-1">
+                        <div className="text-[11px] font-semibold text-emerald-400">
+                          {ann.category}
+                        </div>
+                        <h3 className="text-sm font-bold text-white leading-snug">{ann.title}</h3>
+                        <p className="text-xs text-slate-300 line-clamp-2">{ann.description}</p>
+                      </div>
+                      {ann.attachment_url && (
+                        <a
+                          href={ann.attachment_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download={ann.attachment_name || 'announcement'}
+                          className="text-xs font-semibold text-amber-300 hover:text-amber-200 inline-flex items-center gap-1 pt-1"
+                        >
+                          <span>Download Attachment</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {settings.homepage_banners.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {settings.homepage_banners.map((banner) => (
+                  <div
+                    key={banner.id}
+                    className="relative rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 min-h-[180px] flex items-end p-6"
+                  >
+                    {banner.imageUrl && (
+                      <img
+                        src={banner.imageUrl}
+                        alt={banner.title}
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 w-full h-full object-cover opacity-35"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/75 to-transparent" />
+                    <div className="relative z-10 space-y-2 max-w-lg">
+                      <h3 className="text-lg font-bold text-white">{banner.title}</h3>
+                      {banner.subtitle && (
+                        <p className="text-xs text-slate-300 leading-relaxed">{banner.subtitle}</p>
+                      )}
+                      {banner.ctaLabel && (
+                        <button
+                          type="button"
+                          onClick={() => onNavigate(banner.ctaTarget || 'news')}
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg inline-flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span>{banner.ctaLabel}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {settings.homepage_highlights.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {settings.homepage_highlights.map((hl) => (
+                  <div
+                    key={hl.id}
+                    onClick={() => onNavigate(hl.targetPage || 'assembly')}
+                    className="p-5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 transition-all cursor-pointer space-y-2"
+                  >
+                    {hl.badge && (
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                        {hl.badge}
+                      </span>
+                    )}
+                    <h3 className="text-sm font-bold text-white">{hl.title}</h3>
+                    <p className="text-xs text-slate-300 leading-relaxed">{hl.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* =========================================================================
           2. EXECUTIVE LEADERSHIP SPOTLIGHT FEATURING THE MCE PICTURE
@@ -673,7 +808,7 @@ export const Hero: React.FC<HeroProps> = ({
 
           {/* Department Cards Grid (Central Admin, HR, MIS, Works, Social Welfare) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {MUNICIPAL_DEPARTMENTS.slice(0, 5).map((dept) => (
+            {departments.slice(0, 5).map((dept) => (
               <div
                 key={dept.id}
                 onClick={() => onSelectDepartment(dept)}

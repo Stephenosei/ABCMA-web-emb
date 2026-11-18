@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ServicesSection } from './components/ServicesSection';
@@ -17,6 +17,8 @@ import { DepartmentsPage } from './components/DepartmentsPage';
 import { LeadershipAddressPage } from './components/LeadershipAddressPage';
 import { ProjectDossierPage } from './components/ProjectDossierPage';
 import { NewsPage } from './components/NewsPage';
+import { GalleryPage } from './components/GalleryPage';
+import { DynamicCmsPage } from './components/DynamicCmsPage';
 
 import { ServiceApplicationModal } from './components/ServiceApplicationModal';
 import { CitizenReportModal } from './components/CitizenReportModal';
@@ -26,12 +28,16 @@ import { TownHallMemoModal } from './components/TownHallMemoModal';
 import { TrackModal } from './components/TrackModal';
 import { DepartmentDetailModal } from './components/DepartmentDetailModal';
 
+import { AdminLoginPage } from './components/admin/AdminLoginPage';
+import { AdminDashboardApp } from './components/admin/AdminDashboardApp';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { CmsProvider, useCms } from './context/CmsContext';
+
 import {
   INITIAL_SERVICES,
   INITIAL_BILLS,
   INITIAL_ISSUES,
   ASSEMBLY_MEMBERS,
-  TOWN_HALLS,
   MUNICIPAL_PROJECTS,
 } from './data/mockData';
 import {
@@ -44,54 +50,104 @@ import {
 } from './types';
 import { CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react';
 
-export default function App() {
+function AppRouterAndPortal() {
+  const { isAuthenticatedAdmin, loading: authLoading } = useAuth();
+  const { townHallsFromEvents, refreshPublicContent } = useCms();
+
+  const [pathname, setPathname] = useState<string>(() => window.location.pathname || '/');
   const [activeSection, setActiveSection] = useState('home');
+  const [activeCmsSlug, setActiveCmsSlug] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('proj-1');
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null);
 
-  // Application Data States (persistent in memory during session)
+  // Interactive citizen portal states
   const [bills, setBills] = useState<BillRecord[]>(INITIAL_BILLS);
   const [issues, setIssues] = useState<CitizenIssue[]>(INITIAL_ISSUES);
   const [services] = useState<MunicipalService[]>(INITIAL_SERVICES);
   const [projects] = useState(MUNICIPAL_PROJECTS);
-  const [townHalls] = useState(TOWN_HALLS);
   const [assemblyMembers] = useState(ASSEMBLY_MEMBERS);
 
   // Modals
   const [selectedService, setSelectedService] = useState<MunicipalService | null>(null);
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
-
   const [reportModalOpen, setReportModalOpen] = useState(false);
-
   const [selectedBillForPayment, setSelectedBillForPayment] = useState<BillRecord | null>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-
   const [activeTransaction, setActiveTransaction] = useState<PaymentTransaction | null>(null);
   const [receiptBill, setReceiptBill] = useState<BillRecord | null>(null);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
-
   const [selectedMeetingForMemo, setSelectedMeetingForMemo] = useState<TownHallMeeting | null>(null);
   const [memoModalOpen, setMemoModalOpen] = useState(false);
-
   const [trackModalOpen, setTrackModalOpen] = useState(false);
   const [initialTrackCode, setInitialTrackCode] = useState<string | undefined>(undefined);
-
   const [selectedDepartment, setSelectedDepartment] = useState<MunicipalDepartment | null>(null);
   const [departmentModalOpen, setDepartmentModalOpen] = useState(false);
-
-  const handleOpenDepartmentDetail = (dept: MunicipalDepartment) => {
-    setSelectedDepartment(dept);
-    setDepartmentModalOpen(true);
-  };
-
-  // Toast alert state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const navigatePath = useCallback((nextPath: string, replace = false) => {
+    if (replace) {
+      window.history.replaceState({}, '', nextPath);
+    } else {
+      window.history.pushState({}, '', nextPath);
+    }
+    setPathname(window.location.pathname || '/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Redirect already-authenticated admins away from /admin/login
+  useEffect(() => {
+    if (pathname === '/admin/login' && !authLoading && isAuthenticatedAdmin) {
+      navigatePath('/admin', true);
+    }
+  }, [pathname, authLoading, isAuthenticatedAdmin, navigatePath]);
+
+  // Sync URL pathname & hash on browser navigation
+  useEffect(() => {
+    const syncRoute = () => {
+      const currentPath = window.location.pathname || '/';
+      setPathname(currentPath);
+
+      if (currentPath.startsWith('/page/')) {
+        const slug = currentPath.slice('/page/'.length).replace(/\/+$/, '');
+        setActiveCmsSlug(slug);
+        setActiveSection('cms-page');
+        return;
+      }
+
+      setActiveCmsSlug(null);
+      const hash = window.location.hash.replace('#', '').trim();
+      if (hash) {
+        if (hash.startsWith('project-dossier-')) {
+          const id = hash.replace('project-dossier-', '');
+          setSelectedProjectId(id);
+          setActiveSection('project-dossier');
+        } else {
+          setActiveSection(hash);
+        }
+      } else {
+        setActiveSection('home');
+      }
+    };
+
+    syncRoute();
+    window.addEventListener('popstate', syncRoute);
+    window.addEventListener('hashchange', syncRoute);
+    return () => {
+      window.removeEventListener('popstate', syncRoute);
+      window.removeEventListener('hashchange', syncRoute);
+    };
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage(null);
     }, 4000);
+  };
+
+  const handleOpenDepartmentDetail = (dept: MunicipalDepartment) => {
+    setSelectedDepartment(dept);
+    setDepartmentModalOpen(true);
   };
 
   const handleOpenServiceModal = (serviceId?: string) => {
@@ -104,7 +160,7 @@ export default function App() {
     setServiceModalOpen(true);
   };
 
-  const handleServiceSubmitted = (code: string, serviceTitle: string) => {
+  const handleServiceSubmitted = (code: string) => {
     showToast(`Application successfully registered! Tracking code: ${code}`);
   };
 
@@ -119,7 +175,6 @@ export default function App() {
   };
 
   const handlePaymentSuccess = (transaction: PaymentTransaction, updatedBill: BillRecord) => {
-    // Update bill in state
     setBills((prev) =>
       prev.map((b) => (b.id === updatedBill.id ? updatedBill : b))
     );
@@ -154,27 +209,6 @@ export default function App() {
     setMemoModalOpen(true);
   };
 
-  useEffect(() => {
-    const syncHash = () => {
-      const hash = window.location.hash.replace('#', '').trim();
-      if (hash) {
-        if (hash.startsWith('project-dossier-')) {
-          const id = hash.replace('project-dossier-', '');
-          setSelectedProjectId(id);
-          setActiveSection('project-dossier');
-        } else {
-          setActiveSection(hash);
-        }
-      } else {
-        setActiveSection('home');
-      }
-    };
-
-    syncHash();
-    window.addEventListener('hashchange', syncHash);
-    return () => window.removeEventListener('hashchange', syncHash);
-  }, []);
-
   const handleOpenTrackModal = (code?: string) => {
     setInitialTrackCode(code);
     setTrackModalOpen(true);
@@ -184,30 +218,80 @@ export default function App() {
     if (pageId === 'news') {
       setSelectedNewsId(null);
     }
+    setActiveCmsSlug(null);
+    if (window.location.pathname !== '/') {
+      window.history.pushState({}, '', `/#${pageId}`);
+      setPathname('/');
+    } else {
+      window.location.hash = `#${pageId}`;
+    }
     setActiveSection(pageId);
-    window.location.hash = `#${pageId}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenCmsPage = (slug: string) => {
+    const cleanSlug = slug.replace(/^\/+/, '');
+    setActiveCmsSlug(cleanSlug);
+    setActiveSection('cms-page');
+    window.history.pushState({}, '', `/page/${cleanSlug}`);
+    setPathname(`/page/${cleanSlug}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleOpenNewsArticle = (newsId: string) => {
     setSelectedNewsId(newsId);
+    if (window.location.pathname !== '/') {
+      window.history.pushState({}, '', '/#news');
+      setPathname('/');
+    } else {
+      window.location.hash = '#news';
+    }
     setActiveSection('news');
-    window.location.hash = '#news';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleOpenProjectDossier = (projectId: string) => {
     setSelectedProjectId(projectId);
+    if (window.location.pathname !== '/') {
+      window.history.pushState({}, '', `/#project-dossier-${projectId}`);
+      setPathname('/');
+    } else {
+      window.location.hash = `#project-dossier-${projectId}`;
+    }
     setActiveSection('project-dossier');
-    window.location.hash = `#project-dossier-${projectId}`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Dedicated Admin Login Route (/admin/login)
+  if (pathname === '/admin/login') {
+    return (
+      <AdminLoginPage
+        onNavigatePublic={() => {
+          refreshPublicContent();
+          navigatePath('/');
+        }}
+        onLoginSuccess={() => navigatePath('/admin', true)}
+      />
+    );
+  }
+
+  // Protected Admin CMS Dashboard Routes (/admin and /admin/*)
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    return (
+      <AdminDashboardApp
+        onNavigatePublic={() => {
+          refreshPublicContent();
+          navigatePath('/');
+        }}
+        onRedirectLogin={() => navigatePath('/admin/login', true)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col relative text-slate-900 selection:bg-emerald-200 selection:text-emerald-950 bg-slate-100">
       {/* Lively Multi-Layer Civic Assembly Backdrop featuring Authentic Assembly Pictures */}
       <div className="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
-        {/* Assembly Chamber In-Session Background Picture */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.22] scale-105 transition-all duration-700"
           style={{
@@ -215,7 +299,6 @@ export default function App() {
             backgroundAttachment: 'fixed',
           }}
         />
-        {/* Civic Plaza & Community Atmosphere Secondary Wash */}
         <div
           className="absolute inset-0 bg-cover bg-bottom bg-no-repeat opacity-[0.14] mix-blend-overlay"
           style={{
@@ -223,30 +306,35 @@ export default function App() {
             backgroundAttachment: 'fixed',
           }}
         />
-        {/* Lively Ambient Civic Tint with Warm Emerald, Sunlight Amber, and Crisp Soft Tone */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/70 via-slate-50/75 to-amber-50/70 backdrop-blur-[0.5px]" />
-        {/* Subtle Decorative Civic Guilloche / Dot Grid */}
         <div className="absolute inset-0 bg-[radial-gradient(#059669_1px,transparent_1px)] [background-size:28px_28px] opacity-15" />
       </div>
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs sm:text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2.5 animate-bounce">
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs sm:text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2.5">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Top Navigation Bar with active tab highlighting */}
+      {/* Top Navigation Bar */}
       <Header
         onOpenTrackModal={handleOpenTrackModal}
         activeSection={activeSection}
         setActiveSection={handleNavigate}
+        onOpenCmsPage={handleOpenCmsPage}
+        activeCmsSlug={activeCmsSlug}
+        onOpenAdmin={() => navigatePath(isAuthenticatedAdmin ? '/admin' : '/admin/login')}
+        isAuthenticatedAdmin={isAuthenticatedAdmin}
       />
 
-      {/* Multi-Page Container: Only the currently active open page is rendered */}
+      {/* Multi-Page Container */}
       <main className="flex-1">
-        {/* 1. Home Page */}
+        {activeSection === 'cms-page' && activeCmsSlug && (
+          <DynamicCmsPage slug={activeCmsSlug} onNavigate={handleNavigate} />
+        )}
+
         {activeSection === 'home' && (
           <Hero
             onNavigate={handleNavigate}
@@ -259,7 +347,6 @@ export default function App() {
           />
         )}
 
-        {/* 1b. News Open Page (Local & Other News) */}
         {activeSection === 'news' && (
           <NewsPage
             onNavigate={handleNavigate}
@@ -268,7 +355,6 @@ export default function App() {
           />
         )}
 
-        {/* 2. Departments Open Page */}
         {activeSection === 'departments' && (
           <DepartmentsPage
             onNavigate={handleNavigate}
@@ -278,11 +364,9 @@ export default function App() {
           />
         )}
 
-        {/* 3. Service Open Page: Public Services & Rates */}
         {activeSection === 'service' && (
           <div className="bg-transparent min-h-screen py-8 lg:py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
-              {/* Breadcrumb Navigation */}
               <div className="mb-6 space-y-4">
                 <nav className="flex items-center gap-2 text-xs font-medium text-slate-500">
                   <button
@@ -319,7 +403,6 @@ export default function App() {
                 />
               </div>
 
-              {/* Cross-Page Connect Link */}
               <div className="mt-12 p-6 sm:p-8 bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-3xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-slate-900">
@@ -341,7 +424,6 @@ export default function App() {
           </div>
         )}
 
-        {/* 4. Projects Open Page */}
         {activeSection === 'projects' && (
           <ProjectsTracker
             projects={projects}
@@ -351,7 +433,6 @@ export default function App() {
           />
         )}
 
-        {/* 5. Documents Open Page */}
         {activeSection === 'documents' && (
           <DocumentsSection
             isStandalonePage={true}
@@ -360,11 +441,12 @@ export default function App() {
           />
         )}
 
-        {/* 6. The Assembly Open Page */}
+        {activeSection === 'gallery' && <GalleryPage onNavigate={handleNavigate} />}
+
         {activeSection === 'assembly' && (
           <TheAssemblySection
             assemblyMembers={assemblyMembers}
-            townHalls={townHalls}
+            townHalls={townHallsFromEvents}
             issues={issues}
             isStandalonePage={true}
             onNavigateHome={() => handleNavigate('home')}
@@ -376,16 +458,14 @@ export default function App() {
           />
         )}
 
-        {/* 7. Leadership Address Open Page */}
         {activeSection === 'leadership-address' && (
           <LeadershipAddressPage
             onNavigate={handleNavigate}
             onOpenReportModal={() => setReportModalOpen(true)}
-            onOpenMemoModal={() => handleOpenMemoModal(townHalls[0])}
+            onOpenMemoModal={() => handleOpenMemoModal(townHallsFromEvents[0])}
           />
         )}
 
-        {/* 8. Project Dossier Open Page */}
         {activeSection === 'project-dossier' && (
           <ProjectDossierPage
             projectId={selectedProjectId}
@@ -395,12 +475,13 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
       <Footer
         onNavigate={handleNavigate}
         onOpenTrackModal={() => handleOpenTrackModal()}
         onOpenReportModal={() => setReportModalOpen(true)}
         onOpenServiceModal={handleOpenServiceModal}
+        onOpenAdmin={() => navigatePath(isAuthenticatedAdmin ? '/admin' : '/admin/login')}
+        isAuthenticatedAdmin={isAuthenticatedAdmin}
       />
 
       {/* Interactive Modals */}
@@ -458,3 +539,14 @@ export default function App() {
     </div>
   );
 }
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <CmsProvider>
+        <AppRouterAndPortal />
+      </CmsProvider>
+    </AuthProvider>
+  );
+}
+

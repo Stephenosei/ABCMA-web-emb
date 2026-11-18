@@ -2,23 +2,14 @@ import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   Building2,
-  Cpu,
-  UserCheck,
-  Wrench,
-  HeartHandshake,
   Search,
   Phone,
-  Mail,
-  MapPin,
-  Clock,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2,
-  FileText,
-  Filter
+  Users,
 } from 'lucide-react';
 import { MunicipalDepartment } from '../types';
-import { MUNICIPAL_DEPARTMENTS } from '../data/mockData';
+import { useCms } from '../context/CmsContext';
 import { Pagination } from './Pagination';
 
 interface DepartmentsPageProps {
@@ -34,6 +25,7 @@ export const DepartmentsPage: React.FC<DepartmentsPageProps> = ({
   onOpenServiceModal,
   onOpenReportModal,
 }) => {
+  const { departments, staffProfiles } = useCms();
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'admin' | 'technical' | 'social' | 'finance'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,8 +36,11 @@ export const DepartmentsPage: React.FC<DepartmentsPageProps> = ({
     setCurrentPage(1);
   }, [categoryFilter, searchQuery]);
 
-  const filteredDepts = MUNICIPAL_DEPARTMENTS.filter((dept) => {
-    const matchesCat = categoryFilter === 'all' || dept.category === categoryFilter;
+  const filteredDepts = departments.filter((dept) => {
+    const matchesCat =
+      categoryFilter === 'all' ||
+      dept.category === categoryFilter ||
+      (categoryFilter === 'technical' && dept.category === 'planning');
     const q = searchQuery.toLowerCase().trim();
     const matchesQuery =
       !q ||
@@ -132,7 +127,7 @@ export const DepartmentsPage: React.FC<DepartmentsPageProps> = ({
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            All Directorates ({MUNICIPAL_DEPARTMENTS.length})
+            All Directorates ({departments.length})
           </button>
           <button
             onClick={() => setCategoryFilter('admin')}
@@ -301,6 +296,74 @@ export const DepartmentsPage: React.FC<DepartmentsPageProps> = ({
               onPageChange={handlePageChange}
               itemName="directorates"
             />
+          </div>
+        )}
+
+        {/* Published Management & Staff Profiles (CMS) */}
+        {staffProfiles.length > 0 && (
+          <div className="mt-12 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+              <div>
+                <div className="text-xs font-semibold text-emerald-800 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-emerald-700" />
+                  <span>Leadership & Key Officers</span>
+                </div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Management & Senior Municipal Staff
+                </h2>
+              </div>
+              <span className="text-xs font-semibold text-slate-500">
+                {staffProfiles.length} Published Profiles
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {staffProfiles.map((staff) => (
+                <div
+                  key={staff.id}
+                  className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-3"
+                >
+                  <div className="flex items-start gap-3.5">
+                    {staff.photo_url ? (
+                      <img
+                        src={staff.photo_url}
+                        alt={staff.full_name}
+                        referrerPolicy="no-referrer"
+                        className="w-14 h-14 rounded-xl object-cover border border-emerald-600/40 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm shrink-0">
+                        {staff.full_name.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold text-slate-900 truncate">
+                        {staff.full_name}
+                      </h3>
+                      <div className="text-xs font-semibold text-emerald-800">
+                        {staff.position_title}
+                      </div>
+                      {staff.department_name && (
+                        <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                          {staff.department_name}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {staff.biography && (
+                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
+                      {staff.biography}
+                    </p>
+                  )}
+                  {(staff.phone || staff.email) && (
+                    <div className="pt-2.5 border-t border-slate-200/80 text-[11px] text-slate-600 space-y-0.5 font-mono">
+                      {staff.phone && <div>Tel: {staff.phone}</div>}
+                      {staff.email && <div className="font-sans truncate">{staff.email}</div>}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
