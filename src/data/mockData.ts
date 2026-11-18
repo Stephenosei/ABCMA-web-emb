@@ -1188,25 +1188,26 @@ export const MUNICIPAL_NEWS: MunicipalNewsItem[] = [
   },
   {
     id: 'news-3',
-    title: 'Social Welfare Department Disburses 3% DACF Disability Fund & Distributes Youth Artisan Toolkits',
+    title: 'Social Welfare Department Disburses DACF Disability Fund & Distributes Youth Artisan Toolkits',
     newsScope: 'local',
     category: 'Welfare',
-    date: '4 March 2026',
+    date: '29 oct 2026',
     author: 'Social Welfare & Community Development',
-    location: 'ABCMA Civic Plaza Forecourt, Lartebiokorshie',
-    imageUrl: '/images/acma_civic_plaza_bg_1794482218453.jpg',
+    location: 'ABCMA, Lartebiokorshie',
+    imageUrl: '/images/leap.jpg',
     readTime: '3 min read',
     badgeColor: 'bg-rose-950 text-rose-400 border-rose-700/50',
-    excerpt: 'Over 120 beneficiaries received customized trade equipment including industrial sewing machines, heavy-duty automotive toolboxes, welding machines, and assistive mobility devices funded by the District Assembly Common Fund.',
+    excerpt: 'The Ablekuma Central Municipal Assembly today held a disbursement programme under the Disability Common Fund at the forecourt of the Assembly to provide support to persons with disabilities within the municipality.',
     content: 'Hon. Municipal Chief Executive emphasized that economic inclusion for Persons with Disabilities (PWDs) remains a non-negotiable pillar of ABCMA civic governance.',
     fullStory: [
-      'Ablekuma Central Municipal Assembly has disbursed the first-quarter tranche of the 3% District Assembly Common Fund (DACF) allocation for Persons with Disabilities alongside customized startup toolkits for 120 youth apprentices.',
-      'Items distributed at the Lartebiokorshie Municipal Forecourt included heavy-duty industrial sewing machines, deep freezers for micro-retailing, automotive diagnostic kits, welding sets, wheelchairs, and educational tuition support cheques.',
-      'Speaking at the ceremony, Hon. Frank Nkansah (MCE) underscored that providing productive capital equipment—rather than one-off cash handouts—empowers beneficiaries to run sustainable household enterprises across all 7 electoral areas.',
-      'Prospective applicants for the Q2 vetting cycle can download the official 3% DACF Eligibility Guidelines PDF in the Documents repository or visit Block C, Room 015.'
+      'The programme was attended by the Member of Parliament for Ablekuma Central, Hon. Abdul-Latif Dan, and the Municipal Chief Executive, Hon. Frank Nkansah, alongside other stakeholders who joined in reaffirming the importance of supporting persons with disabilities and promoting their inclusion in the development process.',
+      'The disbursement is aimed at providing beneficiaries with the necessary support to improve their livelihoods, strengthen their economic independence and enhance their general well-being. It also reflects the commitment of the Assembly to ensuring that persons with disabilities have access to opportunities and the resources needed to participate meaningfully in society.',
+      'Addressing the beneficiaries, the MCE, Hon. Frank Nkansah, admonished them to make good and responsible use of the items and support received. He encouraged them to utilise the assistance for its intended purpose to improve their living conditions, support their daily activities and contribute to their personal and economic development.',
+      'The programme underscores the Assembly’s commitment to inclusive governance, social protection and equal opportunities for all. Through initiatives such as the Disability Common Fund, the Assembly continues to work towards building a municipality where persons with disabilities are empowered, supported and given the opportunity to live with dignity.',
+      'The Ablekuma Central Municipal Assembly remains committed to promoting the welfare of persons with disabilities and ensuring that development is inclusive and leaves no one behind.'
     ],
     targetPage: 'departments',
-    targetLabel: 'Read on Social Welfare Dept'
+    targetLabel: 'visit Social Welfare Dept'
   },
   {
     id: 'news-4',
@@ -1367,7 +1368,7 @@ export const MUNICIPAL_NEWS: MunicipalNewsItem[] = [
     date: '1 March 2026',
     author: 'National NADMO & GMet Joint Desk',
     location: 'Greater Accra Coastal Belt',
-    imageUrl: '/images/abossey_okai_district_1794370608977.jpg',
+    imageUrl: '/images/leap.jpg',
     readTime: '3 min read',
     badgeColor: 'bg-amber-950 text-amber-300 border-amber-700/50',
     excerpt: 'Meteorological forecasts indicate above-average peak rainfall bursts between May and July across low-lying Accra basins. Citizens are advised to inspect household roof gutters and keep drainage easements clear.',
