@@ -40,6 +40,8 @@ import { MediaLibraryManager } from './sections/MediaLibraryManager';
 import { AdminsAndLogsManager } from './sections/AdminsAndLogsManager';
 
 interface AdminDashboardAppProps {
+  activeSection?: AdminSectionId;
+  onSelectSection?: (section: AdminSectionId) => void;
   onNavigatePublic: () => void;
   onRedirectLogin: () => void;
 }
@@ -70,33 +72,58 @@ const SIDEBAR_ITEMS: NavGroupItem[] = [
 ];
 
 export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
+  activeSection: controlledSection,
+  onSelectSection,
   onNavigatePublic,
   onRedirectLogin,
 }) => {
-  const { adminProfile, roleSlug, loading, isAuthenticatedAdmin, signOut } = useAuth();
-  const [activeSection, setActiveSection] = useState<AdminSectionId>('overview');
+  const {
+    session,
+    adminProfile,
+    roleSlug,
+    loading,
+    profileVerifying,
+    authError,
+    isAuthenticatedAdmin,
+    signOut,
+  } = useAuth();
+  const [localSection, setLocalSection] = useState<AdminSectionId>('overview');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const redirectedRef = React.useRef(false);
+
+  const activeSection = controlledSection ?? localSection;
+  const isCheckingAuth = loading || profileVerifying;
 
   useEffect(() => {
-    if (!loading && !isAuthenticatedAdmin) {
+    if (isCheckingAuth) return;
+
+    if (isAuthenticatedAdmin) {
+      redirectedRef.current = false;
+      return;
+    }
+
+    // Only auto-redirect unauthenticated visitors (no session) once.
+    if (!session && !redirectedRef.current) {
+      redirectedRef.current = true;
       onRedirectLogin();
     }
-  }, [loading, isAuthenticatedAdmin, onRedirectLogin]);
+  }, [isCheckingAuth, isAuthenticatedAdmin, session, onRedirectLogin]);
 
-  const notify = (msg: string, type: 'success' | 'error' = 'success') => {
+  const notify = React.useCallback((msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type });
     setTimeout(() => {
       setToast((prev) => (prev?.msg === msg ? null : prev));
     }, 4500);
-  };
+  }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = React.useCallback(async () => {
+    redirectedRef.current = true;
     await signOut();
     onRedirectLogin();
-  };
+  }, [signOut, onRedirectLogin]);
 
-  if (loading) {
+  if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
         <div className="text-xs font-semibold text-slate-600">
@@ -107,11 +134,48 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
   }
 
   if (!isAuthenticatedAdmin) {
+    if (session) {
+      return (
+        <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl shadow-lg p-6 space-y-4">
+            <div className="flex items-start gap-2.5 text-rose-800">
+              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <h2 className="text-sm font-bold text-slate-900">Administrator Access Denied</h2>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {authError ||
+                    'Your session could not be matched to an active administrator profile.'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={onNavigatePublic}
+                className="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+              >
+                Public Website
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg cursor-pointer"
+              >
+                Sign Out &amp; Go to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return null;
   }
 
   const selectSection = (id: AdminSectionId) => {
-    setActiveSection(id);
+    setLocalSection(id);
+    if (onSelectSection) {
+      onSelectSection(id);
+    }
     setMobileSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

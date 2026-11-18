@@ -9,6 +9,8 @@ import {
   KeyRound,
   Eye,
   EyeOff,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -28,7 +30,10 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     isRecoveryMode,
     isConfigured,
     authError,
+    pendingSetupUser,
     loading,
+    profileVerifying,
+    isAuthenticatedAdmin,
   } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'forgot'>('login');
@@ -42,6 +47,23 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
+  const [copiedSql, setCopiedSql] = useState(false);
+
+  const displayError = feedbackError || authError;
+  const bootstrapSql = pendingSetupUser
+    ? `insert into public.admin_profiles (id, email, full_name, role_id, department, is_active)\nvalues (\n  '${pendingSetupUser.id}',\n  '${pendingSetupUser.email}',\n  'System Super Administrator',\n  (select id from public.admin_roles where slug = 'super_admin'),\n  'Management Information Systems (MIS)',\n  true\n)\non conflict (id) do update set\n  role_id = excluded.role_id,\n  is_active = true;`
+    : '';
+
+  const handleCopyBootstrapSql = async () => {
+    if (!bootstrapSql) return;
+    try {
+      await navigator.clipboard.writeText(bootstrapSql);
+      setCopiedSql(true);
+      setTimeout(() => setCopiedSql(false), 2500);
+    } catch {
+      // Clipboard blocked in restricted iframe
+    }
+  };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +140,16 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     }, 900);
   };
 
+  if (!loading && !profileVerifying && isAuthenticatedAdmin && !isRecoveryMode) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+        <div className="text-xs font-semibold text-slate-600">
+          Administrator session verified. Opening ABCMA Admin Dashboard...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-center py-10 px-4 sm:px-6">
       <div className="max-w-md w-full mx-auto space-y-6">
@@ -180,10 +212,48 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
               </div>
             )}
 
-            {(feedbackError || authError) && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{feedbackError || authError}</span>
+            {displayError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-2">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="font-medium">{displayError}</span>
+                </div>
+                {displayError.toLowerCase().includes('invalid login credentials') && (
+                  <p className="pl-6 text-[11px] text-rose-700 leading-relaxed">
+                    Verify that this user exists in{' '}
+                    <strong>Supabase Dashboard &rarr; Authentication &rarr; Users</strong>, that{' '}
+                    <strong>Auto Confirm User</strong> was checked, and that the email/password match.
+                  </p>
+                )}
+                {displayError.toLowerCase().includes('email not confirmed') && (
+                  <p className="pl-6 text-[11px] text-rose-700 leading-relaxed">
+                    Open <strong>Supabase Dashboard &rarr; Authentication &rarr; Users</strong>, select this user, and confirm their email address before signing in.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {pendingSetupUser && (
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold">Complete Super Admin Linking in Supabase</span>
+                  <button
+                    type="button"
+                    onClick={handleCopyBootstrapSql}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-900 text-white text-[11px] font-semibold hover:bg-amber-950 cursor-pointer"
+                  >
+                    {copiedSql ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedSql ? 'Copied SQL' : 'Copy SQL'}</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-amber-900 leading-relaxed">
+                  Run this query in <strong>Supabase Dashboard &rarr; SQL Editor</strong> to authorize{' '}
+                  <code className="font-mono bg-amber-100 px-1 rounded">{pendingSetupUser.email}</code>{' '}
+                  (UID: <code className="font-mono bg-amber-100 px-1 rounded">{pendingSetupUser.id}</code>), then sign in again:
+                </p>
+                <pre className="p-2.5 rounded-lg bg-slate-900 text-emerald-300 text-[10px] font-mono overflow-x-auto leading-relaxed">
+                  {bootstrapSql}
+                </pre>
               </div>
             )}
 
@@ -305,10 +375,14 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 
                 <button
                   type="submit"
-                  disabled={submitting || loading || !isConfigured}
+                  disabled={submitting || loading || profileVerifying || !isConfigured}
                   className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-sm transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {submitting ? 'Verifying Credentials...' : 'Sign In to Admin Dashboard'}
+                  {loading || profileVerifying
+                    ? 'Checking Session...'
+                    : submitting
+                      ? 'Verifying Credentials...'
+                      : 'Sign In to Admin Dashboard'}
                 </button>
               </form>
             ) : (

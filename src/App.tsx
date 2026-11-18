@@ -32,6 +32,7 @@ import { AdminLoginPage } from './components/admin/AdminLoginPage';
 import { AdminDashboardApp } from './components/admin/AdminDashboardApp';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CmsProvider, useCms } from './context/CmsContext';
+import { AdminSectionId } from './types/cms';
 
 import {
   INITIAL_SERVICES,
@@ -50,8 +51,39 @@ import {
 } from './types';
 import { CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react';
 
+const ADMIN_SECTION_IDS: readonly AdminSectionId[] = [
+  'overview',
+  'pages',
+  'news',
+  'announcements',
+  'departments',
+  'staff',
+  'events',
+  'gallery',
+  'documents',
+  'homepage',
+  'navigation',
+  'contact',
+  'settings',
+  'media',
+  'admins',
+  'logs',
+];
+
+function parseAdminSectionFromPath(currentPath: string): AdminSectionId {
+  const clean = currentPath.replace(/\/+$/, '') || '/';
+  if (clean === '/admin' || clean === '/admin/overview') return 'overview';
+  if (clean.startsWith('/admin/')) {
+    const candidate = clean.slice('/admin/'.length).split('/')[0] as AdminSectionId;
+    if (ADMIN_SECTION_IDS.includes(candidate)) {
+      return candidate;
+    }
+  }
+  return 'overview';
+}
+
 function AppRouterAndPortal() {
-  const { isAuthenticatedAdmin, loading: authLoading } = useAuth();
+  const { isAuthenticatedAdmin, loading: authLoading, profileVerifying } = useAuth();
   const { townHallsFromEvents, refreshPublicContent } = useCms();
 
   const [pathname, setPathname] = useState<string>(() => window.location.pathname || '/');
@@ -94,18 +126,62 @@ function AppRouterAndPortal() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const handleNavigatePublic = useCallback(() => {
+    void refreshPublicContent();
+    navigatePath('/');
+  }, [refreshPublicContent, navigatePath]);
+
+  const handleRedirectLogin = useCallback(() => {
+    const current = window.location.pathname || '/admin';
+    const target =
+      current.startsWith('/admin') && current !== '/admin/login'
+        ? `/admin/login?redirect=${encodeURIComponent(current)}`
+        : '/admin/login';
+    navigatePath(target, true);
+  }, [navigatePath]);
+
+  const handleLoginSuccess = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    const redirectParam = params.get('redirect');
+    const target =
+      redirectParam && redirectParam.startsWith('/admin') && redirectParam !== '/admin/login'
+        ? redirectParam
+        : '/admin';
+    navigatePath(target, true);
+  }, [navigatePath]);
+
+  const handleSelectAdminSection = useCallback((section: AdminSectionId) => {
+    const nextPath = section === 'overview' ? '/admin' : `/admin/${section}`;
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, '', nextPath);
+      setPathname(nextPath);
+    }
+  }, []);
+
+  const handleOpenAdminPortal = useCallback(() => {
+    if (authLoading || profileVerifying || isAuthenticatedAdmin) {
+      navigatePath('/admin');
+    } else {
+      navigatePath('/admin/login');
+    }
+  }, [authLoading, profileVerifying, isAuthenticatedAdmin, navigatePath]);
+
   // Redirect already-authenticated admins away from /admin/login
   useEffect(() => {
-    if (pathname === '/admin/login' && !authLoading && isAuthenticatedAdmin) {
-      navigatePath('/admin', true);
+    if (pathname === '/admin/login' && !authLoading && !profileVerifying && isAuthenticatedAdmin) {
+      handleLoginSuccess();
     }
-  }, [pathname, authLoading, isAuthenticatedAdmin, navigatePath]);
+  }, [pathname, authLoading, profileVerifying, isAuthenticatedAdmin, handleLoginSuccess]);
 
   // Sync URL pathname & hash on browser navigation
   useEffect(() => {
     const syncRoute = () => {
       const currentPath = window.location.pathname || '/';
       setPathname(currentPath);
+
+      if (currentPath === '/admin' || currentPath.startsWith('/admin/')) {
+        return;
+      }
 
       if (currentPath.startsWith('/page/')) {
         const slug = currentPath.slice('/page/'.length).replace(/\/+$/, '');
@@ -266,24 +342,21 @@ function AppRouterAndPortal() {
   if (pathname === '/admin/login') {
     return (
       <AdminLoginPage
-        onNavigatePublic={() => {
-          refreshPublicContent();
-          navigatePath('/');
-        }}
-        onLoginSuccess={() => navigatePath('/admin', true)}
+        onNavigatePublic={handleNavigatePublic}
+        onLoginSuccess={handleLoginSuccess}
       />
     );
   }
 
   // Protected Admin CMS Dashboard Routes (/admin and /admin/*)
   if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    const activeAdminSection = parseAdminSectionFromPath(pathname);
     return (
       <AdminDashboardApp
-        onNavigatePublic={() => {
-          refreshPublicContent();
-          navigatePath('/');
-        }}
-        onRedirectLogin={() => navigatePath('/admin/login', true)}
+        activeSection={activeAdminSection}
+        onSelectSection={handleSelectAdminSection}
+        onNavigatePublic={handleNavigatePublic}
+        onRedirectLogin={handleRedirectLogin}
       />
     );
   }
@@ -325,7 +398,7 @@ function AppRouterAndPortal() {
         setActiveSection={handleNavigate}
         onOpenCmsPage={handleOpenCmsPage}
         activeCmsSlug={activeCmsSlug}
-        onOpenAdmin={() => navigatePath(isAuthenticatedAdmin ? '/admin' : '/admin/login')}
+        onOpenAdmin={handleOpenAdminPortal}
         isAuthenticatedAdmin={isAuthenticatedAdmin}
       />
 
@@ -480,7 +553,7 @@ function AppRouterAndPortal() {
         onOpenTrackModal={() => handleOpenTrackModal()}
         onOpenReportModal={() => setReportModalOpen(true)}
         onOpenServiceModal={handleOpenServiceModal}
-        onOpenAdmin={() => navigatePath(isAuthenticatedAdmin ? '/admin' : '/admin/login')}
+        onOpenAdmin={handleOpenAdminPortal}
         isAuthenticatedAdmin={isAuthenticatedAdmin}
       />
 
