@@ -27,15 +27,9 @@ import {
   Clock,
   Lock,
   Inbox,
-  Bell,
-  ClipboardList,
 } from 'lucide-react';
 import { AdminRoleSlug, AdminSectionId } from '../../types/cms';
 import { useAuth } from '../../context/AuthContext';
-import { NotificationsProvider, useNotifications } from '../../context/NotificationsContext';
-import { NotificationBell } from './NotificationBell';
-import { NotificationsCentreSection } from './sections/NotificationsCentreSection';
-import { TasksManager } from './sections/TasksManager';
 import { OverviewSection } from './sections/OverviewSection';
 import { PagesManager } from './sections/PagesManager';
 import { NewsManager } from './sections/NewsManager';
@@ -68,8 +62,6 @@ interface NavGroupItem {
 
 const SIDEBAR_ITEMS: NavGroupItem[] = [
   { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'tasks', label: 'Tasks & Approvals', icon: ClipboardList },
   { id: 'pages', label: 'Manage Pages', icon: FileCode2 },
   { id: 'news', label: 'News and Articles', icon: Newspaper },
   { id: 'announcements', label: 'Announcements', icon: Megaphone },
@@ -92,8 +84,6 @@ const SIDEBAR_ITEMS: NavGroupItem[] = [
 
 const EDITOR_ALLOWED_SECTIONS: ReadonlySet<AdminSectionId> = new Set([
   'overview',
-  'notifications',
-  'tasks',
   'pages',
   'news',
   'announcements',
@@ -241,69 +231,6 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
   const idleSecs = String(idleRemainingSeconds % 60).padStart(2, '0');
 
   return (
-    <NotificationsProvider>
-      <AdminDashboardShell
-        activeSection={activeSection}
-        visibleSidebarItems={visibleSidebarItems}
-        sectionPermitted={sectionPermitted}
-        mobileSidebarOpen={mobileSidebarOpen}
-        setMobileSidebarOpen={setMobileSidebarOpen}
-        toast={toast}
-        notify={notify}
-        selectSection={selectSection}
-        handleLogout={handleLogout}
-        onNavigatePublic={onNavigatePublic}
-        adminProfile={adminProfile}
-        roleSlug={roleSlug}
-        idleMins={idleMins}
-        idleSecs={idleSecs}
-        idleWarningActive={idleWarningActive}
-        extendSession={extendSession}
-      />
-    </NotificationsProvider>
-  );
-};
-
-interface AdminDashboardShellProps {
-  activeSection: AdminSectionId;
-  visibleSidebarItems: NavGroupItem[];
-  sectionPermitted: boolean;
-  mobileSidebarOpen: boolean;
-  setMobileSidebarOpen: (open: boolean) => void;
-  toast: { msg: string; type: 'success' | 'error' } | null;
-  notify: (msg: string, type?: 'success' | 'error') => void;
-  selectSection: (id: AdminSectionId) => void;
-  handleLogout: () => Promise<void>;
-  onNavigatePublic: () => void;
-  adminProfile: ReturnType<typeof useAuth>['adminProfile'];
-  roleSlug: AdminRoleSlug | null;
-  idleMins: number;
-  idleSecs: string;
-  idleWarningActive: boolean;
-  extendSession: () => void;
-}
-
-const AdminDashboardShell: React.FC<AdminDashboardShellProps> = ({
-  activeSection,
-  visibleSidebarItems,
-  sectionPermitted,
-  mobileSidebarOpen,
-  setMobileSidebarOpen,
-  toast,
-  notify,
-  selectSection,
-  handleLogout,
-  onNavigatePublic,
-  adminProfile,
-  roleSlug,
-  idleMins,
-  idleSecs,
-  idleWarningActive,
-  extendSession,
-}) => {
-  const { unreadCount } = useNotifications();
-
-  return (
     <div className="min-h-screen bg-slate-100 flex text-slate-900">
       {/* Toast Notification */}
       {toast && (
@@ -383,11 +310,6 @@ const AdminDashboardShell: React.FC<AdminDashboardShellProps> = ({
               >
                 <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-amber-300' : 'text-slate-400'}`} />
                 <span className="truncate">{item.label}</span>
-                {item.id === 'notifications' && unreadCount > 0 && (
-                  <span className="ml-auto px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold leading-none">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
               </button>
             );
           })}
@@ -440,7 +362,6 @@ const AdminDashboardShell: React.FC<AdminDashboardShellProps> = ({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            <NotificationBell onNavigateSection={selectSection} />
             <button
               type="button"
               onClick={() => selectSection('security')}
@@ -512,12 +433,6 @@ const AdminDashboardShell: React.FC<AdminDashboardShellProps> = ({
             <>
               {activeSection === 'overview' && (
                 <OverviewSection onNavigateSection={selectSection} />
-              )}
-              {activeSection === 'notifications' && (
-                <NotificationsCentreSection onNavigateSection={selectSection} notify={notify} />
-              )}
-              {activeSection === 'tasks' && (
-                <TasksManager onNavigateSection={selectSection} notify={notify} />
               )}
               {activeSection === 'pages' && <PagesManager notify={notify} />}
               {activeSection === 'news' && <NewsManager notify={notify} />}
