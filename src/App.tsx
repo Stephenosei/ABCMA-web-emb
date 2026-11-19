@@ -54,6 +54,8 @@ import { isSafeAdminRedirectPath } from './utils/security';
 
 const ADMIN_SECTION_IDS: readonly AdminSectionId[] = [
   'overview',
+  'notifications',
+  'tasks',
   'pages',
   'news',
   'announcements',
