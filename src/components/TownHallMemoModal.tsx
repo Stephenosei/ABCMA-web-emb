@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { X, Send, CheckCircle2, MessageSquare, Calendar } from 'lucide-react';
 import { TownHallMeeting } from '../types';
+import {
+  checkClientRateLimit,
+  recordClientRateLimitEvent,
+  sanitizePlainText,
+} from '../utils/security';
 
 interface TownHallMemoModalProps {
   meeting: TownHallMeeting | null;
@@ -15,22 +20,46 @@ export const TownHallMemoModal: React.FC<TownHallMemoModalProps> = ({
   onClose,
   onSubmitted,
 }) => {
-  if (!isOpen || !meeting) return null;
-
   const [citizenName, setCitizenName] = useState('');
   const [electoralArea, setElectoralArea] = useState('Abossey Okai');
   const [memoSubject, setMemoSubject] = useState('');
   const [memoContent, setMemoContent] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  if (!isOpen || !meeting) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const rate = checkClientRateLimit('public:townhall_memo', 10 * 60 * 1000);
+    if (rate.blocked) {
+      setSubmitError(
+        `Submission rate limit reached. Please wait ${Math.max(1, Math.ceil(rate.retryAfterSeconds / 60))} minute(s) before submitting another memo.`
+      );
+      return;
+    }
+
+    const cleanName = sanitizePlainText(citizenName, 100);
+    const cleanSubject = sanitizePlainText(memoSubject, 150);
+    const cleanContent = sanitizePlainText(memoContent, 2000);
+    if (!cleanName || !cleanSubject || !cleanContent) {
+      setSubmitError('Please fill in your name, memo topic, and submission details.');
+      return;
+    }
+
+    recordClientRateLimitEvent('public:townhall_memo', {
+      maxAttempts: 5,
+      windowMs: 10 * 60 * 1000,
+      lockoutMs: 10 * 60 * 1000,
+    });
+    setSubmitError(null);
     setIsSuccess(true);
-    onSubmitted(memoSubject);
+    onSubmitted(cleanSubject);
   };
 
   const handleReset = () => {
     setIsSuccess(false);
+    setSubmitError(null);
     setCitizenName('');
     setMemoSubject('');
     setMemoContent('');
@@ -60,6 +89,11 @@ export const TownHallMemoModal: React.FC<TownHallMemoModalProps> = ({
 
         {!isSuccess ? (
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+            {submitError && (
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium">
+                {submitError}
+              </div>
+            )}
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-1">
               <span className="text-slate-500 block">Hearing / Town Hall:</span>
               <strong className="text-slate-900 block">{meeting.title}</strong>

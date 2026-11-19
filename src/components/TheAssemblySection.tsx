@@ -22,11 +22,22 @@ import {
   Building2,
   Hammer,
   HeartHandshake,
-  Briefcase
+  Briefcase,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { AssemblyMember, TownHallMeeting, CitizenIssue, MunicipalDepartment } from '../types';
 import { useCms } from '../context/CmsContext';
 import { Pagination } from './Pagination';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import {
+  checkClientRateLimit,
+  normalizeGhanaPhoneNumber,
+  recordClientRateLimitEvent,
+  sanitizePlainText,
+  sanitizeUrl,
+  toSafeErrorMessage,
+} from '../utils/security';
 
 interface TheAssemblySectionProps {
   assemblyMembers: AssemblyMember[];
@@ -125,12 +136,17 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
 
   // Contact Us interactive state
   const [contactName, setContactName] = useState('');
-  const [contactPhoneOrEmail, setContactPhoneOrEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
   const [contactUnit, setContactUnit] = useState('Client Service Unit / Central Administration');
   const [contactSubject, setContactSubject] = useState('');
   const [contactMessage, setContactMessage] = useState('');
+  const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSubmittedRef, setContactSubmittedRef] = useState<string | null>(null);
+  const [contactSmsStatus, setContactSmsStatus] = useState<'sent' | 'failed' | null>(null);
   const [contactError, setContactError] = useState<string | null>(null);
+  const contactSubmittingRef = React.useRef(false);
+  const lastSubmissionRef = React.useRef<{ signature: string; at: number } | null>(null);
 
   useEffect(() => {
     setMemberPage(1);
@@ -182,23 +198,180 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
     setRsvpdMeetings((prev) => ({ ...prev, [meetingId]: !prev[meetingId] }));
   };
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!contactName.trim() || !contactPhoneOrEmail.trim() || !contactSubject.trim() || !contactMessage.trim()) {
-      setContactError('Please fill in your name, contact details, subject, and inquiry message.');
+    if (contactSubmittingRef.current) return;
+
+    const rate = checkClientRateLimit('public:assembly_contact', 10 * 60 * 1000);
+    if (rate.blocked) {
+      setContactError(
+        `Submission limit reached. Please wait ${Math.max(1, Math.ceil(rate.retryAfterSeconds / 60))} minute(s) before sending another inquiry.`
+      );
       return;
     }
+
+    const cleanName = sanitizePlainText(contactName, 100);
+    const cleanPhone = sanitizePlainText(contactPhone, 25);
+    const cleanEmail = sanitizePlainText(contactEmail, 160);
+    const cleanSubject = sanitizePlainText(contactSubject, 150);
+    const cleanMessage = sanitizePlainText(contactMessage, 2000);
+
+    if (!cleanName || cleanName.length < 2) {
+      setContactError('Please enter your full name (at least 2 characters).');
+      return;
+    }
+
+    const phoneCheck = normalizeGhanaPhoneNumber(cleanPhone);
+    if (!phoneCheck.valid || !phoneCheck.normalized) {
+      setContactError(
+        phoneCheck.error ||
+          'Please enter a valid Ghanaian mobile number (e.g. 0241234567 or +233241234567).'
+      );
+      return;
+    }
+
+    if (cleanEmail && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(cleanEmail)) {
+      setContactError('Please enter a valid email address or leave the optional email field blank.');
+      return;
+    }
+
+    if (!cleanSubject || cleanSubject.length < 2) {
+      setContactError('Please enter a subject for your enquiry.');
+      return;
+    }
+
+    if (!cleanMessage || cleanMessage.length < 5) {
+      setContactError('Please provide your enquiry message details (at least 5 characters).');
+      return;
+    }
+
+    const submissionSig = `${phoneCheck.normalized}|${cleanSubject.toLowerCase()}|${cleanMessage.toLowerCase()}`;
+    if (
+      lastSubmissionRef.current &&
+      lastSubmissionRef.current.signature === submissionSig &&
+      Date.now() - lastSubmissionRef.current.at < 3 * 60 * 1000
+    ) {
+      setContactError(
+        'This exact enquiry was already submitted moments ago. Use "Send Another Inquiry" if you have a different request.'
+      );
+      return;
+    }
+
+    if (!isSupabaseConfigured || !supabase) {
+      setContactError(
+        'Enquiry service is currently unavailable because the portal backend is not configured.'
+      );
+      return;
+    }
+
+    contactSubmittingRef.current = true;
+    setContactSubmitting(true);
     setContactError(null);
-    const refNumber = `ABCMA-INQ-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    setContactSubmittedRef(refNumber);
+
+    try {
+      recordClientRateLimitEvent('public:assembly_contact', {
+        maxAttempts: 5,
+        windowMs: 10 * 60 * 1000,
+        lockoutMs: 10 * 60 * 1000,
+      });
+
+      // Step 1: Save enquiry to public.contact_messages via SECURITY DEFINER RPC first
+      const { data: rpcData, error: rpcError } = await supabase.rpc('submit_contact_message', {
+        p_full_name: cleanName,
+        p_phone_number: cleanPhone,
+        p_email: cleanEmail,
+        p_recipient_unit: contactUnit,
+        p_subject: cleanSubject,
+        p_message: cleanMessage,
+      });
+
+      const savedRecord = (rpcData && typeof rpcData === 'object' ? rpcData : null) as {
+        id?: string;
+        ticket_reference?: string;
+      } | null;
+
+      if (rpcError || !savedRecord?.id) {
+        // Database insert failed — DO NOT trigger SMS
+        const rawMsg = rpcError?.message || '';
+        const isMissingMigration =
+          rpcError?.code === 'PGRST202' ||
+          /submit_contact_message/i.test(rawMsg);
+        setContactError(
+          isMissingMigration
+            ? 'The contact enquiries database setup has not been applied yet. Please contact the system administrator.'
+            : toSafeErrorMessage(
+                rpcError,
+                'Unable to save your enquiry right now. Please check your details and try again.'
+              )
+        );
+        return;
+      }
+
+      const savedContactId = savedRecord.id;
+      const savedTicket =
+        savedRecord.ticket_reference ||
+        `ABCMA-INQ-${new Date().getFullYear()}-${savedContactId.slice(0, 6).toUpperCase()}`;
+
+      lastSubmissionRef.current = {
+        signature: submissionSig,
+        at: Date.now(),
+      };
+
+      setContactName(cleanName);
+      setContactPhone(cleanPhone);
+      setContactEmail(cleanEmail);
+      setContactSubject(cleanSubject);
+      setContactMessage(cleanMessage);
+
+      // Step 2: Only after successful DB save, invoke Edge Function with ONLY contactId
+      let smsConfirmed = false;
+      try {
+        const { data: fnData, error: fnError } = await supabase.functions.invoke(
+          'send-contact-sms',
+          {
+            body: { contactId: savedContactId },
+          }
+        );
+
+        const fnPayload = (fnData && typeof fnData === 'object' ? fnData : null) as {
+          ok?: boolean;
+          smsStatus?: string;
+          alreadySent?: boolean;
+        } | null;
+
+        smsConfirmed = Boolean(
+          !fnError &&
+            fnPayload?.ok === true &&
+            (fnPayload.smsStatus === 'sent' || fnPayload.alreadySent === true)
+        );
+      } catch {
+        smsConfirmed = false;
+      }
+
+      // Enquiry IS saved regardless of SMS gateway status
+      setContactSubmittedRef(savedTicket);
+      setContactSmsStatus(smsConfirmed ? 'sent' : 'failed');
+    } catch (err) {
+      setContactError(
+        toSafeErrorMessage(
+          err,
+          'Unable to submit your enquiry right now. Please verify your connection and try again.'
+        )
+      );
+    } finally {
+      contactSubmittingRef.current = false;
+      setContactSubmitting(false);
+    }
   };
 
   const handleResetContactForm = () => {
     setContactName('');
-    setContactPhoneOrEmail('');
+    setContactPhone('');
+    setContactEmail('');
     setContactSubject('');
     setContactMessage('');
     setContactSubmittedRef(null);
+    setContactSmsStatus(null);
     setContactError(null);
   };
 
@@ -242,16 +415,23 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 <span className="block text-emerald-400 font-mono text-[11px] mt-0.5">
                   GhanaPostGPS: {settings.gps_address}
                 </span>
-                {settings.google_maps_url && (
-                  <a
-                    href={settings.google_maps_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block text-[11px] text-amber-300 hover:underline mt-0.5"
-                  >
-                    Open Location on Google Maps
-                  </a>
-                )}
+                {(() => {
+                  const safeMapsHref = sanitizeUrl(settings.google_maps_url || '', {
+                    allowRelative: false,
+                    allowHash: false,
+                    allowMailtoTel: false,
+                  });
+                  return safeMapsHref ? (
+                    <a
+                      href={safeMapsHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-[11px] text-amber-300 hover:underline mt-0.5"
+                    >
+                      Open Location on Google Maps
+                    </a>
+                  ) : null;
+                })()}
               </div>
             </div>
 
@@ -324,18 +504,43 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
       <div className="lg:col-span-7 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 sm:p-7 shadow-sm flex flex-col justify-between">
         {contactSubmittedRef ? (
           <div className="my-auto py-8 text-center space-y-4 max-w-md mx-auto">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto border border-emerald-200">
-              <CheckCircle className="w-7 h-7" />
+            <div
+              className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto border ${
+                contactSmsStatus === 'sent'
+                  ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                  : 'bg-amber-100 text-amber-700 border-amber-200'
+              }`}
+            >
+              {contactSmsStatus === 'sent' ? (
+                <CheckCircle className="w-7 h-7" />
+              ) : (
+                <AlertCircle className="w-7 h-7" />
+              )}
             </div>
-            <div className="space-y-1.5">
-              <div className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+            <div className="space-y-2">
+              <div
+                className={`text-xs font-bold uppercase tracking-wider ${
+                  contactSmsStatus === 'sent' ? 'text-emerald-800' : 'text-amber-800'
+                }`}
+              >
                 Inquiry Registered
               </div>
               <h4 className="text-xl font-bold text-slate-900">
                 Thank you, {contactName}
               </h4>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Your message has been routed to <strong>{contactUnit}</strong>. A Client Service Officer will respond via <strong>{contactPhoneOrEmail}</strong> within 1 business day.
+              {contactSmsStatus === 'sent' ? (
+                <p className="text-xs sm:text-sm text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 leading-relaxed font-medium">
+                  Your enquiry has been received. An SMS confirmation has been sent to your phone.
+                </p>
+              ) : (
+                <p className="text-xs sm:text-sm text-amber-950 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 leading-relaxed font-medium">
+                  Your enquiry has been received successfully, but we could not send your SMS confirmation. Please try again later.
+                </p>
+              )}
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Routed to <strong>{contactUnit}</strong>. A Client Service Officer will reach out on{' '}
+                <strong className="font-mono">{contactPhone}</strong>
+                {contactEmail ? ` or ${contactEmail}` : ''} within 1 business day.
               </p>
             </div>
             <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-mono text-slate-700">
@@ -378,23 +583,29 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                 </label>
                 <input
                   type="text"
+                  maxLength={100}
+                  required
+                  disabled={contactSubmitting}
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
                   placeholder="e.g. Samuel Nii Odartey"
-                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 disabled:bg-slate-50"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Phone Number or Email *
+                  Mobile Phone Number (SMS Confirmation) *
                 </label>
                 <input
-                  type="text"
-                  value={contactPhoneOrEmail}
-                  onChange={(e) => setContactPhoneOrEmail(e.target.value)}
-                  placeholder="e.g. 024 412 8890 or email"
-                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
+                  type="tel"
+                  maxLength={25}
+                  required
+                  disabled={contactSubmitting}
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="e.g. 0241234567 or +233241234567"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 font-mono disabled:bg-slate-50"
                 />
               </div>
             </div>
@@ -402,12 +613,28 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Email Address (Optional)
+                </label>
+                <input
+                  type="email"
+                  maxLength={160}
+                  disabled={contactSubmitting}
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="e.g. citizen@example.com"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 disabled:bg-slate-50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Recipient Office / Directorate
                 </label>
                 <select
+                  disabled={contactSubmitting}
                   value={contactUnit}
                   onChange={(e) => setContactUnit(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 disabled:bg-slate-50"
                 >
                   <option value="Client Service Unit / Central Administration">
                     Client Service Unit / Central Administration
@@ -425,19 +652,22 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
                   ))}
                 </select>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Subject *
-                </label>
-                <input
-                  type="text"
-                  value={contactSubject}
-                  onChange={(e) => setContactSubject(e.target.value)}
-                  placeholder="e.g. BOP Certificate Follow-up / RTI Request"
-                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Subject *
+              </label>
+              <input
+                type="text"
+                maxLength={150}
+                required
+                disabled={contactSubmitting}
+                value={contactSubject}
+                onChange={(e) => setContactSubject(e.target.value)}
+                placeholder="e.g. BOP Certificate Follow-up / RTI Request"
+                className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 disabled:bg-slate-50"
+              />
             </div>
 
             <div>
@@ -446,10 +676,13 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
               </label>
               <textarea
                 rows={4}
+                maxLength={2000}
+                required
+                disabled={contactSubmitting}
                 value={contactMessage}
                 onChange={(e) => setContactMessage(e.target.value)}
                 placeholder="Describe your inquiry, electoral area, or reference number..."
-                className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 resize-none"
+                className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 resize-none disabled:bg-slate-50"
               />
             </div>
 
@@ -459,10 +692,20 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
               </span>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-sm transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shrink-0 min-h-[40px]"
+                disabled={contactSubmitting}
+                className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-sm transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shrink-0 min-h-[40px]"
               >
-                <Send className="w-3.5 h-3.5" />
-                <span>Submit Official Message</span>
+                {contactSubmitting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Sending Enquiry...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Submit Official Message</span>
+                  </>
+                )}
               </button>
             </div>
           </form>

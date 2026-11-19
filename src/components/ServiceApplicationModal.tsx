@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { X, CheckCircle, Upload, FileText, ArrowRight, ShieldAlert, Calendar } from 'lucide-react';
 import { MunicipalService } from '../types';
+import {
+  checkClientRateLimit,
+  recordClientRateLimitEvent,
+  sanitizePlainText,
+} from '../utils/security';
 
 interface ServiceApplicationModalProps {
   service: MunicipalService | null;
@@ -15,8 +20,6 @@ export const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = (
   onClose,
   onSubmitted,
 }) => {
-  if (!isOpen || !service) return null;
-
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [formData, setFormData] = useState({
     applicantName: '',
@@ -31,6 +34,9 @@ export const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = (
   });
   const [generatedCode, setGeneratedCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  if (!isOpen || !service) return null;
 
   const electoralAreas = [
     'Abossey Okai',
@@ -44,6 +50,31 @@ export const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = (
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const rate = checkClientRateLimit('public:service_application', 10 * 60 * 1000);
+    if (rate.blocked) {
+      setSubmitError(
+        `Application rate limit reached. Please wait ${Math.max(1, Math.ceil(rate.retryAfterSeconds / 60))} minute(s) before submitting again.`
+      );
+      return;
+    }
+
+    const cleanName = sanitizePlainText(formData.applicantName, 120);
+    const cleanPhone = sanitizePlainText(formData.phone, 30);
+    const cleanGhanaCard = sanitizePlainText(formData.ghanaCard, 40);
+    const cleanDigitalAddr = sanitizePlainText(formData.digitalAddress, 40);
+    const cleanEntityName = sanitizePlainText(formData.businessOrProjectName, 140);
+
+    if (!cleanName || !cleanPhone || !cleanGhanaCard || !cleanDigitalAddr || !cleanEntityName) {
+      setSubmitError('Please fill in all mandatory applicant details.');
+      return;
+    }
+
+    recordClientRateLimitEvent('public:service_application', {
+      maxAttempts: 5,
+      windowMs: 10 * 60 * 1000,
+      lockoutMs: 10 * 60 * 1000,
+    });
+    setSubmitError(null);
     setIsSubmitting(true);
 
     setTimeout(() => {
@@ -60,6 +91,7 @@ export const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = (
 
   const handleReset = () => {
     setStep('form');
+    setSubmitError(null);
     setFormData({
       applicantName: '',
       phone: '',
@@ -93,6 +125,11 @@ export const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = (
 
         {step === 'form' ? (
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+            {submitError && (
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium">
+                {submitError}
+              </div>
+            )}
             <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-950 flex items-start gap-2.5">
               <ShieldAlert className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
               <div>

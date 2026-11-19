@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { X, AlertTriangle, Upload, CheckCircle2, ArrowRight, Camera } from 'lucide-react';
 import { CitizenIssue, IssueCategory } from '../types';
+import {
+  checkClientRateLimit,
+  recordClientRateLimitEvent,
+  sanitizePlainText,
+} from '../utils/security';
 
 interface CitizenReportModalProps {
   isOpen: boolean;
@@ -13,8 +18,6 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
   onClose,
   onIssueReported,
 }) => {
-  if (!isOpen) return null;
-
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [formData, setFormData] = useState({
     category: 'choked_drain' as IssueCategory,
@@ -27,6 +30,9 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
     hasPhoto: false,
   });
   const [generatedTicket, setGeneratedTicket] = useState<CitizenIssue | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  if (!isOpen) return null;
 
   const electoralAreas = [
     'Abossey Okai',
@@ -50,6 +56,32 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const rate = checkClientRateLimit('public:citizen_report', 10 * 60 * 1000);
+    if (rate.blocked) {
+      setSubmitError(
+        `Submission rate limit reached. Please wait ${Math.max(1, Math.ceil(rate.retryAfterSeconds / 60))} minute(s) before submitting another report.`
+      );
+      return;
+    }
+
+    const cleanLandmark = sanitizePlainText(formData.landmark, 120);
+    const cleanTitle = sanitizePlainText(formData.title, 140);
+    const cleanDescription = sanitizePlainText(formData.description, 1500);
+    const cleanReporter = sanitizePlainText(formData.reportedBy, 100);
+    const cleanPhone = sanitizePlainText(formData.contactPhone, 30);
+
+    if (!cleanLandmark || !cleanTitle || !cleanDescription || !cleanReporter || !cleanPhone) {
+      setSubmitError('Please complete all required report fields.');
+      return;
+    }
+
+    recordClientRateLimitEvent('public:citizen_report', {
+      maxAttempts: 5,
+      windowMs: 10 * 60 * 1000,
+      lockoutMs: 10 * 60 * 1000,
+    });
+    setSubmitError(null);
+
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const trackingCode = `REP-2026-${randomNum}`;
 
@@ -64,12 +96,12 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
       id: `iss-${Date.now()}`,
       trackingCode,
       category: formData.category,
-      title: formData.title || `${formData.category.replace('_', ' ')} incident in ${formData.electoralArea}`,
-      description: formData.description,
+      title: cleanTitle || `${formData.category.replace('_', ' ')} incident in ${formData.electoralArea}`,
+      description: cleanDescription,
       electoralArea: formData.electoralArea,
-      landmark: formData.landmark,
-      reportedBy: formData.reportedBy,
-      contactPhone: formData.contactPhone,
+      landmark: cleanLandmark,
+      reportedBy: cleanReporter,
+      contactPhone: cleanPhone,
       status: 'submitted',
       dateReported: new Date().toISOString().split('T')[0],
       departmentAssigned,
@@ -84,6 +116,7 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
 
   const handleReset = () => {
     setStep('form');
+    setSubmitError(null);
     setFormData({
       category: 'choked_drain',
       electoralArea: 'Abossey Okai',
@@ -121,6 +154,11 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
 
         {step === 'form' ? (
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+            {submitError && (
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium">
+                {submitError}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Category of Issue / Fault *

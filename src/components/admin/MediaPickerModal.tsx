@@ -7,6 +7,7 @@ import {
 } from '../../lib/supabase';
 import { CmsMediaAsset } from '../../types/cms';
 import { useAuth } from '../../context/AuthContext';
+import { sanitizeUrl, toSafeErrorMessage } from '../../utils/security';
 
 interface MediaPickerModalProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
       .limit(120);
 
     if (err) {
-      setError(err.message);
+      setError(toSafeErrorMessage(err, 'Failed to load media assets.'));
     } else if (data) {
       setAssets(data as CmsMediaAsset[]);
     }
@@ -70,7 +71,7 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
       setAssets((prev) => [created, ...prev]);
       onSelect(created);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed.');
+      setError(toSafeErrorMessage(err, 'Upload failed.'));
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -156,10 +157,10 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
               disabled={uploading || !supabase}
               accept={
                 acceptKind === 'image'
-                  ? 'image/jpeg,image/png,image/webp,image/svg+xml'
+                  ? 'image/jpeg,image/png,image/webp'
                   : acceptKind === 'document'
                   ? '.pdf,.doc,.docx,application/pdf'
-                  : 'image/jpeg,image/png,image/webp,image/svg+xml,.pdf,.doc,.docx'
+                  : 'image/jpeg,image/png,image/webp,.pdf,.doc,.docx'
               }
               className="sr-only"
             />
@@ -203,7 +204,7 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
                     <div className="h-28 w-full bg-slate-100 flex items-center justify-center overflow-hidden relative">
                       {isImg ? (
                         <img
-                          src={asset.public_url}
+                          src={sanitizeUrl(asset.public_url, { allowRelative: true, allowHash: false, allowMailtoTel: false }) || undefined}
                           alt={asset.alt_text || asset.file_name}
                           referrerPolicy="no-referrer"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"

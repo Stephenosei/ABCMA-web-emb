@@ -1,5 +1,6 @@
 import React from 'react';
 import { Eye, X, ExternalLink } from 'lucide-react';
+import { sanitizeHtml, sanitizeUrl } from '../../utils/security';
 
 interface PreviewModalProps {
   isOpen: boolean;
@@ -24,6 +25,11 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  const safeImageUrl = imageUrl
+    ? sanitizeUrl(imageUrl, { allowRelative: true, allowHash: false, allowMailtoTel: false })
+    : '';
+  const safeHtmlContent = htmlContent ? sanitizeHtml(htmlContent) : '';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
       <div className="w-full max-w-3xl max-h-[90vh] bg-white rounded-2xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden">
@@ -43,10 +49,10 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
         </div>
 
         <div className="overflow-y-auto p-6 space-y-5">
-          {imageUrl && (
+          {safeImageUrl && (
             <div className="h-56 w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
               <img
-                src={imageUrl}
+                src={safeImageUrl}
                 alt={title}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
@@ -76,10 +82,10 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
             </div>
           )}
 
-          {htmlContent && (
+          {safeHtmlContent && (
             <div
               className="prose prose-sm max-w-none text-slate-700 leading-relaxed space-y-3 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-slate-900 [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-slate-900 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-slate-300 [&_th]:bg-slate-100 [&_th]:p-2 [&_th]:text-left [&_td]:border [&_td]:border-slate-300 [&_td]:p-2 [&_a]:text-emerald-700 [&_a]:underline [&_img]:rounded-xl [&_img]:max-h-80 [&_img]:my-3"
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
+              dangerouslySetInnerHTML={{ __html: safeHtmlContent }}
             />
           )}
 

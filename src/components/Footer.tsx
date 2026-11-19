@@ -1,6 +1,7 @@
 import React from 'react';
 import { Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
 import { useCms } from '../context/CmsContext';
+import { sanitizeUrl } from '../utils/security';
 
 interface FooterProps {
   onNavigate: (section: string) => void;
@@ -27,7 +28,16 @@ export const Footer: React.FC<FooterProps> = ({
     { key: 'twitter', label: 'X / Twitter', url: settings.social_links?.twitter },
     { key: 'instagram', label: 'Instagram', url: settings.social_links?.instagram },
     { key: 'youtube', label: 'YouTube', url: settings.social_links?.youtube },
-  ].filter((s) => Boolean(s.url && s.url.trim()));
+  ]
+    .map((s) => ({
+      ...s,
+      url: sanitizeUrl(s.url || '', {
+        allowRelative: false,
+        allowHash: false,
+        allowMailtoTel: false,
+      }),
+    }))
+    .filter((s): s is { key: string; label: string; url: string } => Boolean(s.url));
 
   return (
     <footer className="bg-slate-950/90 backdrop-blur-md text-slate-300 border-t border-slate-800/80 relative z-10">
@@ -39,7 +49,13 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-white border-2 border-emerald-500/40 shadow-md overflow-hidden flex items-center justify-center shrink-0">
                 <img
-                  src={settings.logo_url || '/assets/aistudio/abcma_logo_74f7cef4.jpeg'}
+                  src={
+                    sanitizeUrl(settings.logo_url || '', {
+                      allowRelative: true,
+                      allowHash: false,
+                      allowMailtoTel: false,
+                    }) || '/assets/aistudio/abcma_logo_74f7cef4.jpeg'
+                  }
                   alt={`${settings.site_title} Crest`}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-contain scale-[1.42]"

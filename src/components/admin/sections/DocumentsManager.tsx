@@ -1,12 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FileText, Plus, Upload, Edit3, Trash2, Eye, CheckCircle2 } from 'lucide-react';
-import { supabase, uploadMediaFile, formatFileSize, logAdminActivity } from '../../../lib/supabase';
+import { FileText, Plus, Upload, Edit3, Trash2, Eye, CheckCircle2, Lock, Download } from 'lucide-react';
+import {
+  supabase,
+  uploadMediaFile,
+  uploadInternalDocumentFile,
+  getSignedDocumentUrl,
+  deleteInternalDocumentFile,
+  INTERNAL_DOCS_BUCKET,
+  formatFileSize,
+  logAdminActivity,
+} from '../../../lib/supabase';
 import { CmsDocument } from '../../../types/cms';
 import { useAuth } from '../../../context/AuthContext';
 import { useCms } from '../../../context/CmsContext';
 import { MediaPickerModal } from '../MediaPickerModal';
 import { PreviewModal } from '../PreviewModal';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { sanitizeUrl, toSafeErrorMessage } from '../../../utils/security';
 
 interface DocumentsManagerProps {
   notify: (msg: string, type?: 'success' | 'error') => void;
@@ -38,6 +48,9 @@ const EMPTY_FORM = {
   file_size: '1.0 MB',
   department: 'Central Administration',
   provisionsText: '',
+  audience: 'public' as 'public' | 'internal',
+  storage_bucket: '',
+  storage_path: '',
   status: 'published' as 'draft' | 'published',
 };
 
@@ -52,6 +65,7 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -70,7 +84,7 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
       .from('documents')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) notify(error.message, 'error');
+    if (error) notify(toSafeErrorMessage(error, 'Failed to load documents.'), 'error');
     else if (data) setDocs(data as CmsDocument[]);
     setLoading(false);
   }, [notify]);
@@ -84,24 +98,81 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
     if (!file || !adminProfile) return;
     setUploading(true);
     try {
-      const asset = await uploadMediaFile({
-        file,
-        folder: 'documents',
-        uploadedBy: adminProfile.id,
-        kind: 'document',
-      });
-      setForm((prev) => ({
-        ...prev,
-        file_url: asset.public_url,
-        file_name: asset.file_name,
-        file_size: formatFileSize(asset.file_size),
-      }));
-      notify(`Uploaded "${asset.file_name}" to Supabase Storage.`);
+      if (form.audience === 'internal') {
+        const uploaded = await uploadInternalDocumentFile({
+          file,
+          folder: 'internal-documents',
+        });
+        setForm((prev) => ({
+          ...prev,
+          file_url: '',
+          storage_bucket: uploaded.storageBucket,
+          storage_path: uploaded.storagePath,
+          file_name: uploaded.fileName,
+          file_size: uploaded.fileSize,
+        }));
+        notify(`Uploaded "${uploaded.fileName}" to private encrypted storage.`);
+      } else {
+        const asset = await uploadMediaFile({
+          file,
+          folder: 'documents',
+          uploadedBy: adminProfile.id,
+          kind: 'document',
+        });
+        setForm((prev) => ({
+          ...prev,
+          file_url: asset.public_url,
+          storage_bucket: 'abcma-media',
+          storage_path: asset.file_path,
+          file_name: asset.file_name,
+          file_size: formatFileSize(asset.file_size),
+        }));
+        notify(`Uploaded "${asset.file_name}" to Supabase Storage.`);
+      }
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Document upload failed.', 'error');
+      notify(toSafeErrorMessage(err, 'Document upload failed.'), 'error');
     } finally {
       setUploading(false);
       e.target.value = '';
+    }
+  };
+
+  const handleAuthorizedDownload = async (doc: CmsDocument) => {
+    setDownloadingId(doc.id);
+    try {
+      let targetUrl = '';
+      if (doc.audience === 'internal' && doc.storage_path) {
+        targetUrl = await getSignedDocumentUrl(
+          doc.storage_path,
+          doc.storage_bucket || INTERNAL_DOCS_BUCKET,
+          300
+        );
+      } else if (doc.file_url) {
+        targetUrl =
+          sanitizeUrl(doc.file_url, {
+            allowRelative: true,
+            allowHash: false,
+            allowMailtoTel: false,
+          }) || '';
+      }
+
+      if (!targetUrl) {
+        notify('No valid file link found for this document.', 'error');
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.href = targetUrl;
+      link.download = doc.file_name || 'document.pdf';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      notify(toSafeErrorMessage(err, 'Unable to generate download link.'), 'error');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -119,11 +190,14 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
       category: doc.category,
       gazette_number: doc.gazette_number,
       year: doc.year,
-      file_url: doc.file_url || '',
+      file_url: doc.audience === 'internal' ? '' : doc.file_url || '',
       file_name: doc.file_name,
       file_size: doc.file_size,
       department: doc.department || 'Central Administration',
       provisionsText: Array.isArray(doc.key_provisions) ? doc.key_provisions.join('\n') : '',
+      audience: doc.audience === 'internal' ? 'internal' : 'public',
+      storage_bucket: doc.storage_bucket || '',
+      storage_path: doc.storage_path || '',
       status: doc.status,
     });
     setFormOpen(true);
@@ -146,13 +220,20 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const payload = {
+    const safeFileUrl =
+      form.audience === 'internal'
+        ? null
+        : form.file_url
+        ? sanitizeUrl(form.file_url, { allowRelative: true, allowHash: false, allowMailtoTel: false }) || null
+        : null;
+
+    const basePayload = {
       title: form.title.trim(),
       description: form.description.trim(),
       category: form.category,
       gazette_number: form.gazette_number.trim() || `ABCMA-${form.year}`,
       year: Number(form.year) || 2026,
-      file_url: form.file_url || null,
+      file_url: safeFileUrl,
       file_name: form.file_name.trim() || `${form.title.trim().replace(/\s+/g, '_')}.pdf`,
       file_size: form.file_size.trim() || '1.0 MB',
       department: form.department.trim(),
@@ -160,40 +241,64 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
       status: targetStatus,
     };
 
+    const fullPayload = {
+      ...basePayload,
+      audience: form.audience,
+      storage_bucket:
+        form.storage_bucket || (form.audience === 'internal' ? INTERNAL_DOCS_BUCKET : 'abcma-media'),
+      storage_path: form.storage_path || null,
+    };
+
+    const db = supabase;
     try {
-      if (editingId) {
-        const { error } = await supabase.from('documents').update(payload).eq('id', editingId);
-        if (error) throw error;
-        await logAdminActivity({
-          adminId: adminProfile.id,
-          adminEmail: adminProfile.email,
-          adminName: adminProfile.full_name,
-          action: 'UPDATE_DOCUMENT',
-          entityType: 'documents',
-          entityId: editingId,
-          entityLabel: payload.title,
-          updatedValues: { category: payload.category, status: targetStatus },
-        });
-      } else {
-        const { data, error } = await supabase.from('documents').insert(payload).select('id').single();
-        if (error) throw error;
-        await logAdminActivity({
-          adminId: adminProfile.id,
-          adminEmail: adminProfile.email,
-          adminName: adminProfile.full_name,
-          action: 'CREATE_DOCUMENT',
-          entityType: 'documents',
-          entityId: data?.id || '',
-          entityLabel: payload.title,
-          updatedValues: { category: payload.category, status: targetStatus },
-        });
+      const executeWrite = async (payloadObj: Record<string, unknown>) => {
+        if (editingId) {
+          const { error } = await db.from('documents').update(payloadObj).eq('id', editingId);
+          return { error, id: editingId };
+        }
+        const { data, error } = await db
+          .from('documents')
+          .insert(payloadObj)
+          .select('id')
+          .single();
+        return { error, id: data?.id || '' };
+      };
+
+      let result = await executeWrite(fullPayload);
+      if (
+        result.error &&
+        /audience|storage_bucket|storage_path|column/i.test(result.error.message || '')
+      ) {
+        if (form.audience === 'internal') {
+          throw new Error(
+            'Internal/Private documents require applying migration 004_abcma_security_hardening.sql in Supabase first.'
+          );
+        }
+        result = await executeWrite(basePayload);
       }
-      notify(`Document "${payload.title}" saved (${targetStatus}).`);
+      if (result.error) throw result.error;
+
+      await logAdminActivity({
+        adminId: adminProfile.id,
+        adminEmail: adminProfile.email,
+        adminName: adminProfile.full_name,
+        action: editingId ? 'UPDATE_DOCUMENT' : 'CREATE_DOCUMENT',
+        entityType: 'documents',
+        entityId: result.id,
+        entityLabel: basePayload.title,
+        updatedValues: {
+          category: basePayload.category,
+          audience: form.audience,
+          status: targetStatus,
+        },
+      });
+
+      notify(`Document "${basePayload.title}" saved (${targetStatus} · ${form.audience}).`);
       setFormOpen(false);
       await loadDocuments();
       await refreshPublicContent();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Failed to save document.', 'error');
+      notify(toSafeErrorMessage(err, 'Failed to save document.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -205,6 +310,15 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
     setSaving(true);
     try {
       if (action === 'delete') {
+        if (
+          doc.storage_path &&
+          (doc.audience === 'internal' || doc.storage_bucket === INTERNAL_DOCS_BUCKET)
+        ) {
+          await deleteInternalDocumentFile(
+            doc.storage_path,
+            doc.storage_bucket || INTERNAL_DOCS_BUCKET
+          ).catch(() => {});
+        }
         const { error } = await supabase.from('documents').delete().eq('id', doc.id);
         if (error) throw error;
         await logAdminActivity({
@@ -238,7 +352,7 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
       await loadDocuments();
       await refreshPublicContent();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Action failed.', 'error');
+      notify(toSafeErrorMessage(err, 'Action failed.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -324,6 +438,62 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
                 className="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-lg"
               />
             </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Access Classification &amp; Storage Policy *
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      audience: 'public',
+                      storage_bucket: prev.audience === 'internal' ? '' : prev.storage_bucket,
+                      storage_path: prev.audience === 'internal' ? '' : prev.storage_path,
+                    }))
+                  }
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    form.audience === 'public'
+                      ? 'border-emerald-700 bg-emerald-50/70'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="text-xs font-bold text-slate-900">Public Gazette / Citizen Download</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">
+                    Visible on public portal when published. Stored in <span className="font-mono">abcma-media</span>.
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      audience: 'internal',
+                      file_url: '',
+                      storage_bucket:
+                        prev.audience === 'internal' ? prev.storage_bucket : INTERNAL_DOCS_BUCKET,
+                      storage_path: prev.audience === 'internal' ? prev.storage_path : '',
+                    }))
+                  }
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    form.audience === 'internal'
+                      ? 'border-amber-700 bg-amber-50/80'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Internal Admin-Only Document</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">
+                    Private bucket (<span className="font-mono">abcma-internal-docs</span>), signed URL download only.
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* File Upload / Picker */}
@@ -333,21 +503,35 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
                 {form.file_name || 'No PDF / Word document uploaded yet'}
               </div>
               <div className="text-[11px] text-slate-500 font-mono">
-                {form.file_url ? `Hosted on Supabase Storage · ${form.file_size}` : 'Upload PDF/DOC/DOCX up to 15 MB'}
+                {form.audience === 'internal'
+                  ? form.storage_path
+                    ? `Private Signed Storage (${INTERNAL_DOCS_BUCKET}) · ${form.file_size}`
+                    : 'Upload confidential PDF/DOC/DOCX to private storage (max 15 MB)'
+                  : form.file_url
+                  ? `Hosted on Supabase Storage · ${form.file_size}`
+                  : 'Upload PDF/DOC/DOCX up to 15 MB'}
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setPickerOpen(true)}
-                className="px-3 py-1.5 bg-white border border-slate-300 text-xs font-semibold rounded-lg cursor-pointer"
-              >
-                Pick from Library
-              </button>
+              {form.audience === 'public' && (
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(true)}
+                  className="px-3 py-1.5 bg-white border border-slate-300 text-xs font-semibold rounded-lg cursor-pointer"
+                >
+                  Pick from Library
+                </button>
+              )}
               <label className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 cursor-pointer">
                 <Upload className="w-3.5 h-3.5" />
-                <span>{uploading ? 'Uploading...' : 'Upload PDF / Doc'}</span>
+                <span>
+                  {uploading
+                    ? 'Uploading...'
+                    : form.audience === 'internal'
+                    ? 'Upload Private PDF / Doc'
+                    : 'Upload PDF / Doc'}
+                </span>
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx,application/pdf"
@@ -481,6 +665,7 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
                 <tr>
                   <th className="py-3 px-4">Document Title</th>
                   <th className="py-3 px-4">Category</th>
+                  <th className="py-3 px-4">Audience</th>
                   <th className="py-3 px-4">Year / Size</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Actions</th>
@@ -494,6 +679,16 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
                       <div className="text-[11px] font-mono text-slate-500">{doc.file_name}</div>
                     </td>
                     <td className="py-3 px-4 text-slate-700">{doc.category}</td>
+                    <td className="py-3 px-4">
+                      {doc.audience === 'internal' ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                          <Lock className="w-3 h-3" />
+                          <span>Internal</span>
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-semibold text-slate-600">Public</span>
+                      )}
+                    </td>
                     <td className="py-3 px-4 font-mono tabular-nums text-slate-500">
                       {doc.year} · {doc.file_size}
                     </td>
@@ -508,6 +703,21 @@ export const DocumentsManager: React.FC<DocumentsManagerProps> = ({ notify }) =>
                     </td>
                     <td className="py-3 px-4 text-right whitespace-nowrap">
                       <div className="inline-flex items-center gap-1.5">
+                        {(doc.storage_path || doc.file_url) && (
+                          <button
+                            type="button"
+                            disabled={downloadingId === doc.id}
+                            onClick={() => handleAuthorizedDownload(doc)}
+                            title={
+                              doc.audience === 'internal'
+                                ? 'Authorized Signed Download'
+                                : 'Download File'
+                            }
+                            className="p-1.5 text-slate-600 hover:text-emerald-800 hover:bg-emerald-50 rounded cursor-pointer disabled:opacity-40"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleOpenEdit(doc)}

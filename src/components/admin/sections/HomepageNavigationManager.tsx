@@ -25,6 +25,7 @@ import { useCms, DEFAULT_WEBSITE_SETTINGS } from '../../../context/CmsContext';
 import { MediaPickerModal } from '../MediaPickerModal';
 import { PreviewModal } from '../PreviewModal';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { sanitizeUrl, toSafeErrorMessage } from '../../../utils/security';
 
 interface HomepageNavigationManagerProps {
   mode: 'homepage' | 'navigation';
@@ -70,7 +71,7 @@ export const HomepageNavigationManager: React.FC<HomepageNavigationManagerProps>
       .select('*')
       .eq('id', 1)
       .maybeSingle();
-    if (error) notify(error.message, 'error');
+    if (error) notify(toSafeErrorMessage(error, 'Failed to load homepage settings.'), 'error');
     else if (data) {
       setSettings({
         ...DEFAULT_WEBSITE_SETTINGS,
@@ -96,7 +97,7 @@ export const HomepageNavigationManager: React.FC<HomepageNavigationManagerProps>
       supabase.from('navigation_items').select('*').order('sort_order', { ascending: true }),
       supabase.from('pages').select('*').order('title', { ascending: true }),
     ]);
-    if (navRes.error) notify(navRes.error.message, 'error');
+    if (navRes.error) notify(toSafeErrorMessage(navRes.error, 'Failed to load navigation items.'), 'error');
     else if (navRes.data) setNavItems(navRes.data as CmsNavigationItem[]);
     if (pageRes.data) setPages(pageRes.data as CmsPage[]);
     setLoadingNav(false);
@@ -117,12 +118,30 @@ export const HomepageNavigationManager: React.FC<HomepageNavigationManagerProps>
 
     setSavingHome(true);
     try {
+      const safeHeroImg = settings.hero_image_url.trim()
+        ? sanitizeUrl(settings.hero_image_url.trim(), {
+            allowRelative: true,
+            allowHash: false,
+            allowMailtoTel: false,
+          })
+        : '';
+      const cleanBanners = settings.homepage_banners.map((b) => ({
+        ...b,
+        imageUrl: b.imageUrl
+          ? sanitizeUrl(b.imageUrl, {
+              allowRelative: true,
+              allowHash: false,
+              allowMailtoTel: false,
+            })
+          : '',
+      }));
+
       const payload = {
         hero_heading: settings.hero_heading.trim(),
         hero_subheading: settings.hero_subheading.trim(),
         welcome_message: settings.welcome_message.trim(),
-        hero_image_url: settings.hero_image_url.trim(),
-        homepage_banners: settings.homepage_banners,
+        hero_image_url: safeHeroImg,
+        homepage_banners: cleanBanners,
         homepage_highlights: settings.homepage_highlights,
         homepage_cta: settings.homepage_cta,
         homepage_stats: settings.homepage_stats,
@@ -149,7 +168,7 @@ export const HomepageNavigationManager: React.FC<HomepageNavigationManagerProps>
       );
       await refreshPublicContent();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Failed to save homepage.', 'error');
+      notify(toSafeErrorMessage(err, 'Failed to save homepage.'), 'error');
     } finally {
       setSavingHome(false);
     }
@@ -204,6 +223,20 @@ export const HomepageNavigationManager: React.FC<HomepageNavigationManagerProps>
       return;
     }
 
+    let resolvedTargetValue = navForm.target_value.trim();
+    if (navForm.target_type === 'external') {
+      const validatedExternalUrl = sanitizeUrl(resolvedTargetValue, {
+        allowRelative: false,
+        allowHash: false,
+        allowMailtoTel: false,
+      });
+      if (!validatedExternalUrl) {
+        notify('External navigation URL must start with https:// or http://.', 'error');
+        return;
+      }
+      resolvedTargetValue = validatedExternalUrl;
+    }
+
     try {
       if (editingNav) {
         const { error } = await supabase
@@ -211,7 +244,7 @@ export const HomepageNavigationManager: React.FC<HomepageNavigationManagerProps>
           .update({
             label: navForm.label.trim(),
             target_type: navForm.target_type,
-            target_value: navForm.target_value.trim(),
+            target_value: resolvedTargetValue,
             parent_id: navForm.parent_id || null,
             is_visible: navForm.is_visible,
           })
@@ -234,7 +267,7 @@ export const HomepageNavigationManager: React.FC<HomepageNavigationManagerProps>
           .insert({
             label: navForm.label.trim(),
             target_type: navForm.target_type,
-            target_value: navForm.target_value.trim(),
+            target_value: resolvedTargetValue,
             parent_id: navForm.parent_id || null,
             sort_order: nextOrder,
             is_visible: navForm.is_visible,
@@ -265,7 +298,7 @@ export const HomepageNavigationManager: React.FC<HomepageNavigationManagerProps>
       await loadNavigation();
       await refreshPublicContent();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Failed to save navigation item.', 'error');
+      notify(toSafeErrorMessage(err, 'Failed to save navigation item.'), 'error');
     }
   };
 
@@ -300,7 +333,7 @@ export const HomepageNavigationManager: React.FC<HomepageNavigationManagerProps>
     if (!deleteNavTarget || !supabase || !adminProfile) return;
     const { error } = await supabase.from('navigation_items').delete().eq('id', deleteNavTarget.id);
     if (error) {
-      notify(error.message, 'error');
+      notify(toSafeErrorMessage(error, 'Failed to remove navigation item.'), 'error');
       return;
     }
     await logAdminActivity({

@@ -156,6 +156,9 @@ export interface GazettedDocument {
   summary: string;
   fileName?: string;
   fileUrl?: string;
+  audience?: 'public' | 'internal';
+  storageBucket?: string;
+  storagePath?: string;
   department?: string;
   keyProvisions?: string[];
 }

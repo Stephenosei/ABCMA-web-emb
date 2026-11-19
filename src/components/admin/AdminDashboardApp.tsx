@@ -23,8 +23,12 @@ import {
   X,
   CheckCircle2,
   AlertTriangle,
+  KeyRound,
+  Clock,
+  Lock,
+  Inbox,
 } from 'lucide-react';
-import { AdminSectionId } from '../../types/cms';
+import { AdminRoleSlug, AdminSectionId } from '../../types/cms';
 import { useAuth } from '../../context/AuthContext';
 import { OverviewSection } from './sections/OverviewSection';
 import { PagesManager } from './sections/PagesManager';
@@ -38,8 +42,10 @@ import { GalleryManager } from './sections/GalleryManager';
 import { DocumentsManager } from './sections/DocumentsManager';
 import { HomepageNavigationManager } from './sections/HomepageNavigationManager';
 import { ContactSettingsManager } from './sections/ContactSettingsManager';
+import { ContactMessagesManager } from './sections/ContactMessagesManager';
 import { MediaLibraryManager } from './sections/MediaLibraryManager';
 import { AdminsAndLogsManager } from './sections/AdminsAndLogsManager';
+import { AccountSecuritySection } from './sections/AccountSecuritySection';
 
 interface AdminDashboardAppProps {
   activeSection?: AdminSectionId;
@@ -68,11 +74,41 @@ const SIDEBAR_ITEMS: NavGroupItem[] = [
   { id: 'homepage', label: 'Homepage Management', icon: Home },
   { id: 'navigation', label: 'Navigation Management', icon: Navigation },
   { id: 'contact', label: 'Contact Information', icon: PhoneCall },
+  { id: 'enquiries', label: 'Contact Enquiries', icon: Inbox },
   { id: 'settings', label: 'Website Settings', icon: Settings },
   { id: 'media', label: 'Media Library', icon: HardDrive },
   { id: 'admins', label: 'Administrator Accounts', icon: ShieldCheck },
   { id: 'logs', label: 'Activity Logs', icon: ScrollText },
+  { id: 'security', label: 'Account Security', icon: KeyRound },
 ];
+
+const EDITOR_ALLOWED_SECTIONS: ReadonlySet<AdminSectionId> = new Set([
+  'overview',
+  'pages',
+  'news',
+  'announcements',
+  'departments',
+  'staff',
+  'projects',
+  'events',
+  'gallery',
+  'documents',
+  'enquiries',
+  'media',
+  'security',
+]);
+
+function canAccessSection(section: AdminSectionId, role: AdminRoleSlug | null): boolean {
+  if (!role) return false;
+  if (role === 'super_admin') return true;
+  if (role === 'content_admin') {
+    return section !== 'admins' && section !== 'logs';
+  }
+  if (role === 'editor') {
+    return EDITOR_ALLOWED_SECTIONS.has(section);
+  }
+  return false;
+}
 
 export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
   activeSection: controlledSection,
@@ -87,7 +123,10 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
     loading,
     profileVerifying,
     authError,
-    isAuthenticatedAdmin,
+    isDashboardAccessGranted,
+    idleRemainingSeconds,
+    idleWarningActive,
+    extendSession,
     signOut,
   } = useAuth();
   const [localSection, setLocalSection] = useState<AdminSectionId>('overview');
@@ -101,17 +140,16 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
   useEffect(() => {
     if (isCheckingAuth) return;
 
-    if (isAuthenticatedAdmin) {
+    if (isDashboardAccessGranted) {
       redirectedRef.current = false;
       return;
     }
 
-    // Only auto-redirect unauthenticated visitors (no session) once.
     if (!session && !redirectedRef.current) {
       redirectedRef.current = true;
       onRedirectLogin();
     }
-  }, [isCheckingAuth, isAuthenticatedAdmin, session, onRedirectLogin]);
+  }, [isCheckingAuth, isDashboardAccessGranted, session, onRedirectLogin]);
 
   const notify = React.useCallback((msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type });
@@ -122,7 +160,7 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
 
   const handleLogout = React.useCallback(async () => {
     redirectedRef.current = true;
-    await signOut();
+    await signOut('USER_LOGOUT');
     onRedirectLogin();
   }, [signOut, onRedirectLogin]);
 
@@ -136,7 +174,7 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
     );
   }
 
-  if (!isAuthenticatedAdmin) {
+  if (!isDashboardAccessGranted) {
     if (session) {
       return (
         <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
@@ -175,6 +213,10 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
   }
 
   const selectSection = (id: AdminSectionId) => {
+    if (!canAccessSection(id, roleSlug)) {
+      notify('Your administrator role does not have permission to open that module.', 'error');
+      return;
+    }
     setLocalSection(id);
     if (onSelectSection) {
       onSelectSection(id);
@@ -182,6 +224,11 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
     setMobileSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const visibleSidebarItems = SIDEBAR_ITEMS.filter((item) => canAccessSection(item.id, roleSlug));
+  const sectionPermitted = canAccessSection(activeSection, roleSlug);
+  const idleMins = Math.floor(idleRemainingSeconds / 60);
+  const idleSecs = String(idleRemainingSeconds % 60).padStart(2, '0');
 
   return (
     <div className="min-h-screen bg-slate-100 flex text-slate-900">
@@ -245,9 +292,9 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
           </button>
         </div>
 
-        {/* Navigation Links */}
+        {/* Navigation Links (RBAC-filtered) */}
         <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-0.5">
-          {SIDEBAR_ITEMS.map((item) => {
+          {visibleSidebarItems.map((item) => {
             const Icon = item.icon;
             const active = activeSection === item.id;
             return (
@@ -268,8 +315,17 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
           })}
         </nav>
 
-        {/* Logout Footer */}
+        {/* Session Security & Logout Footer */}
         <div className="p-3 border-t border-slate-800 space-y-2">
+          <div className="px-2 flex items-center justify-between gap-2 text-[10px] font-mono">
+            <span className="px-2 py-0.5 rounded font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700/60">
+              Session Active
+            </span>
+            <span className="text-slate-400 flex items-center gap-1" title="Session inactivity timer">
+              <Clock className="w-3 h-3" />
+              {idleMins}:{idleSecs}
+            </span>
+          </div>
           <div className="px-2 text-[11px] text-slate-400 truncate">
             {adminProfile?.email}
           </div>
@@ -288,7 +344,7 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 h-14 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setMobileSidebarOpen(true)}
@@ -297,15 +353,23 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
             >
               <Menu className="w-4 h-4" />
             </button>
-            <div className="text-xs font-semibold text-slate-500">
+            <div className="text-xs font-semibold text-slate-500 truncate">
               Ablekuma Central Municipal Assembly ·{' '}
               <span className="text-slate-900">
-                {SIDEBAR_ITEMS.find((i) => i.id === activeSection)?.label}
+                {SIDEBAR_ITEMS.find((i) => i.id === activeSection)?.label || 'Dashboard'}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => selectSection('security')}
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Account Security</span>
+            </button>
             <button
               type="button"
               onClick={onNavigatePublic}
@@ -317,41 +381,94 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
           </div>
         </header>
 
+        {/* Idle Expiration Warning Banner */}
+        {idleWarningActive && (
+          <div className="bg-amber-50 border-b border-amber-300 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-950">
+            <div className="flex items-center gap-2 font-medium">
+              <Clock className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>
+                Your session will expire due to inactivity in{' '}
+                <strong className="font-mono">
+                  {idleMins}:{idleSecs}
+                </strong>
+                . Unsaved edits may be lost.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={extendSession}
+              className="px-3 py-1 bg-amber-900 hover:bg-amber-950 text-white text-xs font-semibold rounded-lg cursor-pointer"
+            >
+              Extend Session
+            </button>
+          </div>
+        )}
+
         {/* Active Module Viewport */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {activeSection === 'overview' && (
-            <OverviewSection onNavigateSection={selectSection} />
-          )}
-          {activeSection === 'pages' && <PagesManager notify={notify} />}
-          {activeSection === 'news' && <NewsManager notify={notify} />}
-          {activeSection === 'announcements' && <AnnouncementsManager notify={notify} />}
-          {activeSection === 'departments' && <DepartmentsManager notify={notify} />}
-          {activeSection === 'staff' && <StaffManager notify={notify} />}
-          {activeSection === 'projects' && <ProjectsManager notify={notify} />}
-          {activeSection === 'events' && <EventsManager notify={notify} />}
-          {activeSection === 'gallery' && <GalleryManager notify={notify} />}
-          {activeSection === 'documents' && <DocumentsManager notify={notify} />}
-          {activeSection === 'homepage' && (
-            <HomepageNavigationManager mode="homepage" notify={notify} />
-          )}
-          {activeSection === 'navigation' && (
-            <HomepageNavigationManager mode="navigation" notify={notify} />
-          )}
-          {activeSection === 'contact' && (
-            <ContactSettingsManager mode="contact" notify={notify} />
-          )}
-          {activeSection === 'settings' && (
-            <ContactSettingsManager mode="settings" notify={notify} />
-          )}
-          {activeSection === 'media' && <MediaLibraryManager notify={notify} />}
-          {activeSection === 'admins' && (
-            <AdminsAndLogsManager mode="admins" notify={notify} />
-          )}
-          {activeSection === 'logs' && (
-            <AdminsAndLogsManager mode="logs" notify={notify} />
+          {!sectionPermitted ? (
+            <div className="max-w-lg mx-auto bg-white border border-rose-200 rounded-2xl p-6 space-y-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <Lock className="w-5 h-5 text-rose-700 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <h2 className="text-sm font-bold text-slate-900">
+                    Access Denied (Insufficient Role Permissions)
+                  </h2>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Your current role (<strong>{adminProfile?.role?.name || roleSlug}</strong>) does not authorize access to this administrative section.
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => selectSection('overview')}
+                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-lg cursor-pointer"
+                >
+                  Return to Dashboard Overview
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {activeSection === 'overview' && (
+                <OverviewSection onNavigateSection={selectSection} />
+              )}
+              {activeSection === 'pages' && <PagesManager notify={notify} />}
+              {activeSection === 'news' && <NewsManager notify={notify} />}
+              {activeSection === 'announcements' && <AnnouncementsManager notify={notify} />}
+              {activeSection === 'departments' && <DepartmentsManager notify={notify} />}
+              {activeSection === 'staff' && <StaffManager notify={notify} />}
+              {activeSection === 'projects' && <ProjectsManager notify={notify} />}
+              {activeSection === 'events' && <EventsManager notify={notify} />}
+              {activeSection === 'gallery' && <GalleryManager notify={notify} />}
+              {activeSection === 'documents' && <DocumentsManager notify={notify} />}
+              {activeSection === 'homepage' && (
+                <HomepageNavigationManager mode="homepage" notify={notify} />
+              )}
+              {activeSection === 'navigation' && (
+                <HomepageNavigationManager mode="navigation" notify={notify} />
+              )}
+              {activeSection === 'contact' && (
+                <ContactSettingsManager mode="contact" notify={notify} />
+              )}
+              {activeSection === 'enquiries' && <ContactMessagesManager notify={notify} />}
+              {activeSection === 'settings' && (
+                <ContactSettingsManager mode="settings" notify={notify} />
+              )}
+              {activeSection === 'media' && <MediaLibraryManager notify={notify} />}
+              {activeSection === 'admins' && (
+                <AdminsAndLogsManager mode="admins" notify={notify} />
+              )}
+              {activeSection === 'logs' && (
+                <AdminsAndLogsManager mode="logs" notify={notify} />
+              )}
+              {activeSection === 'security' && <AccountSecuritySection />}
+            </>
           )}
         </main>
       </div>
     </div>
   );
 };
+

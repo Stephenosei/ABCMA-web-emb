@@ -24,6 +24,7 @@ import {
 import { MunicipalDepartment, MunicipalNewsItem } from '../types';
 import { useCms } from '../context/CmsContext';
 import { Pagination } from './Pagination';
+import { sanitizeUrl } from '../utils/security';
 
 interface HeroProps {
   onNavigate: (page: string) => void;
@@ -56,7 +57,11 @@ export const Hero: React.FC<HeroProps> = ({
   const NEWS_PER_PAGE = 3;
 
   const assemblyImagePath =
-    settings.hero_image_url || '/images/ablekuma_assembly_welcome_1794372179601.jpg';
+    sanitizeUrl(settings.hero_image_url || '', {
+      allowRelative: true,
+      allowHash: false,
+      allowMailtoTel: false,
+    }) || '/images/ablekuma_assembly_welcome_1794372179601.jpg';
   const mcePortraitPath = '/images/acma_mce_portrait_1794438674697.jpg';
   const featuredProject = projects[0] || null;
 
@@ -441,7 +446,15 @@ export const Hero: React.FC<HeroProps> = ({
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {announcements.slice(0, 3).map((ann) => (
+                  {announcements.slice(0, 3).map((ann) => {
+                    const safeAttachmentUrl = ann.attachment_url
+                      ? sanitizeUrl(ann.attachment_url, {
+                          allowRelative: true,
+                          allowHash: false,
+                          allowMailtoTel: false,
+                        })
+                      : '';
+                    return (
                     <div
                       key={ann.id}
                       className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between"
@@ -453,9 +466,9 @@ export const Hero: React.FC<HeroProps> = ({
                         <h3 className="text-sm font-bold text-white leading-snug">{ann.title}</h3>
                         <p className="text-xs text-slate-300 line-clamp-2">{ann.description}</p>
                       </div>
-                      {ann.attachment_url && (
+                      {safeAttachmentUrl && (
                         <a
-                          href={ann.attachment_url}
+                          href={safeAttachmentUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           download={ann.attachment_name || 'announcement'}
@@ -466,7 +479,8 @@ export const Hero: React.FC<HeroProps> = ({
                         </a>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Phone, Menu, X, ChevronDown, ShieldCheck } from 'lucide-react';
 import { useCms } from '../context/CmsContext';
 import { CmsNavigationItem } from '../types/cms';
+import { sanitizeUrl } from '../utils/security';
 
 interface HeaderProps {
   onOpenTrackModal: (initialCode?: string) => void;
@@ -118,7 +119,13 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-emerald-700/25 shadow-sm overflow-hidden flex items-center justify-center shrink-0">
             <img
-              src={settings.logo_url || '/assets/aistudio/abcma_logo_74f7cef4.jpeg'}
+              src={
+                sanitizeUrl(settings.logo_url || '', {
+                  allowRelative: true,
+                  allowHash: false,
+                  allowMailtoTel: false,
+                }) || '/assets/aistudio/abcma_logo_74f7cef4.jpeg'
+              }
               alt={`${settings.site_title} Crest`}
               referrerPolicy="no-referrer"
               className="w-full h-full object-contain scale-[1.42] transition-transform duration-300 group-hover:scale-[1.48]"
@@ -141,10 +148,16 @@ export const Header: React.FC<HeaderProps> = ({
             const active = isItemActive(item) || children.some(isItemActive);
 
             if (item.target_type === 'external' && children.length === 0) {
+              const safeHref = sanitizeUrl(item.target_value, {
+                allowRelative: false,
+                allowHash: false,
+                allowMailtoTel: false,
+              });
+              if (!safeHref) return null;
               return (
                 <a
                   key={item.id}
-                  href={item.target_value}
+                  href={safeHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-emerald-700 transition-colors whitespace-nowrap shrink-0 py-1 text-slate-700"
@@ -182,15 +195,25 @@ export const Header: React.FC<HeaderProps> = ({
                       <div className="bg-white border border-slate-200 rounded-xl shadow-xl py-1.5">
                         {children.map((child) =>
                           child.target_type === 'external' ? (
-                            <a
-                              key={child.id}
-                              href={child.target_value}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-900"
-                            >
-                              {child.label}
-                            </a>
+                            (() => {
+                              const safeChildHref = sanitizeUrl(child.target_value, {
+                                allowRelative: false,
+                                allowHash: false,
+                                allowMailtoTel: false,
+                              });
+                              if (!safeChildHref) return null;
+                              return (
+                                <a
+                                  key={child.id}
+                                  href={safeChildHref}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-900"
+                                >
+                                  {child.label}
+                                </a>
+                              );
+                            })()
                           ) : (
                             <button
                               key={child.id}
@@ -264,15 +287,25 @@ export const Header: React.FC<HeaderProps> = ({
             return (
               <div key={item.id} className="space-y-1">
                 {item.target_type === 'external' ? (
-                  <a
-                    href={item.target_value}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block w-full text-left px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-700 hover:bg-slate-50 hover:text-emerald-800 min-h-[44px] flex items-center"
-                  >
-                    {item.label}
-                  </a>
+                  (() => {
+                    const safeHref = sanitizeUrl(item.target_value, {
+                      allowRelative: false,
+                      allowHash: false,
+                      allowMailtoTel: false,
+                    });
+                    if (!safeHref) return null;
+                    return (
+                      <a
+                        href={safeHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block w-full text-left px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-700 hover:bg-slate-50 hover:text-emerald-800 min-h-[44px] flex items-center"
+                      >
+                        {item.label}
+                      </a>
+                    );
+                  })()
                 ) : (
                   <button
                     onClick={() => handleItemAction(item)}
@@ -290,16 +323,26 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="pl-4 space-y-1">
                     {children.map((child) =>
                       child.target_type === 'external' ? (
-                        <a
-                          key={child.id}
-                          href={child.target_value}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="block px-3 py-2 text-xs font-medium text-slate-600 hover:text-emerald-800 rounded-lg"
-                        >
-                          {child.label}
-                        </a>
+                        (() => {
+                          const safeChildHref = sanitizeUrl(child.target_value, {
+                            allowRelative: false,
+                            allowHash: false,
+                            allowMailtoTel: false,
+                          });
+                          if (!safeChildHref) return null;
+                          return (
+                            <a
+                              key={child.id}
+                              href={safeChildHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="block px-3 py-2 text-xs font-medium text-slate-600 hover:text-emerald-800 rounded-lg"
+                            >
+                              {child.label}
+                            </a>
+                          );
+                        })()
                       ) : (
                         <button
                           key={child.id}

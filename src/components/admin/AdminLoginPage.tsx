@@ -9,10 +9,10 @@ import {
   KeyRound,
   Eye,
   EyeOff,
-  Copy,
-  Check,
+  Clock,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { validateStrongPassword } from '../../utils/security';
 
 interface AdminLoginPageProps {
   onNavigatePublic: () => void;
@@ -30,10 +30,10 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     isRecoveryMode,
     isConfigured,
     authError,
-    pendingSetupUser,
     loading,
     profileVerifying,
-    isAuthenticatedAdmin,
+    isDashboardAccessGranted,
+    loginLockoutSeconds,
   } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'forgot'>('login');
@@ -47,28 +47,18 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
-  const [copiedSql, setCopiedSql] = useState(false);
 
   const displayError = feedbackError || authError;
-  const bootstrapSql = pendingSetupUser
-    ? `insert into public.admin_profiles (id, email, full_name, role_id, department, is_active)\nvalues (\n  '${pendingSetupUser.id}',\n  '${pendingSetupUser.email}',\n  'System Super Administrator',\n  (select id from public.admin_roles where slug = 'super_admin'),\n  'Management Information Systems (MIS)',\n  true\n)\non conflict (id) do update set\n  role_id = excluded.role_id,\n  is_active = true;`
-    : '';
-
-  const handleCopyBootstrapSql = async () => {
-    if (!bootstrapSql) return;
-    try {
-      await navigator.clipboard.writeText(bootstrapSql);
-      setCopiedSql(true);
-      setTimeout(() => setCopiedSql(false), 2500);
-    } catch {
-      // Clipboard blocked in restricted iframe
-    }
-  };
+  const pwdStrength = validateStrongPassword(newPassword, email);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFeedbackError(null);
     setFeedbackSuccess(null);
+
+    if (loginLockoutSeconds > 0) {
+      return;
+    }
 
     if (!email.trim() || !password) {
       setFeedbackError('Enter both your authorized administrator email and password.');
@@ -79,8 +69,14 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     const res = await signIn(email, password);
     setSubmitting(false);
 
+    // Immediately clear password from React state memory after submission attempt
+    setPassword('');
+
     if (!res.ok) {
-      setFeedbackError(res.error || 'Authentication failed.');
+      setFeedbackError(
+        res.error ||
+          'Invalid administrator credentials or unauthorized account. Please verify your details and try again.'
+      );
       return;
     }
 
@@ -93,7 +89,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     setFeedbackSuccess(null);
 
     if (!email.trim()) {
-      setFeedbackError('Enter your registered administrator email address.');
+      setFeedbackError('Enter your administrator email address.');
       return;
     }
 
@@ -102,12 +98,12 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     setSubmitting(false);
 
     if (!res.ok) {
-      setFeedbackError(res.error || 'Unable to send password reset email.');
+      setFeedbackError(res.error || 'Unable to process password reset request.');
       return;
     }
 
     setFeedbackSuccess(
-      'Password reset instructions have been dispatched to your email if the address is registered in ABCMA Supabase Auth.'
+      'If an active administrator account matches that email, a verified password reset link has been sent.'
     );
   };
 
@@ -116,8 +112,10 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     setFeedbackError(null);
     setFeedbackSuccess(null);
 
-    if (newPassword.length < 8) {
-      setFeedbackError('New password must be at least 8 characters long.');
+    if (!pwdStrength.valid) {
+      setFeedbackError(
+        pwdStrength.error || 'Password does not satisfy minimum security complexity requirements.'
+      );
       return;
     }
     if (newPassword !== confirmNewPassword) {
@@ -128,19 +126,21 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     setSubmitting(true);
     const res = await updatePassword(newPassword);
     setSubmitting(false);
+    setNewPassword('');
+    setConfirmNewPassword('');
 
     if (!res.ok) {
       setFeedbackError(res.error || 'Failed to update password.');
       return;
     }
 
-    setFeedbackSuccess('Your administrator password has been updated. Redirecting to dashboard...');
+    setFeedbackSuccess('Your administrator password has been updated.');
     setTimeout(() => {
       onLoginSuccess();
-    }, 900);
+    }, 800);
   };
 
-  if (!loading && !profileVerifying && isAuthenticatedAdmin && !isRecoveryMode) {
+  if (!loading && !profileVerifying && isDashboardAccessGranted && !isRecoveryMode) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
         <div className="text-xs font-semibold text-slate-600">
@@ -169,7 +169,6 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 
         {/* Main Card */}
         <div className="bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden">
-          {/* Header */}
           <div className="px-6 py-6 bg-slate-900 text-white border-b border-slate-800">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-full bg-white border border-emerald-500/40 overflow-hidden flex items-center justify-center shrink-0">
@@ -192,68 +191,39 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
           </div>
 
           <div className="p-6 space-y-5">
-            {/* Environment Warning when Supabase isn't connected */}
             {!isConfigured && (
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs space-y-2">
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs space-y-1.5">
                 <div className="flex items-center gap-2 font-bold">
                   <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
-                  <span>Supabase Configuration Required</span>
+                  <span>Authentication Service Unavailable</span>
                 </div>
-                <p className="leading-relaxed text-amber-900">
-                  Supabase authentication is disabled because{' '}
-                  <code className="font-mono bg-amber-100 px-1 rounded">VITE_SUPABASE_URL</code> and{' '}
-                  <code className="font-mono bg-amber-100 px-1 rounded">VITE_SUPABASE_PUBLISHABLE_KEY</code>{' '}
-                  (or <code className="font-mono bg-amber-100 px-1 rounded">VITE_SUPABASE_ANON_KEY</code>) are
-                  not configured in this environment.
+                <p className="text-[11px] text-amber-900">
+                  Portal environment configuration is missing. Contact the Municipal Systems Administrator.
                 </p>
-                <p className="text-[11px] text-amber-800">
-                  Set both variables in Vercel Project Settings or <code className="font-mono">.env.local</code>, apply the SQL migrations in <code className="font-mono">supabase/migrations/</code>, and bootstrap your initial Super Administrator account.
-                </p>
+              </div>
+            )}
+
+            {loginLockoutSeconds > 0 && (
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs flex items-start gap-2">
+                <Clock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-bold">Temporary Login Lockout Active</div>
+                  <p className="text-[11px] text-amber-900 mt-0.5">
+                    Sign-in attempts are paused for{' '}
+                    <span className="font-mono font-bold">
+                      {Math.floor(loginLockoutSeconds / 60)}:
+                      {String(loginLockoutSeconds % 60).padStart(2, '0')}
+                    </span>{' '}
+                    due to repeated failed attempts.
+                  </p>
+                </div>
               </div>
             )}
 
             {displayError && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-2">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span className="font-medium">{displayError}</span>
-                </div>
-                {displayError.toLowerCase().includes('invalid login credentials') && (
-                  <p className="pl-6 text-[11px] text-rose-700 leading-relaxed">
-                    Verify that this user exists in{' '}
-                    <strong>Supabase Dashboard &rarr; Authentication &rarr; Users</strong>, that{' '}
-                    <strong>Auto Confirm User</strong> was checked, and that the email/password match.
-                  </p>
-                )}
-                {displayError.toLowerCase().includes('email not confirmed') && (
-                  <p className="pl-6 text-[11px] text-rose-700 leading-relaxed">
-                    Open <strong>Supabase Dashboard &rarr; Authentication &rarr; Users</strong>, select this user, and confirm their email address before signing in.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {pendingSetupUser && (
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs space-y-2.5">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold">Complete Super Admin Linking in Supabase</span>
-                  <button
-                    type="button"
-                    onClick={handleCopyBootstrapSql}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-900 text-white text-[11px] font-semibold hover:bg-amber-950 cursor-pointer"
-                  >
-                    {copiedSql ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                    <span>{copiedSql ? 'Copied SQL' : 'Copy SQL'}</span>
-                  </button>
-                </div>
-                <p className="text-[11px] text-amber-900 leading-relaxed">
-                  Run this query in <strong>Supabase Dashboard &rarr; SQL Editor</strong> to authorize{' '}
-                  <code className="font-mono bg-amber-100 px-1 rounded">{pendingSetupUser.email}</code>{' '}
-                  (UID: <code className="font-mono bg-amber-100 px-1 rounded">{pendingSetupUser.id}</code>), then sign in again:
-                </p>
-                <pre className="p-2.5 rounded-lg bg-slate-900 text-emerald-300 text-[10px] font-mono overflow-x-auto leading-relaxed">
-                  {bootstrapSql}
-                </pre>
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="font-medium">{displayError}</span>
               </div>
             )}
 
@@ -269,10 +239,10 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                 <div className="space-y-1">
                   <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                     <KeyRound className="w-4 h-4 text-emerald-700" />
-                    <span>Set New Administrator Password</span>
+                    <span>Set New Strong Password</span>
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Enter a strong new password for your ABCMA administrator account.
+                    Administrators must maintain a strong, unique password meeting all complexity checks.
                   </p>
                 </div>
 
@@ -283,12 +253,33 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                   <input
                     type="password"
                     required
-                    minLength={8}
+                    minLength={12}
+                    autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimum 8 characters"
+                    placeholder="Minimum 12 characters"
                     className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700"
                   />
+                  <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-slate-600">
+                    <span className={pwdStrength.checks.minLength ? 'text-emerald-700 font-semibold' : ''}>
+                      • 12+ characters
+                    </span>
+                    <span className={pwdStrength.checks.hasUpper ? 'text-emerald-700 font-semibold' : ''}>
+                      • Uppercase letter
+                    </span>
+                    <span className={pwdStrength.checks.hasLower ? 'text-emerald-700 font-semibold' : ''}>
+                      • Lowercase letter
+                    </span>
+                    <span className={pwdStrength.checks.hasDigit ? 'text-emerald-700 font-semibold' : ''}>
+                      • Number (0-9)
+                    </span>
+                    <span className={pwdStrength.checks.hasSpecial ? 'text-emerald-700 font-semibold' : ''}>
+                      • Special symbol
+                    </span>
+                    <span className={pwdStrength.checks.notCommonOrEmail ? 'text-emerald-700 font-semibold' : ''}>
+                      • Not common/email
+                    </span>
+                  </div>
                 </div>
 
                 <div>
@@ -298,20 +289,21 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                   <input
                     type="password"
                     required
-                    minLength={8}
+                    minLength={12}
+                    autoComplete="new-password"
                     value={confirmNewPassword}
                     onChange={(e) => setConfirmNewPassword(e.target.value)}
-                    placeholder="Re-enter password"
+                    placeholder="Re-enter strong password"
                     className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={submitting || !isConfigured}
+                  disabled={submitting || !isConfigured || !pwdStrength.valid}
                   className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-sm transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {submitting ? 'Updating Password...' : 'Save New Password'}
+                  {submitting ? 'Updating Password...' : 'Save Strong Password'}
                 </button>
               </form>
             ) : mode === 'login' ? (
@@ -375,7 +367,13 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 
                 <button
                   type="submit"
-                  disabled={submitting || loading || profileVerifying || !isConfigured}
+                  disabled={
+                    submitting ||
+                    loading ||
+                    profileVerifying ||
+                    !isConfigured ||
+                    loginLockoutSeconds > 0
+                  }
                   className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-sm transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {loading || profileVerifying
@@ -392,7 +390,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                     Reset Administrator Password
                   </h2>
                   <p className="text-xs text-slate-500">
-                    A secure Supabase recovery link will be sent to your authorized email.
+                    Enter your email address to receive a verified Supabase Auth recovery link.
                   </p>
                 </div>
 
@@ -418,7 +416,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                   disabled={submitting || !isConfigured}
                   className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-sm transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {submitting ? 'Sending Recovery Link...' : 'Send Password Reset Email'}
+                  {submitting ? 'Processing Request...' : 'Send Password Reset Email'}
                 </button>
 
                 <button
@@ -435,11 +433,10 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
               </form>
             )}
 
-            {/* Security Notice (No Public Signup) */}
             <div className="pt-4 border-t border-slate-100 flex items-start gap-2.5 text-[11px] text-slate-500">
               <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
               <span>
-                Restricted official system. Public self-registration is disabled. Access is enforced via Supabase Row Level Security (RLS) for authorized Super Administrators, Content Administrators, and Editors only.
+                Restricted official system. Sessions expire automatically on browser exit or 15 minutes of inactivity. Protected by Row Level Security.
               </span>
             </div>
           </div>
@@ -448,3 +445,4 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     </div>
   );
 };
+

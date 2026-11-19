@@ -1,13 +1,27 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured, logAdminActivity } from '../lib/supabase';
+import {
+  supabase,
+  isSupabaseConfigured,
+  logAdminActivity,
+  checkServerLoginRateLimit,
+  recordServerLoginAttempt,
+} from '../lib/supabase';
 import { supabaseUrl, supabasePublishableKey } from '../lib/supabaseClient.js';
 import { AdminProfile, AdminRole, AdminRoleSlug } from '../types/cms';
+import {
+  checkClientRateLimit,
+  recordClientRateLimitEvent,
+  clearClientRateLimit,
+  validateStrongPassword,
+  toSafeErrorMessage,
+} from '../utils/security';
 
-export interface PendingSetupUser {
-  id: string;
-  email: string;
-}
+export const INACTIVITY_TIMEOUT_SECONDS = 15 * 60; // 15 minutes
+export const INACTIVITY_WARNING_SECONDS = 2 * 60; // 2-minute countdown warning
+
+const GENERIC_LOGIN_ERROR =
+  'Invalid administrator credentials or unauthorized account. Please verify your details and try again.';
 
 interface ProfileLookupResult {
   profile: AdminProfile | null;
@@ -25,19 +39,24 @@ interface AuthContextValue {
   loading: boolean;
   profileVerifying: boolean;
   authError: string | null;
-  pendingSetupUser: PendingSetupUser | null;
   isRecoveryMode: boolean;
   isConfigured: boolean;
   isAuthenticatedAdmin: boolean;
+  isDashboardAccessGranted: boolean;
   isSuperAdmin: boolean;
   canPublishOrDelete: boolean;
   canManageAdmins: boolean;
   canEditContent: boolean;
+  loginLockoutSeconds: number;
+  idleRemainingSeconds: number;
+  idleWarningActive: boolean;
   signIn: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
-  signOut: () => Promise<void>;
+  signOut: (reason?: 'USER_LOGOUT' | 'SESSION_TIMEOUT') => Promise<void>;
   requestPasswordReset: (email: string) => Promise<{ ok: boolean; error?: string }>;
   updatePassword: (newPassword: string) => Promise<{ ok: boolean; error?: string }>;
+  reauthenticate: (password: string) => Promise<{ ok: boolean; error?: string }>;
   refreshProfile: () => Promise<void>;
+  extendSession: () => void;
   clearRecoveryMode: () => void;
 }
 
@@ -108,13 +127,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(isSupabaseConfigured);
   const [profileVerifying, setProfileVerifying] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [pendingSetupUser, setPendingSetupUser] = useState<PendingSetupUser | null>(null);
   const [isRecoveryMode, setIsRecoveryMode] = useState<boolean>(false);
+
+  const [loginLockoutSeconds, setLoginLockoutSeconds] = useState<number>(0);
+
+  const [idleRemainingSeconds, setIdleRemainingSeconds] = useState<number>(INACTIVITY_TIMEOUT_SECONDS);
 
   const mountedRef = useRef<boolean>(true);
   const signingInRef = useRef<boolean>(false);
   const sessionRef = useRef<Session | null>(null);
   const adminProfileRef = useRef<AdminProfile | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
   const inFlightProfileRef = useRef<{
     userId: string;
     promise: Promise<ProfileLookupResult>;
@@ -135,17 +158,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     async (
       userId: string,
       explicitAccessToken?: string,
-      options?: { preserveOnTransientError?: boolean }
+      options?: { preserveOnTransientError?: boolean; suppressAuthError?: boolean }
     ): Promise<ProfileLookupResult> => {
       if (!supabase) {
         return {
           profile: null,
-          errorMessage: 'Supabase client is not configured.',
+          errorMessage: 'Authentication service is unavailable.',
           missingProfile: false,
         };
       }
 
-      // Deduplicate concurrent lookups for the same user ID
       if (inFlightProfileRef.current && inFlightProfileRef.current.userId === userId) {
         return inFlightProfileRef.current.promise;
       }
@@ -155,7 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!sb) {
           return {
             profile: null,
-            errorMessage: 'Supabase client is not configured.',
+            errorMessage: 'Authentication service is unavailable.',
             missingProfile: false,
           };
         }
@@ -170,7 +192,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        // Step 1: Try querying admin_profiles joined with admin_roles using the Supabase client
         let profileRow: (AdminProfile & { role?: AdminRole | AdminRole[] | null }) | null = null;
         let queryErrorMsg: string | null = null;
 
@@ -192,7 +213,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           queryErrorMsg = err instanceof Error ? err.message : 'Unable to query admin profile.';
         }
 
-        // Step 2: If the embedded join errored or returned empty, query admin_profiles directly
         if (!profileRow && queryErrorMsg) {
           try {
             const plainRes = await sb
@@ -212,7 +232,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        // Step 3: If client returned no row (or errored) and we have a JWT, query directly with Bearer JWT
         if (!profileRow && token) {
           const directRes = await fetchProfileWithExplicitJwt(userId, token);
           if (directRes.error) {
@@ -221,13 +240,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             queryErrorMsg = null;
             profileRow = directRes.row as unknown as AdminProfile;
           } else {
-            // HTTP 200 with empty result confirms no profile exists
             queryErrorMsg = null;
           }
         }
 
         if (queryErrorMsg) {
-          const msg = `Unable to verify administrator profile: ${queryErrorMsg}`;
+          const safeMsg = toSafeErrorMessage(
+            queryErrorMsg,
+            'Unable to verify administrator session right now.'
+          );
           if (
             options?.preserveOnTransientError &&
             adminProfileRef.current?.id === userId &&
@@ -241,43 +262,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
           }
           if (mountedRef.current) {
-            setAuthError(msg);
+            if (!options?.suppressAuthError) setAuthError(safeMsg);
             commitAdminProfile(null);
           }
           return {
             profile: null,
-            errorMessage: msg,
+            errorMessage: safeMsg,
             missingProfile: false,
             transientError: true,
           };
         }
 
         if (!profileRow) {
-          const msg =
-            'Your email and password are valid in Supabase Auth, but no matching administrator profile was found in public.admin_profiles.';
           if (mountedRef.current) {
-            setAuthError(msg);
+            if (!options?.suppressAuthError) setAuthError(GENERIC_LOGIN_ERROR);
             commitAdminProfile(null);
           }
-          return { profile: null, errorMessage: msg, missingProfile: true };
+          return { profile: null, errorMessage: GENERIC_LOGIN_ERROR, missingProfile: true };
         }
 
         if (!profileRow.is_active) {
-          const msg =
-            'Your administrator account is inactive or suspended. Contact a Super Administrator.';
           if (mountedRef.current) {
-            setAuthError(msg);
+            if (!options?.suppressAuthError) setAuthError(GENERIC_LOGIN_ERROR);
             commitAdminProfile(null);
           }
           return {
             profile: null,
-            errorMessage: msg,
+            errorMessage: GENERIC_LOGIN_ERROR,
             missingProfile: false,
             inactiveProfile: true,
           };
         }
 
-        // Step 4: Normalize or fetch the corresponding role from public.admin_roles
         let resolvedRole: AdminRole | null = Array.isArray(profileRow.role)
           ? profileRow.role[0] ?? null
           : profileRow.role ?? null;
@@ -297,7 +313,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               if (directRole.role) {
                 resolvedRole = directRole.role;
               } else if (directRole.error) {
-                const msg = `Unable to load administrator role: ${directRole.error}`;
+                const safeMsg = toSafeErrorMessage(
+                  directRole.error,
+                  'Unable to verify administrator role.'
+                );
                 if (
                   options?.preserveOnTransientError &&
                   adminProfileRef.current?.id === userId &&
@@ -311,73 +330,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   };
                 }
                 if (mountedRef.current) {
-                  setAuthError(msg);
+                  if (!options?.suppressAuthError) setAuthError(safeMsg);
                   commitAdminProfile(null);
                 }
-                return { profile: null, errorMessage: msg, missingProfile: false, transientError: true };
+                return { profile: null, errorMessage: safeMsg, missingProfile: false, transientError: true };
               }
-            } else if (roleRes.error) {
-              const msg = `Unable to load administrator role: ${roleRes.error.message}`;
-              if (
-                options?.preserveOnTransientError &&
-                adminProfileRef.current?.id === userId &&
-                adminProfileRef.current.is_active
-              ) {
-                return {
-                  profile: adminProfileRef.current,
-                  errorMessage: null,
-                  missingProfile: false,
-                  transientError: true,
-                };
-              }
-              if (mountedRef.current) {
-                setAuthError(msg);
-                commitAdminProfile(null);
-              }
-              return { profile: null, errorMessage: msg, missingProfile: false, transientError: true };
             }
           } catch (err) {
-            const msg = err instanceof Error ? err.message : 'Unable to load administrator role.';
-            if (
-              options?.preserveOnTransientError &&
-              adminProfileRef.current?.id === userId &&
-              adminProfileRef.current.is_active
-            ) {
-              return {
-                profile: adminProfileRef.current,
-                errorMessage: null,
-                missingProfile: false,
-                transientError: true,
-              };
-            }
+            const safeMsg = toSafeErrorMessage(err, 'Unable to verify administrator role.');
             if (mountedRef.current) {
-              setAuthError(`Unable to load administrator role: ${msg}`);
+              if (!options?.suppressAuthError) setAuthError(safeMsg);
               commitAdminProfile(null);
             }
-            return { profile: null, errorMessage: msg, missingProfile: false, transientError: true };
+            return { profile: null, errorMessage: safeMsg, missingProfile: false, transientError: true };
           }
         }
 
         if (!resolvedRole) {
-          const msg =
-            'Administrator role record could not be retrieved from public.admin_roles. Verify RLS policies and role assignment.';
-          if (
-            options?.preserveOnTransientError &&
-            adminProfileRef.current?.id === userId &&
-            adminProfileRef.current.is_active
-          ) {
-            return {
-              profile: adminProfileRef.current,
-              errorMessage: null,
-              missingProfile: false,
-              transientError: true,
-            };
-          }
           if (mountedRef.current) {
-            setAuthError(msg);
+            if (!options?.suppressAuthError) setAuthError(GENERIC_LOGIN_ERROR);
             commitAdminProfile(null);
           }
-          return { profile: null, errorMessage: msg, missingProfile: false };
+          return { profile: null, errorMessage: GENERIC_LOGIN_ERROR, missingProfile: false };
         }
 
         const fullProfile: AdminProfile = {
@@ -387,7 +361,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (mountedRef.current) {
           setAuthError(null);
-          setPendingSetupUser(null);
           commitAdminProfile(fullProfile);
         }
         return { profile: fullProfile, errorMessage: null, missingProfile: false };
@@ -442,7 +415,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (err) {
         if (mountedRef.current) {
-          setAuthError(err instanceof Error ? err.message : 'Unable to restore session.');
+          setAuthError(toSafeErrorMessage(err, 'Unable to restore session.'));
         }
       } finally {
         initialFinished = true;
@@ -455,7 +428,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initSession();
 
-    // Keep callback synchronous so Supabase's internal auth state never deadlocks.
     const { data: listener } = sb.auth.onAuthStateChange((event, nextSession) => {
       if (!mountedRef.current) return;
 
@@ -467,7 +439,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // Let initSession() own the initial hydration so loading never drops prematurely.
       if (event === 'INITIAL_SESSION' && !initialFinished) {
         return;
       }
@@ -476,14 +447,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_OUT' || initialFinished) {
           commitSession(null);
           commitAdminProfile(null);
-          setPendingSetupUser(null);
           setProfileVerifying(false);
           setLoading(false);
         }
         return;
       }
 
-      // Update active session & user cleanly
       commitSession(nextSession);
 
       const uid = nextSession.user.id;
@@ -491,9 +460,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const alreadyVerifiedSameUser =
         adminProfileRef.current?.id === uid && adminProfileRef.current.is_active;
 
-      // On token refresh or redundant event for the same already-verified active admin,
-      // preserve the active dashboard without resetting profile or toggling loading.
-      if (event === 'TOKEN_REFRESHED' && alreadyVerifiedSameUser) {
+      if (event === 'TOKEN_REFRESHED') {
+        if (!alreadyVerifiedSameUser) {
+          setTimeout(() => {
+            if (!mountedRef.current || signingInRef.current) return;
+            void loadAdminProfile(uid, token, { preserveOnTransientError: true });
+          }, 0);
+        }
         return;
       }
 
@@ -505,7 +478,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // Verify profile for newly authenticated / restored session without treating loading as logged-out
       setProfileVerifying(true);
       setTimeout(() => {
         if (!mountedRef.current || signingInRef.current) return;
@@ -524,37 +496,178 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [loadAdminProfile, commitSession, commitAdminProfile]);
 
+  // Lockout countdown ticker
+  useEffect(() => {
+    if (loginLockoutSeconds <= 0) return;
+    const timer = window.setInterval(() => {
+      setLoginLockoutSeconds((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [loginLockoutSeconds]);
+
+  const roleSlug: AdminRoleSlug | null = adminProfile?.role?.slug ?? null;
+  const isAuthenticatedAdmin = Boolean(session && adminProfile && adminProfile.is_active);
+  const isDashboardAccessGranted = isAuthenticatedAdmin;
+
+  const isSuperAdmin = isDashboardAccessGranted && roleSlug === 'super_admin';
+  const canPublishOrDelete =
+    isDashboardAccessGranted && (roleSlug === 'super_admin' || roleSlug === 'content_admin');
+  const canManageAdmins = isSuperAdmin;
+  const canEditContent =
+    isDashboardAccessGranted &&
+    (roleSlug === 'super_admin' || roleSlug === 'content_admin' || roleSlug === 'editor');
+
+  const signOut = useCallback(
+    async (reason: 'USER_LOGOUT' | 'SESSION_TIMEOUT' = 'USER_LOGOUT') => {
+      if (!supabase) return;
+      const currentProfile = adminProfileRef.current;
+      if (currentProfile) {
+        try {
+          await logAdminActivity({
+            adminId: currentProfile.id,
+            adminEmail: currentProfile.email,
+            adminName: currentProfile.full_name,
+            action: reason === 'SESSION_TIMEOUT' ? 'SESSION_TIMEOUT' : 'LOGOUT',
+            entityType: 'admin_session',
+            entityId: currentProfile.id,
+            entityLabel:
+              reason === 'SESSION_TIMEOUT'
+                ? `${currentProfile.full_name} auto-logged out due to inactivity`
+                : `${currentProfile.full_name} signed out`,
+            outcome: reason === 'SESSION_TIMEOUT' ? 'blocked' : 'success',
+          });
+        } catch {
+          // Ignore audit failure on sign-out
+        }
+      }
+      await supabase.auth.signOut();
+      commitAdminProfile(null);
+      commitSession(null);
+      setAuthError(null);
+      setIsRecoveryMode(false);
+      setProfileVerifying(false);
+      setLoading(false);
+    },
+    [commitAdminProfile, commitSession]
+  );
+
+  const extendSession = useCallback(() => {
+    lastActivityRef.current = Date.now();
+    setIdleRemainingSeconds(INACTIVITY_TIMEOUT_SECONDS);
+  }, []);
+
+  // Strict inactivity expiration when dashboard is active
+  useEffect(() => {
+    if (!isDashboardAccessGranted) {
+      lastActivityRef.current = Date.now();
+      setIdleRemainingSeconds(INACTIVITY_TIMEOUT_SECONDS);
+      return;
+    }
+
+    lastActivityRef.current = Date.now();
+    setIdleRemainingSeconds(INACTIVITY_TIMEOUT_SECONDS);
+
+    let lastRecorded = Date.now();
+    const recordActivity = () => {
+      const now = Date.now();
+      if (now - lastRecorded > 1000) {
+        lastRecorded = now;
+        lastActivityRef.current = now;
+        setIdleRemainingSeconds(INACTIVITY_TIMEOUT_SECONDS);
+      }
+    };
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'] as const;
+    events.forEach((evt) => window.addEventListener(evt, recordActivity, { passive: true }));
+
+    const interval = window.setInterval(() => {
+      const elapsedSec = Math.floor((Date.now() - lastActivityRef.current) / 1000);
+      const remaining = Math.max(0, INACTIVITY_TIMEOUT_SECONDS - elapsedSec);
+      setIdleRemainingSeconds(remaining);
+      if (remaining === 0) {
+        window.clearInterval(interval);
+        void signOut('SESSION_TIMEOUT');
+        if (mountedRef.current) {
+          setAuthError('Your administrator session expired due to 15 minutes of inactivity.');
+        }
+      }
+    }, 1000);
+
+    return () => {
+      events.forEach((evt) => window.removeEventListener(evt, recordActivity));
+      window.clearInterval(interval);
+    };
+  }, [isDashboardAccessGranted, signOut]);
+
+  const idleWarningActive =
+    isDashboardAccessGranted &&
+    idleRemainingSeconds > 0 &&
+    idleRemainingSeconds <= INACTIVITY_WARNING_SECONDS;
+
   const signIn = async (email: string, password: string): Promise<{ ok: boolean; error?: string }> => {
     if (!supabase) {
       return {
         ok: false,
-        error:
-          'Supabase environment variables (VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY) are not configured.',
+        error: 'Authentication service is not configured.',
       };
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+    const rateKey = `admin_login:${cleanEmail || 'unknown'}`;
+
+    const clientCheck = checkClientRateLimit(rateKey);
+    if (clientCheck.blocked) {
+      setLoginLockoutSeconds(clientCheck.retryAfterSeconds);
+      const msg = `Too many failed sign-in attempts. Please wait ${Math.ceil(clientCheck.retryAfterSeconds / 60)} minute(s) before retrying.`;
+      setAuthError(msg);
+      return { ok: false, error: msg };
+    }
+
+    const serverCheck = await checkServerLoginRateLimit(cleanEmail);
+    if (serverCheck.blocked) {
+      setLoginLockoutSeconds(serverCheck.retryAfterSeconds);
+      const msg = `Account login temporarily locked due to repeated failed attempts. Retry in ${Math.ceil(serverCheck.retryAfterSeconds / 60)} minute(s).`;
+      setAuthError(msg);
+      return { ok: false, error: msg };
+    }
+
     setAuthError(null);
-    setPendingSetupUser(null);
     signingInRef.current = true;
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: cleanEmail,
         password,
       });
 
-      if (error) {
-        setAuthError(error.message);
-        return { ok: false, error: error.message };
+      if (error || !data.user || !data.session) {
+        const clientRec = recordClientRateLimitEvent(rateKey, {
+          maxAttempts: 5,
+          windowMs: 15 * 60 * 1000,
+          lockoutMs: 15 * 60 * 1000,
+        });
+        const serverRec = await recordServerLoginAttempt(
+          cleanEmail,
+          false,
+          error?.message?.slice(0, 60) || 'invalid_credentials'
+        );
+
+        const retrySec = Math.max(clientRec.retryAfterSeconds, serverRec.retryAfterSeconds);
+        if (retrySec > 0) {
+          setLoginLockoutSeconds(retrySec);
+          const lockMsg = `Too many failed sign-in attempts. Login is temporarily locked for ${Math.ceil(retrySec / 60)} minute(s).`;
+          setAuthError(lockMsg);
+          return { ok: false, error: lockMsg };
+        }
+
+        // Progressive delay on failed attempt (anti-brute-force)
+        const delayMs = Math.min(1800, 350 * Math.max(1, clientRec.attemptsInWindow));
+        await new Promise((r) => setTimeout(r, delayMs));
+
+        setAuthError(GENERIC_LOGIN_ERROR);
+        return { ok: false, error: GENERIC_LOGIN_ERROR };
       }
 
-      if (!data.user || !data.session) {
-        const msg = 'Authentication failed. No user session was returned by Supabase.';
-        setAuthError(msg);
-        return { ok: false, error: msg };
-      }
-
-      // Ensure the Supabase client session store holds the fresh session before querying RLS tables
       const { data: currentSessionData } = await supabase.auth.getSession();
       if (!currentSessionData.session) {
         await supabase.auth.setSession({
@@ -565,33 +678,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const lookup = await loadAdminProfile(data.user.id, data.session.access_token, {
         preserveOnTransientError: false,
+        suppressAuthError: true,
       });
+
       if (!lookup.profile) {
-        if (lookup.missingProfile) {
-          setPendingSetupUser({
-            id: data.user.id,
-            email: data.user.email || email.trim(),
-          });
-        }
         await supabase.auth.signOut();
         commitSession(null);
         commitAdminProfile(null);
-        const msg =
-          lookup.errorMessage ||
-          'Access denied. This account is not registered in admin_profiles or has been deactivated.';
-        setAuthError(msg);
-        return { ok: false, error: msg };
+        recordClientRateLimitEvent(rateKey);
+        await recordServerLoginAttempt(
+          cleanEmail,
+          false,
+          lookup.inactiveProfile ? 'inactive_admin' : 'missing_admin_profile'
+        );
+        setAuthError(GENERIC_LOGIN_ERROR);
+        return { ok: false, error: GENERIC_LOGIN_ERROR };
       }
 
-      // Commit verified session + profile before returning so /admin never bounces back
+      clearClientRateLimit(rateKey);
+      setLoginLockoutSeconds(0);
+
       commitSession(data.session);
       commitAdminProfile(lookup.profile);
+
       setAuthError(null);
-      setPendingSetupUser(null);
       setProfileVerifying(false);
       setLoading(false);
 
-      // Record last login & audit entry asynchronously so navigation is immediate and non-blocking
       const profileSnapshot = lookup.profile;
       const sbClient = supabase;
       void (async () => {
@@ -601,96 +714,133 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .update({ last_login_at: new Date().toISOString() })
             .eq('id', profileSnapshot.id);
 
-          await logAdminActivity({
-            adminId: profileSnapshot.id,
-            adminEmail: profileSnapshot.email,
-            adminName: profileSnapshot.full_name,
-            action: 'LOGIN',
-            entityType: 'admin_session',
-            entityId: profileSnapshot.id,
-            entityLabel: `${profileSnapshot.full_name} (${profileSnapshot.role?.slug || 'admin'}) signed in`,
-          });
+          const serverRes = await recordServerLoginAttempt(cleanEmail, true);
+          if (!serverRes) {
+            await logAdminActivity({
+              adminId: profileSnapshot.id,
+              adminEmail: profileSnapshot.email,
+              adminName: profileSnapshot.full_name,
+              action: 'LOGIN_SUCCESS',
+              entityType: 'admin_session',
+              entityId: profileSnapshot.id,
+              entityLabel: `${profileSnapshot.full_name} (${profileSnapshot.role?.slug || 'admin'}) authenticated`,
+              outcome: 'success',
+            });
+          }
         } catch {
-          // Non-blocking audit telemetry
+          // Non-blocking audit update
         }
       })();
 
       return { ok: true };
-    } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : 'Unexpected error during administrator sign-in.';
-      setAuthError(msg);
-      return { ok: false, error: msg };
+    } catch {
+      setAuthError(GENERIC_LOGIN_ERROR);
+      return { ok: false, error: GENERIC_LOGIN_ERROR };
     } finally {
       signingInRef.current = false;
     }
   };
 
-  const signOut = async () => {
-    if (!supabase) return;
-    const currentProfile = adminProfileRef.current;
-    if (currentProfile) {
-      try {
-        await logAdminActivity({
-          adminId: currentProfile.id,
-          adminEmail: currentProfile.email,
-          adminName: currentProfile.full_name,
-          action: 'LOGOUT',
-          entityType: 'admin_session',
-          entityId: currentProfile.id,
-          entityLabel: `${currentProfile.full_name} signed out`,
-        });
-      } catch {
-        // Ignore audit write failure on logout
-      }
-    }
-    await supabase.auth.signOut();
-    commitAdminProfile(null);
-    commitSession(null);
-    setAuthError(null);
-    setPendingSetupUser(null);
-    setIsRecoveryMode(false);
-    setProfileVerifying(false);
-    setLoading(false);
-  };
-
   const requestPasswordReset = async (email: string): Promise<{ ok: boolean; error?: string }> => {
     if (!supabase) {
+      return { ok: false, error: 'Authentication service is not configured.' };
+    }
+    const cleanEmail = email.trim().toLowerCase();
+    const rateKey = `pwd_reset:${cleanEmail || 'unknown'}`;
+    const check = checkClientRateLimit(rateKey, 15 * 60 * 1000);
+    if (check.blocked) {
       return {
         ok: false,
-        error:
-          'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY first.',
+        error: `Please wait ${Math.ceil(check.retryAfterSeconds / 60)} minute(s) before requesting another reset email.`,
       };
     }
+    recordClientRateLimitEvent(rateKey, {
+      maxAttempts: 3,
+      windowMs: 15 * 60 * 1000,
+      lockoutMs: 15 * 60 * 1000,
+    });
+
     const redirectTo = `${window.location.origin}/admin/login`;
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
-    if (error) {
-      return { ok: false, error: error.message };
-    }
+    await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo });
+    // Generic response prevents email enumeration even on reset endpoints
     return { ok: true };
   };
 
   const updatePassword = async (newPassword: string): Promise<{ ok: boolean; error?: string }> => {
     if (!supabase) {
-      return { ok: false, error: 'Supabase is not configured.' };
+      return { ok: false, error: 'Authentication service is not configured.' };
     }
+    const pwdCheck = validateStrongPassword(newPassword, user?.email);
+    if (!pwdCheck.valid) {
+      return { ok: false, error: pwdCheck.error || 'Password does not meet complexity rules.' };
+    }
+
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
-      return { ok: false, error: error.message };
+      return {
+        ok: false,
+        error: toSafeErrorMessage(error.message, 'Unable to update password.'),
+      };
     }
+
+    const prof = adminProfileRef.current;
+    if (prof) {
+      await logAdminActivity({
+        adminId: prof.id,
+        adminEmail: prof.email,
+        adminName: prof.full_name,
+        action: 'PASSWORD_CHANGE',
+        entityType: 'admin_profile',
+        entityId: prof.id,
+        entityLabel: `${prof.full_name} updated account password`,
+        outcome: 'success',
+      }).catch(() => {});
+    }
+
     setIsRecoveryMode(false);
     return { ok: true };
   };
 
-  const roleSlug: AdminRoleSlug | null = adminProfile?.role?.slug ?? null;
-  const isAuthenticatedAdmin = Boolean(session && adminProfile && adminProfile.is_active);
-  const isSuperAdmin = isAuthenticatedAdmin && roleSlug === 'super_admin';
-  const canPublishOrDelete =
-    isAuthenticatedAdmin && (roleSlug === 'super_admin' || roleSlug === 'content_admin');
-  const canManageAdmins = isSuperAdmin;
-  const canEditContent =
-    isAuthenticatedAdmin &&
-    (roleSlug === 'super_admin' || roleSlug === 'content_admin' || roleSlug === 'editor');
+  /**
+   * Verify the currently signed-in administrator's password via direct GoTrue REST
+   * endpoint so we do NOT disturb the active session listener on the shared client.
+   */
+  const reauthenticate = async (password: string): Promise<{ ok: boolean; error?: string }> => {
+    const email = user?.email || adminProfileRef.current?.email;
+    if (!email || !password) {
+      return { ok: false, error: 'Enter your current password to confirm.' };
+    }
+    try {
+      const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+          apikey: supabasePublishableKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        const prof = adminProfileRef.current;
+        if (prof) {
+          void logAdminActivity({
+            adminId: prof.id,
+            adminEmail: prof.email,
+            adminName: prof.full_name,
+            action: 'REAUTH_FAILED',
+            entityType: 'admin_session',
+            entityId: prof.id,
+            entityLabel: 'Failed reauthentication challenge for sensitive operation',
+            outcome: 'failure',
+          }).catch(() => {});
+        }
+        return { ok: false, error: 'Incorrect current password.' };
+      }
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'Unable to verify credentials right now.' };
+    }
+  };
 
   return (
     <AuthContext.Provider
@@ -702,19 +852,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         profileVerifying,
         authError,
-        pendingSetupUser,
         isRecoveryMode,
         isConfigured: isSupabaseConfigured,
         isAuthenticatedAdmin,
+        isDashboardAccessGranted,
         isSuperAdmin,
         canPublishOrDelete,
         canManageAdmins,
         canEditContent,
+        loginLockoutSeconds,
+        idleRemainingSeconds,
+        idleWarningActive,
         signIn,
         signOut,
         requestPasswordReset,
         updatePassword,
+        reauthenticate,
         refreshProfile,
+        extendSession,
         clearRecoveryMode: () => setIsRecoveryMode(false),
       }}
     >
@@ -730,3 +885,4 @@ export function useAuth(): AuthContextValue {
   }
   return ctx;
 }
+

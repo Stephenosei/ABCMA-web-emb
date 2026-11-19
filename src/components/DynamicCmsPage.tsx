@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Calendar, Download, FileText, Globe } from 'lucide-react';
 import { useCms } from '../context/CmsContext';
+import { sanitizeHtml, sanitizeUrl } from '../utils/security';
 
 interface DynamicCmsPageProps {
   slug: string;
@@ -46,6 +47,18 @@ export const DynamicCmsPage: React.FC<DynamicCmsPageProps> = ({ slug, onNavigate
   }
 
   const publishedDate = page.published_at || page.updated_at;
+  const safeFeaturedImage = page.featured_image_url
+    ? sanitizeUrl(page.featured_image_url, { allowRelative: true, allowHash: false, allowMailtoTel: false })
+    : '';
+  const safeContentHtml = sanitizeHtml(page.content_html || '');
+  const safeAttachments = Array.isArray(page.attachments)
+    ? page.attachments
+        .map((att) => ({
+          ...att,
+          url: sanitizeUrl(att.url, { allowRelative: true, allowHash: false, allowMailtoTel: false }),
+        }))
+        .filter((att): att is typeof att & { url: string } => Boolean(att.url))
+    : [];
 
   return (
     <section className="py-10 lg:py-14 bg-transparent min-h-screen">
@@ -70,10 +83,10 @@ export const DynamicCmsPage: React.FC<DynamicCmsPageProps> = ({ slug, onNavigate
         </button>
 
         <article className="bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-3xl overflow-hidden shadow-xl">
-          {page.featured_image_url && (
+          {safeFeaturedImage && (
             <div className="relative h-60 sm:h-72 bg-slate-900 overflow-hidden">
               <img
-                src={page.featured_image_url}
+                src={safeFeaturedImage}
                 alt={page.title}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
@@ -107,17 +120,17 @@ export const DynamicCmsPage: React.FC<DynamicCmsPageProps> = ({ slug, onNavigate
 
             <div
               className="text-sm sm:text-base text-slate-700 leading-relaxed space-y-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-slate-900 [&_h1]:mt-6 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:mt-5 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:text-slate-900 [&_h3]:mt-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_a]:text-emerald-800 [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-slate-300 [&_th]:bg-slate-100 [&_th]:p-2.5 [&_th]:text-left [&_th]:text-xs [&_td]:border [&_td]:border-slate-300 [&_td]:p-2.5 [&_td]:text-xs [&_img]:rounded-xl [&_img]:my-4 [&_img]:max-w-full"
-              dangerouslySetInnerHTML={{ __html: page.content_html || '' }}
+              dangerouslySetInnerHTML={{ __html: safeContentHtml }}
             />
 
-            {Array.isArray(page.attachments) && page.attachments.length > 0 && (
+            {safeAttachments.length > 0 && (
               <div className="pt-6 border-t border-slate-200 space-y-3">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                   <FileText className="w-4 h-4 text-emerald-700" />
                   <span>Official Attachments & Downloads</span>
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {page.attachments.map((att, idx) => (
+                  {safeAttachments.map((att, idx) => (
                     <a
                       key={`${att.url}-${idx}`}
                       href={att.url}

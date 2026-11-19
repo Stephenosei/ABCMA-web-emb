@@ -30,6 +30,7 @@ import { useCms } from '../../../context/CmsContext';
 import { MediaPickerModal } from '../MediaPickerModal';
 import { PreviewModal } from '../PreviewModal';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { sanitizeUrl, toSafeErrorMessage } from '../../../utils/security';
 
 interface ProjectsManagerProps {
   notify: (msg: string, type?: 'success' | 'error') => void;
@@ -174,7 +175,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({ notify }) => {
       if (isMissingProjectsTableError(projRes.error.message, projRes.error.code)) {
         setTableMissing(true);
       } else {
-        notify(projRes.error.message, 'error');
+        notify(toSafeErrorMessage(projRes.error, 'Failed to load projects.'), 'error');
       }
       setProjects([]);
     } else {
@@ -255,7 +256,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({ notify }) => {
       setForm((prev) => ({ ...prev, featured_image_url: asset.public_url }));
       notify(`Uploaded cover image "${asset.file_name}" to Supabase Storage.`);
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Cover upload failed.', 'error');
+      notify(toSafeErrorMessage(err, 'Cover upload failed.'), 'error');
     } finally {
       setUploadingCover(false);
       e.target.value = '';
@@ -284,7 +285,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({ notify }) => {
       }));
       notify(`Uploaded ${uploadedUrls.length} gallery photo(s) to Supabase Storage.`);
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Gallery upload failed.', 'error');
+      notify(toSafeErrorMessage(err, 'Gallery upload failed.'), 'error');
     } finally {
       setUploadingGallery(false);
       e.target.value = '';
@@ -314,13 +315,20 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({ notify }) => {
     const cleanSlug = slugify(form.slug || form.title) || `project-${Date.now()}`;
     const clampedProgress = Math.max(0, Math.min(100, Number(form.progress_percentage) || 0));
 
+    const cleanCoverUrl = form.featured_image_url.trim()
+      ? sanitizeUrl(form.featured_image_url.trim(), { allowRelative: true, allowHash: false, allowMailtoTel: false })
+      : '';
+    const cleanGallery = form.gallery_images
+      .map((u) => sanitizeUrl(u, { allowRelative: true, allowHash: false, allowMailtoTel: false }))
+      .filter(Boolean);
+
     const payload = {
       title: form.title.trim(),
       slug: cleanSlug,
       short_description: form.short_description.trim(),
       full_description: form.full_description.trim() || form.short_description.trim(),
-      featured_image_url: form.featured_image_url.trim() || null,
-      gallery_images: form.gallery_images.filter(Boolean),
+      featured_image_url: cleanCoverUrl || null,
+      gallery_images: cleanGallery,
       category: form.category.trim() || 'Roads & Drainage',
       department_id: form.department_id || null,
       department_name: form.department_name.trim() || 'Works Department',
@@ -406,7 +414,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({ notify }) => {
       await loadData();
       await refreshPublicContent();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Failed to save project.', 'error');
+      notify(toSafeErrorMessage(err, 'Failed to save project.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -480,7 +488,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({ notify }) => {
       await loadData();
       await refreshPublicContent();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Project action failed.', 'error');
+      notify(toSafeErrorMessage(err, 'Project action failed.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -893,7 +901,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({ notify }) => {
                   <span>{uploadingCover ? 'Uploading...' : 'Upload Image'}</span>
                   <input
                     type="file"
-                    accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                    accept="image/jpeg,image/png,image/webp"
                     disabled={uploadingCover || !supabase}
                     onChange={handleCoverUpload}
                     className="sr-only"
@@ -928,7 +936,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({ notify }) => {
                   <input
                     type="file"
                     multiple
-                    accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                    accept="image/jpeg,image/png,image/webp"
                     disabled={uploadingGallery || !supabase}
                     onChange={handleGalleryUpload}
                     className="sr-only"

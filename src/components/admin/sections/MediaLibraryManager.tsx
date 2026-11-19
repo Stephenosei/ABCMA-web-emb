@@ -21,6 +21,7 @@ import {
 import { CmsMediaAsset } from '../../../types/cms';
 import { useAuth } from '../../../context/AuthContext';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { sanitizeUrl, toSafeErrorMessage } from '../../../utils/security';
 
 interface MediaLibraryManagerProps {
   notify: (msg: string, type?: 'success' | 'error') => void;
@@ -47,7 +48,7 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
       .from('media_library')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) notify(error.message, 'error');
+    if (error) notify(toSafeErrorMessage(error, 'Failed to load media library.'), 'error');
     else if (data) setAssets(data as CmsMediaAsset[]);
     setLoading(false);
   }, [notify]);
@@ -81,7 +82,7 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
       notify(`Uploaded ${files.length} asset(s) to "${uploadFolder}".`);
       await loadAssets();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Upload failed.', 'error');
+      notify(toSafeErrorMessage(err, 'Upload failed.'), 'error');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -106,7 +107,7 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
       notify(`Replaced "${asset.file_name}" in Supabase Storage.`);
       await loadAssets();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Replace failed.', 'error');
+      notify(toSafeErrorMessage(err, 'Replace failed.'), 'error');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -130,7 +131,7 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
       setDeleteTarget(null);
       await loadAssets();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Delete failed.', 'error');
+      notify(toSafeErrorMessage(err, 'Delete failed.'), 'error');
     }
   };
 
@@ -181,7 +182,7 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
             <input
               type="file"
               multiple
-              accept="image/jpeg,image/png,image/webp,image/svg+xml,.pdf,.doc,.docx"
+              accept="image/jpeg,image/png,image/webp,.pdf,.doc,.docx"
               onChange={handleUpload}
               disabled={uploading}
               className="sr-only"
@@ -231,7 +232,7 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
           <HardDrive className="w-8 h-8 text-slate-400 mx-auto" />
           <div className="text-sm font-semibold text-slate-900">No files in Media Library</div>
           <p className="text-xs text-slate-500">
-            Supported formats: JPG, PNG, WebP, SVG (max 8 MB) and PDF, DOC, DOCX (max 15 MB).
+            Supported formats: JPG, PNG, WebP (max 8 MB) and PDF, DOC, DOCX (max 15 MB).
           </p>
         </div>
       ) : (
@@ -246,7 +247,7 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
                 <div className="h-40 bg-slate-100 flex items-center justify-center overflow-hidden">
                   {isImg ? (
                     <img
-                      src={asset.public_url}
+                      src={sanitizeUrl(asset.public_url, { allowRelative: true, allowHash: false, allowMailtoTel: false }) || undefined}
                       alt={asset.alt_text || asset.file_name}
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
@@ -286,17 +287,20 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
-                      <label
-                        title="Replace file"
-                        className="p-1.5 hover:text-amber-700 hover:bg-amber-50 rounded cursor-pointer"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        <input
-                          type="file"
-                          onChange={(e) => handleReplace(asset, e)}
-                          className="sr-only"
-                        />
-                      </label>
+                      {canPublishOrDelete && (
+                        <label
+                          title="Replace file"
+                          className="p-1.5 hover:text-amber-700 hover:bg-amber-50 rounded cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,.pdf,.doc,.docx"
+                            onChange={(e) => handleReplace(asset, e)}
+                            className="sr-only"
+                          />
+                        </label>
+                      )}
                     </div>
 
                     {canPublishOrDelete && (
@@ -333,7 +337,7 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
             <div className="p-5 space-y-4">
               {previewAsset.mime_type.startsWith('image/') ? (
                 <img
-                  src={previewAsset.public_url}
+                  src={sanitizeUrl(previewAsset.public_url, { allowRelative: true, allowHash: false, allowMailtoTel: false }) || undefined}
                   alt={previewAsset.file_name}
                   referrerPolicy="no-referrer"
                   className="max-h-80 w-full object-contain rounded-xl bg-slate-50 border border-slate-200"
@@ -342,9 +346,9 @@ export const MediaLibraryManager: React.FC<MediaLibraryManagerProps> = ({ notify
                 <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center space-y-2">
                   <FileText className="w-10 h-10 text-emerald-700 mx-auto" />
                   <a
-                    href={previewAsset.public_url}
+                    href={sanitizeUrl(previewAsset.public_url, { allowRelative: true, allowHash: false, allowMailtoTel: false }) || '#'}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="inline-block text-xs font-bold text-emerald-800 underline"
                   >
                     Open File in Browser Tab

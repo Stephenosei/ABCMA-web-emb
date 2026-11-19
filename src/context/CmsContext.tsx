@@ -25,6 +25,7 @@ import {
   MUNICIPAL_PROJECTS,
   TOWN_HALLS,
 } from '../data/mockData';
+import { sanitizeUrl } from '../utils/security';
 
 export const DEFAULT_WEBSITE_SETTINGS: CmsWebsiteSettings = {
   id: 1,
@@ -151,6 +152,16 @@ function mapCmsProjectToPublic(row: CmsProject): MunicipalProject {
         ? 100
         : 0;
 
+  const safeFeaturedUrl = row.featured_image_url
+    ? sanitizeUrl(row.featured_image_url, { allowRelative: true, allowHash: false, allowMailtoTel: false })
+    : '';
+  const safeGalleryUrls = Array.isArray(row.gallery_images)
+    ? row.gallery_images
+        .filter((url): url is string => typeof url === 'string' && url.length > 0)
+        .map((url) => sanitizeUrl(url, { allowRelative: true, allowHash: false, allowMailtoTel: false }))
+        .filter((url): url is string => Boolean(url))
+    : [];
+
   return {
     id: row.id,
     slug: row.slug,
@@ -170,10 +181,8 @@ function mapCmsProjectToPublic(row: CmsProject): MunicipalProject {
     actualCompletionDate: row.actual_completion_date
       ? formatDisplayDate(row.actual_completion_date)
       : undefined,
-    imageUrl: row.featured_image_url || '/images/municipal_works_project_1794370610757.jpg',
-    galleryImages: Array.isArray(row.gallery_images)
-      ? row.gallery_images.filter((url): url is string => typeof url === 'string' && url.length > 0)
-      : [],
+    imageUrl: safeFeaturedUrl || '/images/municipal_works_project_1794370610757.jpg',
+    galleryImages: safeGalleryUrls,
     category: row.category || 'Infrastructure',
     department: row.department_name || 'Works Department',
     status: row.project_status,
@@ -256,15 +265,64 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase.from('events').select('*').eq('status', 'published').order('event_date', { ascending: true }),
         supabase.from('gallery_albums').select('*').eq('status', 'published').order('created_at', { ascending: false }),
         supabase.from('gallery_images').select('*').eq('status', 'published').order('display_order', { ascending: true }),
-        supabase.from('documents').select('*').eq('status', 'published').order('created_at', { ascending: false }),
+        supabase.from('documents').select('*').eq('status', 'published').or('audience.eq.public,audience.is.null').order('created_at', { ascending: false }),
       ]);
 
+      let resolvedDocsData = docsRes.data;
+      if (docsRes.error && /audience|column/i.test(docsRes.error.message || '')) {
+        const fallbackDocs = await supabase
+          .from('documents')
+          .select('*')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false });
+        resolvedDocsData = fallbackDocs.data;
+      }
+
       if (settingsRes.data && settingsRes.data.status === 'published') {
+        const rawSocial = settingsRes.data.social_links || {};
         const mergedSettings: CmsWebsiteSettings = {
           ...DEFAULT_WEBSITE_SETTINGS,
           ...settingsRes.data,
+          logo_url:
+            sanitizeUrl(settingsRes.data.logo_url || '', {
+              allowRelative: true,
+              allowHash: false,
+              allowMailtoTel: false,
+            }) || DEFAULT_WEBSITE_SETTINGS.logo_url,
+          favicon_url:
+            sanitizeUrl(settingsRes.data.favicon_url || '', {
+              allowRelative: true,
+              allowHash: false,
+              allowMailtoTel: false,
+            }) || DEFAULT_WEBSITE_SETTINGS.favicon_url,
+          hero_image_url:
+            sanitizeUrl(settingsRes.data.hero_image_url || '', {
+              allowRelative: true,
+              allowHash: false,
+              allowMailtoTel: false,
+            }) || DEFAULT_WEBSITE_SETTINGS.hero_image_url,
+          google_maps_url: sanitizeUrl(settingsRes.data.google_maps_url || '', {
+            allowRelative: false,
+            allowHash: false,
+            allowMailtoTel: false,
+          }),
+          social_links: {
+            facebook: sanitizeUrl(rawSocial.facebook || '', { allowRelative: false, allowHash: false, allowMailtoTel: false }),
+            twitter: sanitizeUrl(rawSocial.twitter || '', { allowRelative: false, allowHash: false, allowMailtoTel: false }),
+            instagram: sanitizeUrl(rawSocial.instagram || '', { allowRelative: false, allowHash: false, allowMailtoTel: false }),
+            youtube: sanitizeUrl(rawSocial.youtube || '', { allowRelative: false, allowHash: false, allowMailtoTel: false }),
+          },
           homepage_banners: Array.isArray(settingsRes.data.homepage_banners)
-            ? settingsRes.data.homepage_banners
+            ? settingsRes.data.homepage_banners.map((ban: { imageUrl?: string }) => ({
+                ...ban,
+                imageUrl: ban.imageUrl
+                  ? sanitizeUrl(ban.imageUrl, {
+                      allowRelative: true,
+                      allowHash: false,
+                      allowMailtoTel: false,
+                    })
+                  : '',
+              }))
             : [],
           homepage_highlights: Array.isArray(settingsRes.data.homepage_highlights)
             ? settingsRes.data.homepage_highlights
@@ -370,20 +428,29 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setGalleryImages(imagesRes.data as CmsGalleryImage[]);
       }
 
-      if (docsRes.data && docsRes.data.length > 0) {
-        const mappedDocs: GazettedDocument[] = docsRes.data.map((doc) => ({
-          id: doc.id,
-          title: doc.title,
-          category: doc.category,
-          gazetteNumber: doc.gazette_number,
-          year: doc.year,
-          fileSize: doc.file_size,
-          summary: doc.description,
-          fileName: doc.file_name,
-          fileUrl: doc.file_url || undefined,
-          department: doc.department || undefined,
-          keyProvisions: Array.isArray(doc.key_provisions) ? doc.key_provisions : [],
-        }));
+      if (resolvedDocsData && resolvedDocsData.length > 0) {
+        const mappedDocs: GazettedDocument[] = resolvedDocsData
+          .filter((doc) => doc.audience !== 'internal')
+          .map((doc) => ({
+            id: doc.id,
+            title: doc.title,
+            category: doc.category,
+            gazetteNumber: doc.gazette_number,
+            year: doc.year,
+            fileSize: doc.file_size,
+            summary: doc.description,
+            fileName: doc.file_name,
+            fileUrl: doc.file_url
+              ? sanitizeUrl(doc.file_url, {
+                  allowRelative: true,
+                  allowHash: false,
+                  allowMailtoTel: false,
+                }) || undefined
+              : undefined,
+            audience: doc.audience === 'internal' ? 'internal' : 'public',
+            department: doc.department || undefined,
+            keyProvisions: Array.isArray(doc.key_provisions) ? doc.key_provisions : [],
+          }));
         setDocuments(mappedDocs);
       }
 

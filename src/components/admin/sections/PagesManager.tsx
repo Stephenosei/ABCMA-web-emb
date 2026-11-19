@@ -19,6 +19,7 @@ import { RichTextEditor } from '../RichTextEditor';
 import { MediaPickerModal } from '../MediaPickerModal';
 import { PreviewModal } from '../PreviewModal';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { sanitizeHtml, sanitizeUrl, toSafeErrorMessage } from '../../../utils/security';
 
 interface PagesManagerProps {
   notify: (msg: string, type?: 'success' | 'error') => void;
@@ -65,7 +66,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ notify }) => {
       .select('*')
       .order('updated_at', { ascending: false });
     if (error) {
-      notify(error.message, 'error');
+      notify(toSafeErrorMessage(error, 'Failed to load pages.'), 'error');
     } else if (data) {
       setPages(data as CmsPage[]);
     }
@@ -110,14 +111,24 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ notify }) => {
     setSaving(true);
     const cleanSlug = slugify(form.slug || form.title);
     const prevPage = editingId ? pages.find((p) => p.id === editingId) || null : null;
+    const cleanHtml = sanitizeHtml(form.content_html || '');
+    const cleanFeaturedImage = form.featured_image_url
+      ? sanitizeUrl(form.featured_image_url, { allowRelative: true, allowHash: false, allowMailtoTel: false })
+      : '';
+    const cleanAttachments = form.attachments
+      .map((att) => ({
+        ...att,
+        url: sanitizeUrl(att.url, { allowRelative: true, allowHash: false, allowMailtoTel: false }),
+      }))
+      .filter((att) => Boolean(att.url));
 
     const payload = {
       title: form.title.trim(),
       slug: cleanSlug,
       summary: form.summary.trim(),
-      content_html: form.content_html,
-      featured_image_url: form.featured_image_url || null,
-      attachments: form.attachments,
+      content_html: cleanHtml,
+      featured_image_url: cleanFeaturedImage || null,
+      attachments: cleanAttachments,
       status: targetStatus,
       author_id: adminProfile.id,
       published_at: targetStatus === 'published' ? prevPage?.published_at || new Date().toISOString() : null,
@@ -162,7 +173,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ notify }) => {
       await loadPages();
       await refreshPublicContent();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Failed to save page.', 'error');
+      notify(toSafeErrorMessage(err, 'Failed to save page.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -210,7 +221,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ notify }) => {
       await loadPages();
       await refreshPublicContent();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Action failed.', 'error');
+      notify(toSafeErrorMessage(err, 'Action failed.'), 'error');
     } finally {
       setSaving(false);
     }

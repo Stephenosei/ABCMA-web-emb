@@ -170,6 +170,9 @@ export interface CmsDocument {
   category: string;
   gazette_number: string;
   year: number;
+  audience?: 'public' | 'internal';
+  storage_bucket?: string;
+  storage_path?: string | null;
   file_url: string | null;
   file_name: string;
   file_size: string;
@@ -314,9 +317,31 @@ export interface CmsActivityLog {
   entity_type: string;
   entity_id: string | null;
   entity_label: string;
+  outcome?: 'success' | 'failure' | 'blocked';
+  metadata?: Record<string, unknown> | null;
   previous_values: Record<string, unknown> | null;
   updated_values: Record<string, unknown> | null;
   created_at: string;
+}
+
+export interface CmsContactMessage {
+  id: string;
+  ticket_reference: string;
+  full_name: string;
+  phone_number: string;
+  normalized_phone: string | null;
+  email: string;
+  recipient_unit: string;
+  subject: string;
+  message: string;
+  inquiry_status: 'new' | 'in_review' | 'resolved' | 'archived';
+  sms_status: 'pending' | 'processing' | 'sent' | 'failed';
+  sms_sent_at: string | null;
+  sms_error: string | null;
+  sms_provider_id: string | null;
+  sms_attempts: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export type AdminSectionId =
@@ -333,7 +358,9 @@ export type AdminSectionId =
   | 'homepage'
   | 'navigation'
   | 'contact'
+  | 'enquiries'
   | 'settings'
   | 'media'
+  | 'security'
   | 'admins'
   | 'logs';

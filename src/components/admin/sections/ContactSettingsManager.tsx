@@ -6,6 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useCms, DEFAULT_WEBSITE_SETTINGS } from '../../../context/CmsContext';
 import { MediaPickerModal } from '../MediaPickerModal';
 import { PreviewModal } from '../PreviewModal';
+import { sanitizeUrl, toSafeErrorMessage } from '../../../utils/security';
 
 interface ContactSettingsManagerProps {
   mode: 'contact' | 'settings';
@@ -40,7 +41,7 @@ export const ContactSettingsManager: React.FC<ContactSettingsManagerProps> = ({
       .eq('id', 1)
       .maybeSingle();
     if (error) {
-      notify(error.message, 'error');
+      notify(toSafeErrorMessage(error, 'Failed to load configuration.'), 'error');
     } else if (data) {
       const merged: CmsWebsiteSettings = {
         ...DEFAULT_WEBSITE_SETTINGS,
@@ -72,6 +73,34 @@ export const ContactSettingsManager: React.FC<ContactSettingsManagerProps> = ({
       return;
     }
 
+    const rawMaps = settings.google_maps_url.trim();
+    const safeMapsUrl = rawMaps
+      ? sanitizeUrl(rawMaps, { allowRelative: false, allowHash: false, allowMailtoTel: false })
+      : '';
+    if (rawMaps && !safeMapsUrl) {
+      notify('Google Maps URL must use a valid https:// or http:// address.', 'error');
+      return;
+    }
+
+    const safeSocialLinks: Record<string, string> = {};
+    for (const net of ['facebook', 'twitter', 'instagram', 'youtube'] as const) {
+      const val = (settings.social_links?.[net] || '').trim();
+      if (!val) {
+        safeSocialLinks[net] = '';
+      } else {
+        const cleaned = sanitizeUrl(val, {
+          allowRelative: false,
+          allowHash: false,
+          allowMailtoTel: false,
+        });
+        if (!cleaned) {
+          notify(`Invalid ${net} URL. Only https:// or http:// URLs are allowed.`, 'error');
+          return;
+        }
+        safeSocialLinks[net] = cleaned;
+      }
+    }
+
     setSaving(true);
     const contactPhones = phonesText
       .split(',')
@@ -83,6 +112,24 @@ export const ContactSettingsManager: React.FC<ContactSettingsManagerProps> = ({
       .filter(Boolean);
 
     try {
+      const safeLogoUrl = sanitizeUrl(settings.logo_url.trim(), {
+        allowRelative: true,
+        allowHash: false,
+        allowMailtoTel: false,
+      });
+      const safeFaviconUrl = sanitizeUrl(settings.favicon_url.trim(), {
+        allowRelative: true,
+        allowHash: false,
+        allowMailtoTel: false,
+      });
+      const safeOgImg = settings.seo_metadata?.ogImage
+        ? sanitizeUrl(settings.seo_metadata.ogImage, {
+            allowRelative: true,
+            allowHash: false,
+            allowMailtoTel: false,
+          })
+        : '';
+
       const payload =
         mode === 'contact'
           ? {
@@ -92,19 +139,22 @@ export const ContactSettingsManager: React.FC<ContactSettingsManagerProps> = ({
               postal_address: settings.postal_address.trim(),
               gps_address: settings.gps_address.trim(),
               working_hours: settings.working_hours.trim(),
-              google_maps_url: settings.google_maps_url.trim(),
-              social_links: settings.social_links,
+              google_maps_url: safeMapsUrl,
+              social_links: safeSocialLinks,
               status: targetStatus,
             }
           : {
               site_title: settings.site_title.trim(),
               site_description: settings.site_description.trim(),
-              logo_url: settings.logo_url.trim(),
-              favicon_url: settings.favicon_url.trim(),
+              logo_url: safeLogoUrl,
+              favicon_url: safeFaviconUrl,
               footer_text: settings.footer_text.trim(),
               copyright_text: settings.copyright_text.trim(),
-              social_links: settings.social_links,
-              seo_metadata: settings.seo_metadata,
+              social_links: safeSocialLinks,
+              seo_metadata: {
+                ...settings.seo_metadata,
+                ogImage: safeOgImg,
+              },
               status: targetStatus,
             };
 
@@ -128,7 +178,7 @@ export const ContactSettingsManager: React.FC<ContactSettingsManagerProps> = ({
       );
       await refreshPublicContent();
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'Failed to save settings.', 'error');
+      notify(toSafeErrorMessage(err, 'Failed to save settings.'), 'error');
     } finally {
       setSaving(false);
     }

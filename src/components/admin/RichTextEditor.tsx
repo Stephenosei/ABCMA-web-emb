@@ -14,6 +14,7 @@ import {
   Code,
 } from 'lucide-react';
 import { MediaPickerModal } from './MediaPickerModal';
+import { escapeHtmlAttr, sanitizeHtml, sanitizeUrl } from '../../utils/security';
 
 interface RichTextEditorProps {
   value: string;
@@ -30,11 +31,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [htmlMode, setHtmlMode] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('https://');
+  const [linkError, setLinkError] = useState<string | null>(null);
   const [mediaOpen, setMediaOpen] = useState(false);
 
   useEffect(() => {
     if (!htmlMode && editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value || '';
+      editorRef.current.innerHTML = sanitizeHtml(value || '');
     }
   }, [value, htmlMode]);
 
@@ -78,9 +80,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const handleApplyLink = (e: React.FormEvent) => {
     e.preventDefault();
-    if (linkUrl.trim()) {
-      exec('createLink', linkUrl.trim());
+    const safeLink = sanitizeUrl(linkUrl, {
+      allowRelative: true,
+      allowHash: true,
+      allowMailtoTel: true,
+    });
+    if (!safeLink) {
+      setLinkError('Enter a valid http(s), mailto, tel, hash, or relative URL.');
+      return;
     }
+    setLinkError(null);
+    exec('createLink', safeLink);
     setLinkDialogOpen(false);
     setLinkUrl('https://');
   };
@@ -203,7 +213,15 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <button
           type="button"
-          onClick={() => setHtmlMode(!htmlMode)}
+          onClick={() => {
+            if (htmlMode) {
+              const cleaned = sanitizeHtml(value || '');
+              if (cleaned !== value) {
+                onChange(cleaned);
+              }
+            }
+            setHtmlMode(!htmlMode);
+          }}
           className={`px-2.5 py-1 text-[11px] font-semibold rounded-md border cursor-pointer inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
             htmlMode
               ? 'bg-slate-900 text-white border-slate-900'
@@ -218,28 +236,37 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       {linkDialogOpen && !htmlMode && (
         <form
           onSubmit={handleApplyLink}
-          className="px-3 py-2 bg-emerald-50 border-b border-emerald-200 flex items-center gap-2"
+          className="px-3 py-2 bg-emerald-50 border-b border-emerald-200 space-y-1.5"
         >
-          <input
-            type="url"
-            value={linkUrl}
-            onChange={(e) => setLinkUrl(e.target.value)}
-            placeholder="https://example.gov.gh"
-            className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-700"
-          />
-          <button
-            type="submit"
-            className="px-3 py-1.5 bg-emerald-800 text-white text-xs font-semibold rounded-md cursor-pointer"
-          >
-            Apply Link
-          </button>
-          <button
-            type="button"
-            onClick={() => setLinkDialogOpen(false)}
-            className="px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 cursor-pointer"
-          >
-            Cancel
-          </button>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={linkUrl}
+              onChange={(e) => {
+                setLinkUrl(e.target.value);
+                if (linkError) setLinkError(null);
+              }}
+              placeholder="https://example.gov.gh or /page/slug"
+              className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-700"
+            />
+            <button
+              type="submit"
+              className="px-3 py-1.5 bg-emerald-800 text-white text-xs font-semibold rounded-md cursor-pointer"
+            >
+              Apply Link
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLinkDialogOpen(false);
+                setLinkError(null);
+              }}
+              className="px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+          {linkError && <div className="text-[11px] font-medium text-rose-700">{linkError}</div>}
         </form>
       )}
 
@@ -273,9 +300,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         defaultFolder="pages"
         onClose={() => setMediaOpen(false)}
         onSelect={(asset) => {
-          insertHtml(
-            `<p><img src="${asset.public_url}" alt="${asset.alt_text || asset.file_name}" style="max-width:100%;border-radius:12px;" /></p>`
-          );
+          const safeImgUrl = sanitizeUrl(asset.public_url, {
+            allowRelative: true,
+            allowHash: false,
+            allowMailtoTel: false,
+          });
+          if (safeImgUrl) {
+            const safeAlt = escapeHtmlAttr(asset.alt_text || asset.file_name);
+            insertHtml(
+              `<p><img src="${escapeHtmlAttr(safeImgUrl)}" alt="${safeAlt}" style="max-width:100%;border-radius:12px;" /></p>`
+            );
+          }
           setMediaOpen(false);
         }}
       />

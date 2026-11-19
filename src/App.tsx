@@ -50,6 +50,8 @@ import {
 } from './types';
 import { CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react';
 
+import { isSafeAdminRedirectPath } from './utils/security';
+
 const ADMIN_SECTION_IDS: readonly AdminSectionId[] = [
   'overview',
   'pages',
@@ -64,10 +66,12 @@ const ADMIN_SECTION_IDS: readonly AdminSectionId[] = [
   'homepage',
   'navigation',
   'contact',
+  'enquiries',
   'settings',
   'media',
   'admins',
   'logs',
+  'security',
 ];
 
 function parseAdminSectionFromPath(currentPath: string): AdminSectionId {
@@ -83,7 +87,12 @@ function parseAdminSectionFromPath(currentPath: string): AdminSectionId {
 }
 
 function AppRouterAndPortal() {
-  const { isAuthenticatedAdmin, loading: authLoading, profileVerifying } = useAuth();
+  const {
+    isAuthenticatedAdmin,
+    isDashboardAccessGranted,
+    loading: authLoading,
+    profileVerifying,
+  } = useAuth();
   const { townHallsFromEvents, projects, refreshPublicContent } = useCms();
 
   const [pathname, setPathname] = useState<string>(() => window.location.pathname || '/');
@@ -132,20 +141,16 @@ function AppRouterAndPortal() {
 
   const handleRedirectLogin = useCallback(() => {
     const current = window.location.pathname || '/admin';
-    const target =
-      current.startsWith('/admin') && current !== '/admin/login'
-        ? `/admin/login?redirect=${encodeURIComponent(current)}`
-        : '/admin/login';
+    const target = isSafeAdminRedirectPath(current)
+      ? `/admin/login?redirect=${encodeURIComponent(current)}`
+      : '/admin/login';
     navigatePath(target, true);
   }, [navigatePath]);
 
   const handleLoginSuccess = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
     const redirectParam = params.get('redirect');
-    const target =
-      redirectParam && redirectParam.startsWith('/admin') && redirectParam !== '/admin/login'
-        ? redirectParam
-        : '/admin';
+    const target = isSafeAdminRedirectPath(redirectParam) ? (redirectParam as string) : '/admin';
     navigatePath(target, true);
   }, [navigatePath]);
 
@@ -158,19 +163,26 @@ function AppRouterAndPortal() {
   }, []);
 
   const handleOpenAdminPortal = useCallback(() => {
-    if (authLoading || profileVerifying || isAuthenticatedAdmin) {
+    if (authLoading || profileVerifying || isDashboardAccessGranted) {
       navigatePath('/admin');
+    } else if (isAuthenticatedAdmin) {
+      navigatePath('/admin/login');
     } else {
       navigatePath('/admin/login');
     }
-  }, [authLoading, profileVerifying, isAuthenticatedAdmin, navigatePath]);
+  }, [authLoading, profileVerifying, isDashboardAccessGranted, isAuthenticatedAdmin, navigatePath]);
 
-  // Redirect already-authenticated admins away from /admin/login
+  // Redirect authenticated admins away from /admin/login
   useEffect(() => {
-    if (pathname === '/admin/login' && !authLoading && !profileVerifying && isAuthenticatedAdmin) {
+    if (
+      pathname === '/admin/login' &&
+      !authLoading &&
+      !profileVerifying &&
+      isDashboardAccessGranted
+    ) {
       handleLoginSuccess();
     }
-  }, [pathname, authLoading, profileVerifying, isAuthenticatedAdmin, handleLoginSuccess]);
+  }, [pathname, authLoading, profileVerifying, isDashboardAccessGranted, handleLoginSuccess]);
 
   // Sync URL pathname & hash on browser navigation
   useEffect(() => {
@@ -398,7 +410,7 @@ function AppRouterAndPortal() {
         onOpenCmsPage={handleOpenCmsPage}
         activeCmsSlug={activeCmsSlug}
         onOpenAdmin={handleOpenAdminPortal}
-        isAuthenticatedAdmin={isAuthenticatedAdmin}
+        isAuthenticatedAdmin={isDashboardAccessGranted}
       />
 
       {/* Multi-Page Container */}
@@ -554,7 +566,7 @@ function AppRouterAndPortal() {
         onOpenReportModal={() => setReportModalOpen(true)}
         onOpenServiceModal={handleOpenServiceModal}
         onOpenAdmin={handleOpenAdminPortal}
-        isAuthenticatedAdmin={isAuthenticatedAdmin}
+        isAuthenticatedAdmin={isDashboardAccessGranted}
       />
 
       {/* Interactive Modals */}

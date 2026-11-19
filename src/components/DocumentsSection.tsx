@@ -4,6 +4,7 @@ import { GazettedDocument } from '../types';
 import { useCms } from '../context/CmsContext';
 import { Pagination } from './Pagination';
 import { downloadOfficialPdf, getDocumentFilename } from '../utils/pdfGenerator';
+import { sanitizeUrl } from '../utils/security';
 
 interface DocumentsSectionProps {
   onDocumentDownloaded?: (title: string) => void;
@@ -69,9 +70,12 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   );
 
   const handleDownload = (doc: GazettedDocument) => {
-    if (doc.fileUrl) {
+    const safeUrl = doc.fileUrl
+      ? sanitizeUrl(doc.fileUrl, { allowRelative: true, allowHash: false, allowMailtoTel: false })
+      : '';
+    if (safeUrl) {
       const link = document.createElement('a');
-      link.href = doc.fileUrl;
+      link.href = safeUrl;
       link.download = doc.fileName || getDocumentFilename(doc);
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
