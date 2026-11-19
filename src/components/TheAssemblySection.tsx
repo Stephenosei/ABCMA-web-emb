@@ -333,7 +333,18 @@ export const TheAssemblySection: React.FC<TheAssemblySectionProps> = ({
           }
         );
 
-        const fnPayload = (fnData && typeof fnData === 'object' ? fnData : null) as {
+        let parsedPayload: unknown = fnData;
+        if (typeof fnData === 'string') {
+          try {
+            parsedPayload = JSON.parse(fnData);
+          } catch {
+            parsedPayload = null;
+          }
+        }
+
+        const fnPayload = (
+          parsedPayload && typeof parsedPayload === 'object' ? parsedPayload : null
+        ) as {
           ok?: boolean;
           smsStatus?: string;
           alreadySent?: boolean;

@@ -5,7 +5,7 @@ const MNOTIFY_QUICK_SMS_ENDPOINT = 'https://api.mnotify.com/api/sms/quick';
 const SENDER_ID = 'ABCMA';
 const MAX_RECORD_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:3000',
@@ -15,25 +15,36 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'https://www.abcma.gov.gh',
 ];
 
+function normalizeOrigin(origin: string): string {
+  return origin.trim().replace(/\/+$/, '');
+}
+
 function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
+  const cleanOrigin = normalizeOrigin(origin);
 
   const extra = (Deno.env.get('ALLOWED_ORIGINS') || '')
     .split(',')
-    .map((o) => o.trim())
+    .map((o) => normalizeOrigin(o))
     .filter(Boolean);
 
-  if (DEFAULT_ALLOWED_ORIGINS.includes(origin) || extra.includes(origin)) {
+  if (DEFAULT_ALLOWED_ORIGINS.includes(cleanOrigin) || extra.includes(cleanOrigin)) {
     return true;
   }
 
   try {
-    const parsed = new URL(origin);
-    if (parsed.protocol !== 'https:') return false;
+    const parsed = new URL(cleanOrigin);
     const host = parsed.hostname.toLowerCase();
-    // Allow official Vercel deployments & AI Studio preview origins
+
+    if (parsed.protocol === 'http:' && (host === 'localhost' || host === '127.0.0.1')) {
+      return true;
+    }
+
+    if (parsed.protocol !== 'https:') return false;
+
+    // Allow official Vercel deployments, regional Google Cloud Run AI Studio previews, and ABCMA domains
     if (host.endsWith('.vercel.app')) return true;
-    if (/^ais-(dev|pre)-[a-z0-9-]+\.run\.app$/i.test(host)) return true;
+    if (/^ais-(dev|pre)-[a-z0-9-]+(?:\.[a-z0-9-]+)*\.run\.app$/i.test(host)) return true;
     if (host === 'abcma.gov.gh' || host.endsWith('.abcma.gov.gh')) return true;
   } catch {
     return false;
@@ -45,7 +56,8 @@ function isAllowedOrigin(origin: string | null): boolean {
 function buildCorsHeaders(origin: string | null): Record<string, string> {
   const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Headers':
+      'authorization, x-client-info, apikey, content-type, x-supabase-api-version',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
     'Content-Type': 'application/json',
@@ -53,7 +65,7 @@ function buildCorsHeaders(origin: string | null): Record<string, string> {
   };
 
   if (origin && isAllowedOrigin(origin)) {
-    headers['Access-Control-Allow-Origin'] = origin;
+    headers['Access-Control-Allow-Origin'] = normalizeOrigin(origin);
   }
 
   return headers;
@@ -126,10 +138,12 @@ function maskPhone(phone: string): string {
   return `${phone.slice(0, 3)}****${phone.slice(-3)}`;
 }
 
-function scrubSecrets(text: string): string {
-  return (text || '')
-    .replace(/([?&]key=)[^&\s]+/gi, '$1[REDACTED]')
-    .slice(0, 300);
+function scrubSecrets(text: string, apiKey?: string): string {
+  let cleaned = (text || '').replace(/([?&]key=)[^&\s]+/gi, '$1[REDACTED]');
+  if (apiKey && apiKey.length >= 6) {
+    cleaned = cleaned.split(apiKey).join('[REDACTED]');
+  }
+  return cleaned.slice(0, 350);
 }
 
 async function sha256Hex(value: string): Promise<string> {
@@ -178,9 +192,9 @@ Deno.serve(async (req: Request) => {
     return jsonResponse(405, { ok: false, error: 'Method not allowed.' }, corsHeaders);
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  const mnotifyApiKey = Deno.env.get('MNOTIFY_API_KEY');
+  const supabaseUrl = (Deno.env.get('SUPABASE_URL') || '').trim();
+  const serviceRoleKey = (Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '').trim();
+  const mnotifyApiKey = (Deno.env.get('MNOTIFY_API_KEY') || '').trim();
 
   if (!supabaseUrl || !serviceRoleKey) {
     console.error('[send-contact-sms] Missing Supabase server environment variables.');
@@ -448,9 +462,10 @@ Deno.serve(async (req: Request) => {
       signal: AbortSignal.timeout(12000),
     });
 
+    const rawResponseText = await mnotifyRes.text();
     let mnotifyJson: Record<string, unknown> | null = null;
     try {
-      mnotifyJson = (await mnotifyRes.json()) as Record<string, unknown>;
+      mnotifyJson = rawResponseText ? (JSON.parse(rawResponseText) as Record<string, unknown>) : null;
     } catch {
       mnotifyJson = null;
     }
@@ -458,14 +473,17 @@ Deno.serve(async (req: Request) => {
     const acceptedByMnotify =
       mnotifyRes.ok &&
       mnotifyJson?.status === 'success' &&
-      String(mnotifyJson?.code || '') === '2000';
+      String(mnotifyJson?.code ?? '') === '2000';
 
     if (!acceptedByMnotify) {
-      const upstreamReason = scrubSecrets(
-        typeof mnotifyJson?.message === 'string'
-          ? mnotifyJson.message
-          : `mNotify rejected SMS (HTTP ${mnotifyRes.status})`
-      );
+      const upstreamDetail =
+        typeof mnotifyJson?.message === 'string' && mnotifyJson.message.trim()
+          ? mnotifyJson.message.trim()
+          : rawResponseText.trim()
+            ? rawResponseText.trim()
+            : `mNotify rejected SMS (HTTP ${mnotifyRes.status})`;
+
+      const upstreamReason = scrubSecrets(upstreamDetail, mnotifyApiKey);
 
       await adminClient
         .from('contact_messages')
@@ -481,7 +499,9 @@ Deno.serve(async (req: Request) => {
         contactId: rawContactId,
         maskedPhone: maskPhone(normalizedPhone),
         httpStatus: mnotifyRes.status,
-        code: mnotifyJson?.code ? String(mnotifyJson.code) : undefined,
+        status: mnotifyJson?.status ? String(mnotifyJson.status) : undefined,
+        code: mnotifyJson?.code !== undefined ? String(mnotifyJson.code) : undefined,
+        reason: upstreamReason,
       });
 
       return jsonResponse(
@@ -515,6 +535,7 @@ Deno.serve(async (req: Request) => {
       contactId: rawContactId,
       maskedPhone: maskPhone(normalizedPhone),
       ticket: contactRow.ticket_reference,
+      providerId: providerId || undefined,
     });
 
     return jsonResponse(
@@ -529,7 +550,8 @@ Deno.serve(async (req: Request) => {
     );
   } catch (err) {
     const safeErr = scrubSecrets(
-      err instanceof Error ? err.message : 'Network error calling mNotify gateway.'
+      err instanceof Error ? err.message : 'Network error calling mNotify gateway.',
+      mnotifyApiKey
     );
 
     await adminClient
@@ -545,6 +567,7 @@ Deno.serve(async (req: Request) => {
     console.error('[send-contact-sms] Upstream request exception:', {
       contactId: rawContactId,
       maskedPhone: maskPhone(normalizedPhone),
+      reason: safeErr,
     });
 
     return jsonResponse(
