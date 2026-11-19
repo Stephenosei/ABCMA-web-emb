@@ -7,6 +7,7 @@ import {
   CmsGalleryImage,
   CmsNavigationItem,
   CmsPage,
+  CmsProject,
   CmsStaffProfile,
   CmsWebsiteSettings,
 } from '../types/cms';
@@ -14,12 +15,14 @@ import {
   GazettedDocument,
   MunicipalDepartment,
   MunicipalNewsItem,
+  MunicipalProject,
   TownHallMeeting,
 } from '../types';
 import {
   GAZETTED_DOCUMENTS,
   MUNICIPAL_DEPARTMENTS,
   MUNICIPAL_NEWS,
+  MUNICIPAL_PROJECTS,
   TOWN_HALLS,
 } from '../data/mockData';
 
@@ -88,6 +91,7 @@ interface CmsContextValue {
   announcements: CmsAnnouncement[];
   departments: MunicipalDepartment[];
   staffProfiles: CmsStaffProfile[];
+  projects: MunicipalProject[];
   events: CmsEvent[];
   townHallsFromEvents: TownHallMeeting[];
   albums: CmsGalleryAlbum[];
@@ -123,6 +127,61 @@ function formatEventDate(iso?: string | null): string {
   });
 }
 
+function formatMonthYear(iso?: string | null, fallback = 'Scheduled'): string {
+  if (!iso) return fallback;
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return iso;
+  return parsed.toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function mapCmsProjectToPublic(row: CmsProject): MunicipalProject {
+  const actualFormatted = row.actual_completion_date
+    ? `Completed ${formatMonthYear(row.actual_completion_date)}`
+    : null;
+  const expectedFormatted = row.expected_completion_date
+    ? formatMonthYear(row.expected_completion_date)
+    : 'Scheduled';
+  const progress =
+    typeof row.progress_percentage === 'number'
+      ? Math.max(0, Math.min(100, row.progress_percentage))
+      : row.project_status === 'Completed'
+        ? 100
+        : 0;
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    electoralArea: row.location || 'Ablekuma Central',
+    description: row.short_description || row.full_description || '',
+    fullDescription: row.full_description || row.short_description || '',
+    percentageComplete: progress,
+    budgetGHS: row.budget_ghs?.trim() || 'Assembly Capital Budget',
+    fundingSource: row.funding_source?.trim() || 'ABCMA Capital Fund / DACF',
+    contractor: row.contractor?.trim() || 'ABCMA Works Directorate Supervised',
+    startDate: formatMonthYear(row.start_date, 'Scheduled'),
+    estimatedCompletion:
+      row.project_status === 'Completed' && actualFormatted
+        ? actualFormatted
+        : expectedFormatted,
+    actualCompletionDate: row.actual_completion_date
+      ? formatDisplayDate(row.actual_completion_date)
+      : undefined,
+    imageUrl: row.featured_image_url || '/images/municipal_works_project_1794370610757.jpg',
+    galleryImages: Array.isArray(row.gallery_images)
+      ? row.gallery_images.filter((url): url is string => typeof url === 'string' && url.length > 0)
+      : [],
+    category: row.category || 'Infrastructure',
+    department: row.department_name || 'Works Department',
+    status: row.project_status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<CmsWebsiteSettings>(DEFAULT_WEBSITE_SETTINGS);
   const [navigation, setNavigation] = useState<CmsNavigationItem[]>(DEFAULT_NAVIGATION_ITEMS);
@@ -131,6 +190,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [announcements, setAnnouncements] = useState<CmsAnnouncement[]>([]);
   const [departments, setDepartments] = useState<MunicipalDepartment[]>(MUNICIPAL_DEPARTMENTS);
   const [staffProfiles, setStaffProfiles] = useState<CmsStaffProfile[]>([]);
+  const [projects, setProjects] = useState<MunicipalProject[]>(MUNICIPAL_PROJECTS);
   const [events, setEvents] = useState<CmsEvent[]>([]);
   const [albums, setAlbums] = useState<CmsGalleryAlbum[]>([]);
   const [galleryImages, setGalleryImages] = useState<CmsGalleryImage[]>([]);
@@ -179,6 +239,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         annRes,
         deptRes,
         staffRes,
+        projectsRes,
         eventsRes,
         albumsRes,
         imagesRes,
@@ -191,6 +252,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase.from('announcements').select('*').eq('status', 'published').eq('audience', 'public').order('published_at', { ascending: false }),
         supabase.from('departments').select('*').eq('status', 'published').order('display_order', { ascending: true }),
         supabase.from('staff_profiles').select('*').eq('status', 'published').eq('is_public', true).order('display_order', { ascending: true }),
+        supabase.from('projects').select('*').eq('publication_status', 'published').order('display_order', { ascending: true }).order('created_at', { ascending: false }),
         supabase.from('events').select('*').eq('status', 'published').order('event_date', { ascending: true }),
         supabase.from('gallery_albums').select('*').eq('status', 'published').order('created_at', { ascending: false }),
         supabase.from('gallery_images').select('*').eq('status', 'published').order('display_order', { ascending: true }),
@@ -292,6 +354,10 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setStaffProfiles(staffRes.data as CmsStaffProfile[]);
       }
 
+      if (!projectsRes.error && projectsRes.data !== null) {
+        setProjects((projectsRes.data as CmsProject[]).map(mapCmsProjectToPublic));
+      }
+
       if (eventsRes.data) {
         setEvents(eventsRes.data as CmsEvent[]);
       }
@@ -357,6 +423,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         announcements,
         departments,
         staffProfiles,
+        projects,
         events,
         townHallsFromEvents,
         albums,

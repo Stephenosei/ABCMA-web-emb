@@ -138,6 +138,7 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
               <option value="pages">Pages</option>
               <option value="departments">Departments</option>
               <option value="staff">Staff</option>
+              <option value="projects">Projects</option>
               <option value="events">Events</option>
               <option value="gallery">Gallery</option>
               <option value="documents">Documents</option>

@@ -275,6 +275,36 @@ export interface CmsMediaAsset {
   created_at: string;
 }
 
+export type ProjectStatus = 'Planned' | 'Ongoing' | 'Completed' | 'Suspended';
+
+export interface CmsProject {
+  id: string;
+  title: string;
+  slug: string;
+  short_description: string;
+  full_description: string;
+  featured_image_url: string | null;
+  gallery_images: string[];
+  category: string;
+  department_id: string | null;
+  department_name: string;
+  location: string;
+  start_date: string | null;
+  expected_completion_date: string | null;
+  actual_completion_date: string | null;
+  project_status: ProjectStatus;
+  publication_status: 'draft' | 'published';
+  progress_percentage: number;
+  budget_ghs: string;
+  funding_source: string;
+  contractor: string;
+  display_order: number;
+  author_id: string | null;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CmsActivityLog {
   id: string;
   admin_id: string | null;
@@ -296,6 +326,7 @@ export type AdminSectionId =
   | 'announcements'
   | 'departments'
   | 'staff'
+  | 'projects'
   | 'events'
   | 'gallery'
   | 'documents'

@@ -1,37 +1,63 @@
 import React, { useState } from 'react';
 import {
   ArrowLeft,
-  Calendar,
   MapPin,
   TrendingUp,
-  ShieldCheck,
-  Building,
-  CheckCircle2,
-  HardHat,
   ThumbsUp,
   ArrowRight,
-  FileCheck,
-  AlertTriangle
+  AlertTriangle,
+  HardHat,
+  Building2,
+  FolderKanban,
+  Images,
 } from 'lucide-react';
 import { MunicipalProject } from '../types';
-import { MUNICIPAL_PROJECTS } from '../data/mockData';
+import { useCms } from '../context/CmsContext';
 
 interface ProjectDossierPageProps {
   projectId?: string;
   onNavigate: (page: string) => void;
+  onOpenProjectDossier?: (projectId: string) => void;
   onOpenReportModal: () => void;
 }
 
 export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
   projectId,
   onNavigate,
+  onOpenProjectDossier,
   onOpenReportModal,
 }) => {
+  const { projects } = useCms();
   const [feedbackSent, setFeedbackSent] = useState(false);
 
-  // Default to first project if not specified or found
-  const project: MunicipalProject =
-    MUNICIPAL_PROJECTS.find((p) => p.id === projectId) || MUNICIPAL_PROJECTS[0];
+  const project: MunicipalProject | undefined =
+    projects.find((p) => p.id === projectId || p.slug === projectId) || projects[0];
+
+  if (!project) {
+    return (
+      <div className="bg-transparent min-h-screen py-12">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-3xl p-8 text-center space-y-4 shadow-sm">
+            <HardHat className="w-10 h-10 text-slate-400 mx-auto" />
+            <h1 className="text-lg font-bold text-slate-900">Project Dossier Unavailable</h1>
+            <p className="text-xs sm:text-sm text-slate-600">
+              This project may have been unpublished or removed by the Municipal Assembly administrator.
+            </p>
+            <button
+              type="button"
+              onClick={() => onNavigate('projects')}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-xl cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Projects Tracker</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const galleryImages = (project.galleryImages || []).filter(Boolean);
 
   return (
     <div className="bg-transparent min-h-screen py-8 lg:py-12">
@@ -79,6 +105,7 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
             <img
               src={project.imageUrl}
               alt={project.title}
+              referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
@@ -113,26 +140,30 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
                   style={{ width: `${project.percentageComplete}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 pt-1">
                 <span>Site Mobilization: {project.startDate}</span>
-                <span>Target Handover: {project.estimatedCompletion}</span>
+                <span>
+                  {project.actualCompletionDate
+                    ? `Actual Completion: ${project.actualCompletionDate}`
+                    : `Target Handover: ${project.estimatedCompletion}`}
+                </span>
               </div>
             </div>
 
             {/* Project Summary */}
             <section className="space-y-3">
-              <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider text-xs">
-                Civil Engineering Overview & Community Need
+              <h2 className="font-bold text-slate-900 uppercase tracking-wider text-xs">
+                Civil Engineering Overview &amp; Community Need
               </h2>
-              <p className="text-slate-700 text-sm sm:text-base leading-relaxed">
-                {project.description}
+              <p className="text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-line">
+                {project.fullDescription || project.description}
               </p>
             </section>
 
             {/* Financial & Contractual Specifications */}
             <section className="space-y-4">
-              <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider text-xs">
-                Approved Fiscal & Contractor Dossier
+              <h2 className="font-bold text-slate-900 uppercase tracking-wider text-xs">
+                Approved Fiscal &amp; Contractor Dossier
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
@@ -155,9 +186,33 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
                     {project.fundingSource}
                   </span>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    GoG District Assembly Common Fund & ABCMA Internally Generated Funds
+                    GoG District Assembly Common Fund &amp; ABCMA Internally Generated Funds
                   </p>
                 </div>
+
+                {(project.category || project.department) && (
+                  <>
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                      <span className="text-slate-400 flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider mb-1">
+                        <FolderKanban className="w-3 h-3 text-emerald-700" />
+                        <span>Project Category</span>
+                      </span>
+                      <span className="text-sm font-semibold text-slate-900">
+                        {project.category || 'Infrastructure'}
+                      </span>
+                    </div>
+
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                      <span className="text-slate-400 flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider mb-1">
+                        <Building2 className="w-3 h-3 text-emerald-700" />
+                        <span>Responsible Department</span>
+                      </span>
+                      <span className="text-sm font-semibold text-slate-900">
+                        {project.department || 'Works Department'}
+                      </span>
+                    </div>
+                  </>
+                )}
 
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl sm:col-span-2">
                   <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">
@@ -167,16 +222,41 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
                     {project.contractor}
                   </span>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Category D1/K1 certified contractor supervised by ABCMA Works Department Engineer Ing. Stephen Annan.
+                    Category D1/K1 certified contractor supervised by {project.department || 'ABCMA Works Department'}.
                   </p>
                 </div>
               </div>
             </section>
 
+            {/* Additional Project Gallery Images (shown when present) */}
+            {galleryImages.length > 0 && (
+              <section className="space-y-3">
+                <h2 className="font-bold text-slate-900 uppercase tracking-wider text-xs flex items-center gap-1.5">
+                  <Images className="w-4 h-4 text-emerald-700" />
+                  <span>Project Site Progress Gallery</span>
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {galleryImages.map((imgUrl, idx) => (
+                    <div
+                      key={`${imgUrl}-${idx}`}
+                      className="aspect-[4/3] rounded-xl overflow-hidden border border-slate-200 bg-slate-100"
+                    >
+                      <img
+                        src={imgUrl}
+                        alt={`${project.title} progress photo ${idx + 1}`}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Citizen Commendation & Feedback Box */}
             <div className="p-5 bg-emerald-50/70 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
               <div>
-                <strong className="text-slate-900 text-sm block">Citizen Monitoring & Feedback</strong>
+                <strong className="text-slate-900 text-sm block">Citizen Monitoring &amp; Feedback</strong>
                 <span className="text-slate-600">
                   Are you a resident or shopkeeper near this project site? Share your on-site observations.
                 </span>
@@ -205,39 +285,48 @@ export const ProjectDossierPage: React.FC<ProjectDossierPageProps> = ({
             </div>
 
             {/* Connected Other Projects with Read More */}
-            <div className="pt-6 border-t border-slate-200">
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-4">
-                Other Ongoing Municipal Projects:
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {MUNICIPAL_PROJECTS.filter((p) => p.id !== project.id).slice(0, 2).map((other) => (
-                  <div
-                    key={other.id}
-                    className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between space-y-3"
-                  >
-                    <div>
-                      <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-                        {other.electoralArea} · {other.percentageComplete}% Completed
-                      </span>
-                      <h4 className="text-sm font-bold text-slate-900 mt-1 leading-snug">
-                        {other.title}
-                      </h4>
-                    </div>
+            {projects.filter((p) => p.id !== project.id).length > 0 && (
+              <div className="pt-6 border-t border-slate-200">
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-4">
+                  Other Municipal Projects:
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {projects
+                    .filter((p) => p.id !== project.id)
+                    .slice(0, 2)
+                    .map((other) => (
+                      <div
+                        key={other.id}
+                        className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between space-y-3"
+                      >
+                        <div>
+                          <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                            {other.electoralArea} · {other.percentageComplete}% Completed
+                          </span>
+                          <h4 className="text-sm font-bold text-slate-900 mt-1 leading-snug">
+                            {other.title}
+                          </h4>
+                        </div>
 
-                    <button
-                      onClick={() => {
-                        window.location.hash = `#projects`;
-                        onNavigate('projects');
-                      }}
-                      className="text-xs text-emerald-800 hover:text-emerald-950 font-bold inline-flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>Read More on Projects Page</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
+                        <button
+                          onClick={() => {
+                            if (onOpenProjectDossier) {
+                              onOpenProjectDossier(other.id);
+                            } else {
+                              window.location.hash = `#projects`;
+                              onNavigate('projects');
+                            }
+                          }}
+                          className="text-xs text-emerald-800 hover:text-emerald-950 font-bold inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>View Project Dossier</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </article>
       </div>

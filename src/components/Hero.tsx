@@ -21,7 +21,6 @@ import {
   Eye,
   X,
 } from 'lucide-react';
-import { MUNICIPAL_PROJECTS } from '../data/mockData';
 import { MunicipalDepartment, MunicipalNewsItem } from '../types';
 import { useCms } from '../context/CmsContext';
 import { Pagination } from './Pagination';
@@ -45,7 +44,7 @@ export const Hero: React.FC<HeroProps> = ({
   onOpenProjectDossier,
   onOpenNewsArticle,
 }) => {
-  const { settings, news, departments, announcements } = useCms();
+  const { settings, news, departments, announcements, projects } = useCms();
   const [quickSearchInput, setQuickSearchInput] = useState('');
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [activeNewsScope, setActiveNewsScope] = useState<'all' | 'local' | 'other'>('all');
@@ -59,7 +58,7 @@ export const Hero: React.FC<HeroProps> = ({
   const assemblyImagePath =
     settings.hero_image_url || '/images/ablekuma_assembly_welcome_1794372179601.jpg';
   const mcePortraitPath = '/images/acma_mce_portrait_1794438674697.jpg';
-  const featuredProject = MUNICIPAL_PROJECTS[0]; // Abossey Okai Stormwater Channel
+  const featuredProject = projects[0] || null;
 
   const handleQuickSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -900,62 +899,78 @@ export const Hero: React.FC<HeroProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-800">
-            <div className="lg:col-span-5 aspect-[16/10] rounded-2xl overflow-hidden bg-slate-900 relative border border-slate-700">
-              <img
-                src={featuredProject.imageUrl}
-                alt={featuredProject.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-3 left-3 px-2.5 py-1 rounded bg-slate-950/80 backdrop-blur text-xs font-semibold text-amber-400">
-                {featuredProject.status} · {featuredProject.percentageComplete}% Completed
+          {featuredProject ? (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-800">
+              <div className="lg:col-span-5 aspect-[16/10] rounded-2xl overflow-hidden bg-slate-900 relative border border-slate-700">
+                <img
+                  src={featuredProject.imageUrl}
+                  alt={featuredProject.title}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-3 left-3 px-2.5 py-1 rounded bg-slate-950/80 backdrop-blur text-xs font-semibold text-amber-400">
+                  {featuredProject.status} · {featuredProject.percentageComplete}% Completed
+                </div>
+              </div>
+
+              <div className="lg:col-span-7 space-y-4">
+                <span className="text-xs font-mono text-emerald-400 block">
+                  {featuredProject.electoralArea} Electoral Area · Budget: {featuredProject.budgetGHS}
+                </span>
+
+                <h4 className="text-lg sm:text-xl font-bold text-white leading-snug">
+                  {featuredProject.title}
+                </h4>
+
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  {featuredProject.description}
+                </p>
+
+                <div className="space-y-1.5 max-w-md">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-slate-400">Construction Milestone:</span>
+                    <span className="font-mono text-emerald-400">{featuredProject.percentageComplete}%</span>
+                  </div>
+                  <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                    <div
+                      className="h-full bg-emerald-500 rounded-full"
+                      style={{ width: `${featuredProject.percentageComplete}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <button
+                    onClick={() => onOpenProjectDossier(featuredProject.id)}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 text-xs font-bold rounded-xl shadow transition-colors flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
+                  >
+                    <span>Read More · Full Project Dossier</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={() => onNavigate('projects')}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl border border-slate-700 transition-colors cursor-pointer min-h-[44px] flex items-center justify-center"
+                  >
+                    <span>View All {projects.length} Municipal Projects</span>
+                  </button>
+                </div>
               </div>
             </div>
-
-            <div className="lg:col-span-7 space-y-4">
-              <span className="text-xs font-mono text-emerald-400 block">
-                {featuredProject.electoralArea} Electoral Area · Budget: {featuredProject.budgetGHS}
-              </span>
-
-              <h4 className="text-lg sm:text-xl font-bold text-white leading-snug">
-                {featuredProject.title}
-              </h4>
-
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                {featuredProject.description}
+          ) : (
+            <div className="bg-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-800 text-center space-y-2">
+              <p className="text-sm text-slate-300">
+                Capital infrastructure projects published by ABCMA will appear here automatically.
               </p>
-
-              <div className="space-y-1.5 max-w-md">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-400">Construction Milestone:</span>
-                  <span className="font-mono text-emerald-400">{featuredProject.percentageComplete}%</span>
-                </div>
-                <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-                  <div
-                    className="h-full bg-emerald-500 rounded-full"
-                    style={{ width: `${featuredProject.percentageComplete}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <button
-                  onClick={() => onOpenProjectDossier(featuredProject.id)}
-                  className="w-full sm:w-auto px-4 py-2.5 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 text-xs font-bold rounded-xl shadow transition-colors flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
-                >
-                  <span>Read More · Full Project Dossier</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  onClick={() => onNavigate('projects')}
-                  className="w-full sm:w-auto px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl border border-slate-700 transition-colors cursor-pointer min-h-[44px] flex items-center justify-center"
-                >
-                  <span>View All 8 Municipal Projects</span>
-                </button>
-              </div>
+              <button
+                onClick={() => onNavigate('projects')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl border border-slate-700 cursor-pointer"
+              >
+                <span>Open Projects Tracker</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
-          </div>
+          )}
         </div>
       </section>
 

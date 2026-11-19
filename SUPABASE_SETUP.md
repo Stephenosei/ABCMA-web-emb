@@ -42,6 +42,12 @@ Run both SQL scripts in order inside your Supabase project:
      - Senior management `staff_profiles`
      - All **12 `news` articles** (`local` and `other` scopes, with homepage highlights)
      - Initial public `announcements`, consultative town hall `events`, `gallery_albums` + `gallery_images`, all **16 `documents`**, and a starter published CMS page (`/page/client-service-charter`).
+5. **Run Migration 3 (`003_abcma_projects_cms.sql`)**:
+   - Click **+ New query** in the Supabase SQL Editor.
+   - Copy the **entire** contents of `supabase/migrations/003_abcma_projects_cms.sql`, paste it into the editor, and click **Run**.
+   - What this creates idempotently:
+     - The `public.projects` table (linked to `public.departments` and `public.admin_profiles`), indexes, automatic `updated_at` trigger, and Row Level Security policies (public visitors read `publication_status = 'published'` only; active admins manage projects according to role).
+     - All **8 initial ABCMA Capital Projects** (`on conflict (slug) do nothing`).
 
 ---
 

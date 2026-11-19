@@ -104,17 +104,32 @@ export interface TownHallMeeting {
 
 export interface MunicipalProject {
   id: string;
+  slug?: string;
   title: string;
   electoralArea: string;
   description: string;
+  fullDescription?: string;
   percentageComplete: number;
   budgetGHS: string;
   fundingSource: string;
   contractor: string;
   startDate: string;
   estimatedCompletion: string;
+  actualCompletionDate?: string;
   imageUrl: string;
-  status: 'In Progress' | 'Near Completion' | 'Commissioned';
+  galleryImages?: string[];
+  category?: string;
+  department?: string;
+  status:
+    | 'Planned'
+    | 'Ongoing'
+    | 'Completed'
+    | 'Suspended'
+    | 'In Progress'
+    | 'Near Completion'
+    | 'Commissioned';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type DocumentCategory =

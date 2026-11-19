@@ -22,25 +22,39 @@ interface ProjectsTrackerProps {
   isStandalonePage?: boolean;
 }
 
+type ProjectFilterTab = 'All' | 'Ongoing' | 'Planned' | 'Completed' | 'Suspended';
+
+function normalizeProjectStatusForFilter(status: MunicipalProject['status']): ProjectFilterTab {
+  if (status === 'In Progress' || status === 'Near Completion' || status === 'Ongoing') {
+    return 'Ongoing';
+  }
+  if (status === 'Commissioned' || status === 'Completed') {
+    return 'Completed';
+  }
+  if (status === 'Planned') return 'Planned';
+  if (status === 'Suspended') return 'Suspended';
+  return 'Ongoing';
+}
+
 export const ProjectsTracker: React.FC<ProjectsTrackerProps> = ({
   projects,
   onOpenProjectDossier,
   onNavigateHome,
   isStandalonePage = false,
 }) => {
-  const [activeFilter, setActiveFilter] = useState<'All' | 'In Progress' | 'Near Completion' | 'Commissioned'>('All');
+  const [activeFilter, setActiveFilter] = useState<ProjectFilterTab>('All');
   const [feedbackSent, setFeedbackSent] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 4;
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeFilter]);
+  }, [activeFilter, projects.length]);
 
   const filteredProjects =
     activeFilter === 'All'
       ? projects
-      : projects.filter((p) => p.status === activeFilter);
+      : projects.filter((p) => normalizeProjectStatusForFilter(p.status) === activeFilter);
 
   const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE) || 1;
   const paginatedProjects = filteredProjects.slice(
@@ -98,7 +112,7 @@ export const ProjectsTracker: React.FC<ProjectsTrackerProps> = ({
 
           {/* Status filter buttons */}
           <div className="flex items-center gap-1 p-1 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-lg shadow-sm overflow-x-auto max-w-full scrollbar-none">
-            {(['All', 'In Progress', 'Near Completion', 'Commissioned'] as const).map((filter) => (
+            {(['All', 'Ongoing', 'Planned', 'Completed', 'Suspended'] as const).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}

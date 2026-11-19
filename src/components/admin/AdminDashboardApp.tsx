@@ -17,6 +17,7 @@ import {
   ScrollText,
   LogOut,
   HardDrive,
+  HardHat,
   ExternalLink,
   Menu,
   X,
@@ -31,6 +32,7 @@ import { NewsManager } from './sections/NewsManager';
 import { AnnouncementsManager } from './sections/AnnouncementsManager';
 import { DepartmentsManager } from './sections/DepartmentsManager';
 import { StaffManager } from './sections/StaffManager';
+import { ProjectsManager } from './sections/ProjectsManager';
 import { EventsManager } from './sections/EventsManager';
 import { GalleryManager } from './sections/GalleryManager';
 import { DocumentsManager } from './sections/DocumentsManager';
@@ -59,6 +61,7 @@ const SIDEBAR_ITEMS: NavGroupItem[] = [
   { id: 'announcements', label: 'Announcements', icon: Megaphone },
   { id: 'departments', label: 'Departments', icon: Building2 },
   { id: 'staff', label: 'Management and Staff', icon: Users },
+  { id: 'projects', label: 'Projects', icon: HardHat },
   { id: 'events', label: 'Events and Activities', icon: Calendar },
   { id: 'gallery', label: 'Photo Gallery', icon: Images },
   { id: 'documents', label: 'Documents and Downloads', icon: FileText },
@@ -324,6 +327,7 @@ export const AdminDashboardApp: React.FC<AdminDashboardAppProps> = ({
           {activeSection === 'announcements' && <AnnouncementsManager notify={notify} />}
           {activeSection === 'departments' && <DepartmentsManager notify={notify} />}
           {activeSection === 'staff' && <StaffManager notify={notify} />}
+          {activeSection === 'projects' && <ProjectsManager notify={notify} />}
           {activeSection === 'events' && <EventsManager notify={notify} />}
           {activeSection === 'gallery' && <GalleryManager notify={notify} />}
           {activeSection === 'documents' && <DocumentsManager notify={notify} />}

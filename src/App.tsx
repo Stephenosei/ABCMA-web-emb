@@ -39,7 +39,6 @@ import {
   INITIAL_BILLS,
   INITIAL_ISSUES,
   ASSEMBLY_MEMBERS,
-  MUNICIPAL_PROJECTS,
 } from './data/mockData';
 import {
   BillRecord,
@@ -58,6 +57,7 @@ const ADMIN_SECTION_IDS: readonly AdminSectionId[] = [
   'announcements',
   'departments',
   'staff',
+  'projects',
   'events',
   'gallery',
   'documents',
@@ -84,7 +84,7 @@ function parseAdminSectionFromPath(currentPath: string): AdminSectionId {
 
 function AppRouterAndPortal() {
   const { isAuthenticatedAdmin, loading: authLoading, profileVerifying } = useAuth();
-  const { townHallsFromEvents, refreshPublicContent } = useCms();
+  const { townHallsFromEvents, projects, refreshPublicContent } = useCms();
 
   const [pathname, setPathname] = useState<string>(() => window.location.pathname || '/');
   const [activeSection, setActiveSection] = useState('home');
@@ -96,7 +96,6 @@ function AppRouterAndPortal() {
   const [bills, setBills] = useState<BillRecord[]>(INITIAL_BILLS);
   const [issues, setIssues] = useState<CitizenIssue[]>(INITIAL_ISSUES);
   const [services] = useState<MunicipalService[]>(INITIAL_SERVICES);
-  const [projects] = useState(MUNICIPAL_PROJECTS);
   const [assemblyMembers] = useState(ASSEMBLY_MEMBERS);
 
   // Modals
@@ -543,6 +542,7 @@ function AppRouterAndPortal() {
           <ProjectDossierPage
             projectId={selectedProjectId}
             onNavigate={handleNavigate}
+            onOpenProjectDossier={handleOpenProjectDossier}
             onOpenReportModal={() => setReportModalOpen(true)}
           />
         )}

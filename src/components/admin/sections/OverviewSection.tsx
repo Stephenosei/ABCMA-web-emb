@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Clock,
   Activity,
+  HardHat,
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { AdminSectionId, CmsActivityLog, CmsAnnouncement } from '../../../types/cms';
@@ -27,6 +28,8 @@ interface DashboardStats {
   totalDepartments: number;
   publishedAnnouncements: number;
   totalEvents: number;
+  publishedProjects: number;
+  draftProjects: number;
 }
 
 export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigateSection }) => {
@@ -39,6 +42,8 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigateSect
     totalDepartments: 0,
     publishedAnnouncements: 0,
     totalEvents: 0,
+    publishedProjects: 0,
+    draftProjects: 0,
   });
   const [recentLogs, setRecentLogs] = useState<CmsActivityLog[]>([]);
   const [expiringAnnouncements, setExpiringAnnouncements] = useState<CmsAnnouncement[]>([]);
@@ -51,18 +56,23 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigateSect
     }
     setLoading(true);
     try {
-      const [newsRes, pagesRes, deptRes, annRes, eventsRes, logsRes] = await Promise.all([
+      const [newsRes, pagesRes, deptRes, annRes, eventsRes, projectsRes, logsRes] = await Promise.all([
         supabase.from('news').select('id, status'),
         supabase.from('pages').select('id, status'),
         supabase.from('departments').select('id'),
         supabase.from('announcements').select('*').order('created_at', { ascending: false }),
         supabase.from('events').select('id'),
+        supabase.from('projects').select('id, publication_status'),
         supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(8),
       ]);
 
       const newsRows = (newsRes.data || []) as Array<{ id: string; status: string }>;
       const pageRows = (pagesRes.data || []) as Array<{ id: string; status: string }>;
       const annRows = (annRes.data || []) as CmsAnnouncement[];
+      const projectRows = (!projectsRes.error && projectsRes.data ? projectsRes.data : []) as Array<{
+        id: string;
+        publication_status: string;
+      }>;
 
       const now = Date.now();
       const soon = now + 7 * 24 * 60 * 60 * 1000;
@@ -82,6 +92,8 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigateSect
         totalDepartments: (deptRes.data || []).length,
         publishedAnnouncements: annRows.filter((a) => a.status === 'published').length,
         totalEvents: (eventsRes.data || []).length,
+        publishedProjects: projectRows.filter((p) => p.publication_status === 'published').length,
+        draftProjects: projectRows.filter((p) => p.publication_status === 'draft').length,
       });
 
       setExpiringAnnouncements(expiring);
@@ -125,6 +137,13 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigateSect
       section: 'announcements' as AdminSectionId,
     },
     {
+      label: 'Published Projects',
+      value: stats.publishedProjects,
+      sub: `${stats.draftProjects} drafts`,
+      icon: HardHat,
+      section: 'projects' as AdminSectionId,
+    },
+    {
       label: 'Events & Activities',
       value: stats.totalEvents,
       sub: 'Scheduled & past',
@@ -157,6 +176,14 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigateSect
           </button>
           <button
             type="button"
+            onClick={() => onNavigateSection('projects')}
+            className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+          >
+            <HardHat className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Manage Projects</span>
+          </button>
+          <button
+            type="button"
             onClick={() => onNavigateSection('announcements')}
             className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
           >
@@ -174,7 +201,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigateSect
       </div>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         {kpiCards.map((card) => {
           const Icon = card.icon;
           return (
@@ -253,11 +280,11 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ onNavigateSect
             <h2 className="text-sm font-bold text-slate-900">Quick Content Controls</h2>
             <div className="grid grid-cols-2 gap-2.5 text-xs">
               {[
+                { label: 'Municipal Projects', section: 'projects' as AdminSectionId },
                 { label: 'Edit Homepage Hero', section: 'homepage' as AdminSectionId },
                 { label: 'Menu & Navigation', section: 'navigation' as AdminSectionId },
                 { label: 'Photo Gallery', section: 'gallery' as AdminSectionId },
                 { label: 'Media Library', section: 'media' as AdminSectionId },
-                { label: 'Contact Details', section: 'contact' as AdminSectionId },
                 { label: 'Site & SEO Settings', section: 'settings' as AdminSectionId },
               ].map((item) => (
                 <button
